@@ -1,0 +1,17 @@
+name: Java tests
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Run the same tests as local Windows
+        shell: pwsh
+        run: ./scripts/test.ps1
+
