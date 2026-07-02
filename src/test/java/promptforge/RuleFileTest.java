@@ -18,12 +18,22 @@ public final class RuleFileTest {
             check(loaded.get(0).id().equals("payment.retry"), "id preserved");
             check(loaded.get(0).keywords().equals(List.of("付款", "重試")), "keywords preserved");
             check(loaded.get(0).source().equals(".promptforge/rules/payment.rule"), "portable source");
+            try {
+                loaded.get(0).keywords().add("其他");
+                throw new AssertionError("keywords should be immutable");
+            } catch (UnsupportedOperationException expected) { /* immutable by contract */ }
             expectFailure(() -> Files.writeString(rules.resolve("payment.rule"),
                     "id=payment.retry\nkeywords=付款\n", StandardCharsets.UTF_8),
                     root, "instruction");
             expectFailure(() -> Files.writeString(rules.resolve("payment.rule"),
                     "id=payment.retry\nkeywords=付款\ninstruction=OK\nunknown=x\n", StandardCharsets.UTF_8),
                     root, "unknown");
+            expectFailure(() -> Files.writeString(rules.resolve("payment.rule"),
+                    "id=payment.retry\nid=other\nkeywords=付款\ninstruction=OK\n", StandardCharsets.UTF_8),
+                    root, "duplicate key");
+            expectFailure(() -> Files.writeString(rules.resolve("payment.rule"),
+                    "id=payment.retry\nkeywords=付款,\ninstruction=OK\n", StandardCharsets.UTF_8),
+                    root, "keywords");
             Files.writeString(rules.resolve("payment.rule"),
                     "id=payment.retry\nkeywords=付款\ninstruction=OK\n", StandardCharsets.UTF_8);
             Files.writeString(rules.resolve("duplicate.rule"),
