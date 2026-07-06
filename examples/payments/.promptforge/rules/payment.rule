@@ -1,0 +1,5 @@
+# Example only: a payment project would own this rule.
+id=payment.retry
+keywords=付款,重試
+instruction=保留冪等性，並檢查重複扣款的測試
+
