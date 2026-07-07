@@ -3,6 +3,7 @@ package promptforge;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,15 +20,24 @@ public final class RuleFileLoader {
 
     public List<Rule> load(Path projectRoot) throws IOException {
         Path rulesDir = projectRoot.resolve(".promptforge/rules");
+        if (Files.isSymbolicLink(projectRoot.resolve(".promptforge")) || Files.isSymbolicLink(rulesDir)) {
+            throw new RuleFormatException("symbolic link rule directory is not allowed");
+        }
         if (!Files.isDirectory(rulesDir)) return List.of();
         List<Path> files;
         try (Stream<Path> entries = Files.list(rulesDir)) {
             files = entries.filter(p -> p.getFileName().toString().endsWith(".rule"))
-                    .sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
+                    .sorted(Comparator.comparing(p -> p.getFileName().toString())).collect(Collectors.toList());
         }
         List<Rule> result = new ArrayList<>();
         Map<String, String> sources = new HashMap<>();
         for (Path file : files) {
+            if (Files.isSymbolicLink(file) || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
+                throw new RuleFormatException("symbolic link or non-file rule is not allowed: " + file.getFileName());
+            }
+            if (Files.size(file) > 8192) {
+                throw new RuleFormatException("rule file too large: " + file.getFileName());
+            }
             Rule rule = parse(projectRoot, file);
             String firstSource = sources.putIfAbsent(rule.id(), rule.source());
             if (firstSource != null) {

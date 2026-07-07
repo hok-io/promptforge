@@ -46,6 +46,9 @@ public final class Main {
             List<Rule> rules = new RuleFileLoader().load(project);
             output.println(new TaskFrameCompiler().compile(task, rules).text());
             return 0;
+        } catch (FrameBudgetException e) {
+            errors.println("Frame budget error: " + e.getMessage());
+            return 5;
         } catch (RuleFormatException e) {
             errors.println("Rule error: " + e.getMessage());
             return 3;
@@ -53,7 +56,7 @@ public final class Main {
             errors.println("Input error: " + e.getMessage());
             return 2;
         } catch (IOException e) {
-            errors.println("I/O error: " + e.getMessage());
+            errors.println("I/O error: " + e);
             return 4;
         }
     }

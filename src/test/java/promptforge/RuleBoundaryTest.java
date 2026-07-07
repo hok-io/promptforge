@@ -21,7 +21,7 @@ public final class RuleBoundaryTest {
                 try {
                     Files.createSymbolicLink(rules.resolve("external.rule"), outside);
                     expectRuleError(root, "symbolic link");
-                } catch (UnsupportedOperationException | java.nio.file.AccessDeniedException e) {
+                } catch (UnsupportedOperationException | java.io.IOException e) {
                     System.out.println("SKIP symlink test: platform privilege unavailable");
                 }
             } finally {
@@ -32,6 +32,17 @@ public final class RuleBoundaryTest {
                 throw new AssertionError("long task should fail");
             } catch (IllegalArgumentException expected) {
                 check(expected.getMessage().contains("task"), "task length error");
+            }
+            java.util.List<Rule> many = new java.util.ArrayList<>();
+            for (int i = 0; i < 15; i++) {
+                many.add(new Rule("rule." + i, java.util.List.of("x"),
+                        "y".repeat(500), ".promptforge/rules/" + i + ".rule"));
+            }
+            try {
+                new TaskFrameCompiler().compile("x", many);
+                throw new AssertionError("oversized frame should fail");
+            } catch (FrameBudgetException expected) {
+                check(expected.getMessage().contains("frame"), "frame length error");
             }
             System.out.println("PASS RuleBoundaryTest");
         } finally {

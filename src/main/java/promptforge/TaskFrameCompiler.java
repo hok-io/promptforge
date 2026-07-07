@@ -10,6 +10,7 @@ public final class TaskFrameCompiler {
         if (task == null || task.isBlank()) {
             throw new IllegalArgumentException("task must not be blank");
         }
+        if (task.length() > 4000) throw new IllegalArgumentException("task exceeds 4000 characters");
         List<Rule> selected = selector.select(task, availableRules);
         if (selected.isEmpty()) return new TaskFrame(task, selected);
         StringBuilder text = new StringBuilder(task);
@@ -19,6 +20,10 @@ public final class TaskFrameCompiler {
                     .append(" [").append(rule.id()).append("; ")
                     .append(rule.source()).append("]\n");
         }
-        return new TaskFrame(text.toString().stripTrailing(), selected);
+        String rendered = text.toString().stripTrailing();
+        if (rendered.length() > 6000) {
+            throw new FrameBudgetException("frame exceeds 6000 characters; narrow the rule keywords");
+        }
+        return new TaskFrame(rendered, selected);
     }
 }

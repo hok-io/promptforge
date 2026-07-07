@@ -15,7 +15,7 @@ public final class CliTest {
                 "id=payment.retry\nkeywords=付款,重試\ninstruction=保留冪等性\n", StandardCharsets.UTF_8);
         try {
             Result matched = call(new String[]{"--project", root.toString(), "--task", "修改付款重試"}, "");
-            check(matched.code == 0, "matching task succeeds");
+            check(matched.code == 0, "matching task succeeds: code=" + matched.code + " err=" + matched.err);
             check(matched.out.contains("保留冪等性"), "matching rule shown");
             check(matched.out.contains("payment.rule"), "source shown");
             check(matched.err.isEmpty(), "success has no stderr");
