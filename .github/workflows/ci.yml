@@ -14,4 +14,6 @@ jobs:
       - name: Run the same tests as local Windows
         shell: pwsh
         run: ./scripts/test.ps1
-
+      - name: Check Codex skill entrypoint
+        shell: pwsh
+        run: ./scripts/check-skill.ps1
