@@ -16,4 +16,8 @@ cd D:\PromptForge
 
 自己專案只要建立 `.promptforge/rules/*.rule`。每檔包含 `id`、以逗號分隔的 `keywords`、單行 `instruction`；全部關鍵字都命中才加規則，沒有命中便原文返回。輸出的方括號包含規則 ID和來源檔案。詳見 [範例專案](examples/payments/README.md)。
 
-目前仍是 CLI MVP：用可解釋的文字匹配，不宣稱理解語意；規則衝突和輸出長度預算列在下一階段。
+目前仍是 CLI MVP：用可解釋的文字匹配，不宣稱理解語意；已有輸出長度上限，規則衝突檢查列在下一階段。
+
+## Codex Skill
+
+[Skill入口](skills/prompt-frame/SKILL.md) 可複製到個人 Codex skills目錄。它只負責按需呼叫本地 CLI；規則仍保存在各專案的 `.promptforge/rules`。執行 `./scripts/check-skill.ps1` 可檢查本專案中的 skill檔案。
