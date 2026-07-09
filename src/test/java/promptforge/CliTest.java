@@ -26,6 +26,15 @@ public final class CliTest {
             Files.writeString(rules.resolve("payment.rule"), "id=bad\n", StandardCharsets.UTF_8);
             Result invalid = call(new String[]{"--project", root.toString(), "--task", "付款重試"}, "");
             check(invalid.code == 3 && invalid.err.contains("payment.rule"), "invalid rule named");
+            Files.writeString(rules.resolve("payment.rule"),
+                    "id=payment.fast\nkeywords=付款,重試\ninstruction=Do fast\nconflicts=payment.safe\n",
+                    StandardCharsets.UTF_8);
+            Files.writeString(rules.resolve("safe.rule"),
+                    "id=payment.safe\nkeywords=付款,重試\ninstruction=Do safe\n", StandardCharsets.UTF_8);
+            Result conflict = call(new String[]{"--project", root.toString(), "--task", "付款重試"}, "");
+            check(conflict.code == 6 && conflict.out.isEmpty(), "conflict returns no frame");
+            check(conflict.err.contains("payment.fast") && conflict.err.contains("payment.safe"),
+                    "conflict names both rules");
             System.out.println("PASS CliTest");
         } finally {
             try (var paths = Files.walk(root)) {
