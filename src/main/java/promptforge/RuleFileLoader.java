@@ -16,7 +16,8 @@ import java.util.stream.Stream;
 
 /** Loads human-editable rule files in a predictable order. */
 public final class RuleFileLoader {
-    private static final Set<String> KEYS = Set.of("id", "keywords", "instruction");
+    private static final Set<String> KEYS = Set.of("id", "keywords", "instruction", "conflicts");
+    private static final Set<String> REQUIRED = Set.of("id", "keywords", "instruction");
 
     public List<Rule> load(Path projectRoot) throws IOException {
         Path rulesDir = projectRoot.resolve(".promptforge/rules");
@@ -64,15 +65,18 @@ public final class RuleFileLoader {
                 throw new RuleFormatException(source + ":" + lineNumber + " duplicate key " + key);
             }
         }
-        for (String key : KEYS) {
+        for (String key : REQUIRED) {
             if (!values.containsKey(key) || values.get(key).isBlank()) {
                 throw new RuleFormatException(source + " missing " + key);
             }
         }
         List<String> keywords = Stream.of(values.get("keywords").split(",", -1))
                 .map(String::trim).collect(Collectors.toList());
+        List<String> conflicts = values.containsKey("conflicts")
+                ? Stream.of(values.get("conflicts").split(",", -1)).map(String::trim).collect(Collectors.toList())
+                : List.of();
         try {
-            return new Rule(values.get("id"), keywords, values.get("instruction"), source);
+            return new Rule(values.get("id"), keywords, values.get("instruction"), source, conflicts);
         } catch (IllegalArgumentException e) {
             throw new RuleFormatException(source + " " + e.getMessage());
         }
