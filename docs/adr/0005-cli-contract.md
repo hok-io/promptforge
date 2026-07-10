@@ -9,7 +9,7 @@ Java核心已能編譯 task frame，但使用者不能為每次任務手動寫 J
 
 ## 決定
 
-`frame.ps1 -Task "..." -Project <目錄>` 編譯並執行 Java CLI；Java本身接受 `--project <目錄> --task <文字>` 或 `--stdin`。正常 stdout只有可複製的 frame；錯誤寫 stderr並用非零 exit code。無效參數／空任務為 2，規則格式錯誤為 3，檔案 I/O錯誤為 4，frame超過預算為 5。`--project`省略時用目前目錄。不開 HTTP server，不依賴 Spring Boot。
+`frame.ps1 -Task "..." -Project <目錄>` 編譯並執行 Java CLI；Java本身接受 `--project <目錄> --task <文字>` 或 `--stdin`。正常 stdout只有可複製的 frame；錯誤寫 stderr並用非零 exit code。無效參數／空任務為 2，規則格式錯誤為 3，檔案 I/O錯誤為 4，frame超過預算為 5，命中規則互相衝突為 6。`--project`省略時用目前目錄。不開 HTTP server，不依賴 Spring Boot。
 
 ## 後果
 

@@ -5,6 +5,7 @@ import java.util.List;
 /** Adds only applicable project rules to the original task. */
 public final class TaskFrameCompiler {
     private final RuleSelector selector = new RuleSelector();
+    private final RuleConflictChecker conflicts = new RuleConflictChecker();
 
     public TaskFrame compile(String task, List<Rule> availableRules) {
         if (task == null || task.isBlank()) {
@@ -12,6 +13,7 @@ public final class TaskFrameCompiler {
         }
         if (task.length() > 4000) throw new IllegalArgumentException("task exceeds 4000 characters");
         List<Rule> selected = selector.select(task, availableRules);
+        conflicts.check(selected);
         if (selected.isEmpty()) return new TaskFrame(task, selected);
         StringBuilder text = new StringBuilder(task);
         text.append("\n\n專案規則：\n");

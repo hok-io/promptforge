@@ -49,6 +49,9 @@ public final class Main {
         } catch (FrameBudgetException e) {
             errors.println("Frame budget error: " + e.getMessage());
             return 5;
+        } catch (RuleConflictException e) {
+            errors.println("Rule conflict: " + e.getMessage());
+            return 6;
         } catch (RuleFormatException e) {
             errors.println("Rule error: " + e.getMessage());
             return 3;
