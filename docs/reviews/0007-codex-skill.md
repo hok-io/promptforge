@@ -5,3 +5,4 @@
 - 已用 skill-creator 的 `quick_validate.py` 驗證，結果 `Skill is valid!`；也已複製到個人 `C:\Users\Hohokio\.codex\skills\prompt-frame`。
 - 觸發範圍是「要求整理／預處理 prompt」，普通 coding任務不應自動轉成 frame；這需要最後以 Codex實際對話驗證，靜態測試無法證明。
 - 待使用者／Codex實際驗收：使用 `$prompt-frame` 對付款重試、README及無關任務各試一次；確認跟 CLI輸出一致，且不自行執行任務。靜態驗證不能代替 Codex觸發測試。
+- 低成本 subagent已用真實付款任務獨立前向測試：exit 0、輸出與 CLI一致、沒有改檔。其回饋是 frame可能被誤解成已完成任務；skill已補一句要求在可複製 frame外說明尚未執行 coding／tests。

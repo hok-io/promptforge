@@ -1,0 +1,5 @@
+id=payment.fast
+keywords=付款,重試
+instruction=交易失敗時立即重試
+conflicts=payment.safe
+
