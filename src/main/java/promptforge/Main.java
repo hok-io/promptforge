@@ -20,6 +20,7 @@ public final class Main {
     public static int run(String[] args, InputStream input, PrintStream output, PrintStream errors) {
         Path project = Path.of(".").toAbsolutePath().normalize();
         String task = null;
+        String query = null;
         boolean stdin = false;
         try {
             for (int i = 0; i < args.length; i++) {
@@ -32,6 +33,10 @@ public final class Main {
                         if (++i >= args.length) throw new IllegalArgumentException("--task needs text");
                         task = args[i];
                         break;
+                    case "--query":
+                        if (++i >= args.length) throw new IllegalArgumentException("--query needs text");
+                        query = args[i];
+                        break;
                     case "--stdin":
                         stdin = true;
                         break;
@@ -39,10 +44,33 @@ public final class Main {
                         throw new IllegalArgumentException("unknown option: " + args[i]);
                 }
             }
+            if (query != null && (task != null || stdin)) {
+                throw new IllegalArgumentException("use --query or --task/--stdin, not both");
+            }
+            if (!Files.isDirectory(project)) throw new IllegalArgumentException("project is not a directory: " + project);
+            if (query != null) {
+                if (query.isBlank() || query.length() > 4000) {
+                    throw new IllegalArgumentException("query must be 1-4000 characters");
+                }
+                List<KnowledgeCard> cards = new KnowledgeCardLoader().load(project);
+                List<SearchHit> hits = new Bm25Index(cards).search(query, 3);
+                if (hits.isEmpty()) {
+                    output.println("沒有相關本地資料。");
+                } else {
+                    for (int i = 0; i < hits.size(); i++) {
+                        KnowledgeCard card = hits.get(i).card();
+                        String excerpt = card.body().replaceAll("\\s+", " ").trim();
+                        if (excerpt.length() > 180) excerpt = excerpt.substring(0, 177) + "...";
+                        output.println((i + 1) + ". " + card.title());
+                        output.println("來源：" + card.source());
+                        output.println("摘錄：" + excerpt);
+                    }
+                }
+                return 0;
+            }
             if (stdin && task != null) throw new IllegalArgumentException("use --task or --stdin, not both");
             if (stdin) task = new String(input.readAllBytes(), StandardCharsets.UTF_8).stripTrailing();
             if (task == null || task.isBlank()) throw new IllegalArgumentException("task must not be blank");
-            if (!Files.isDirectory(project)) throw new IllegalArgumentException("project is not a directory: " + project);
             List<Rule> rules = new RuleFileLoader().load(project);
             output.println(new TaskFrameCompiler().compile(task, rules).text());
             return 0;
@@ -54,6 +82,9 @@ public final class Main {
             return 6;
         } catch (RuleFormatException e) {
             errors.println("Rule error: " + e.getMessage());
+            return 3;
+        } catch (KnowledgeFormatException e) {
+            errors.println("Knowledge error: " + e.getMessage());
             return 3;
         } catch (IllegalArgumentException e) {
             errors.println("Input error: " + e.getMessage());

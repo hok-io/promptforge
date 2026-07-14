@@ -12,11 +12,14 @@
 cd D:\PromptForge
 .\scripts\test.ps1
 .\frame.ps1 "請修改付款重試邏輯，保持既有測試通過" -Project .\examples\payments
+.\query.ps1 "付款重試" -Project .\examples\payments
 ```
 
 自己專案只要建立 `.promptforge/rules/*.rule`。每檔包含 `id`、以逗號分隔的 `keywords`、單行 `instruction`；全部關鍵字都命中才加規則，沒有命中便原文返回。輸出的方括號包含規則 ID和來源檔案。詳見 [範例專案](examples/payments/README.md)。
 
-目前仍是 CLI MVP：用可解釋的文字匹配，不宣稱理解語意；已有輸出長度上限，規則衝突檢查列在下一階段。
+目前仍是 CLI MVP：用可解釋的文字匹配，不宣稱理解語意；已有輸出長度上限和明確的規則衝突檢查。
+
+`query.ps1`會用本地 BM25查 `.promptforge/knowledge/**/*.md` 的 ADR／policy等卡片，顯示來源和短摘錄；它不生成答案，也不自動把檢索結果塞進 prompt。查詢指令與整理 task的指令刻意分開。
 
 ## Codex Skill
 
