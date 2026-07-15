@@ -17,3 +17,9 @@ jobs:
       - name: Check Codex skill entrypoint
         shell: pwsh
         run: ./scripts/check-skill.ps1
+      - name: Package executable JAR
+        shell: pwsh
+        run: ./scripts/package.ps1
+      - name: Smoke-test packaged CLI
+        shell: pwsh
+        run: ./scripts/package-smoke.ps1
