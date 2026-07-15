@@ -21,6 +21,16 @@ cd D:\PromptForge
 
 `query.ps1`會用本地 BM25查 `.promptforge/knowledge/**/*.md` 的 ADR／policy等卡片，顯示來源和短摘錄；它不生成答案，也不自動把檢索結果塞進 prompt。查詢指令與整理 task的指令刻意分開。
 
+如果唔想每次用 PowerShell script重新編譯，可以先打包一次：
+
+```powershell
+.\scripts\package.ps1
+java -jar .\build\PromptForge.jar --project .\examples\payments --task "修改付款重試"
+java -jar .\build\PromptForge.jar --project .\examples\payments --query "付款重試"
+```
+
+修改 Java source後要重新打包；修改 `.rule`或知識卡片不用重新打包。
+
 ## Codex Skill
 
 [Skill入口](skills/prompt-frame/SKILL.md) 可複製到個人 Codex skills目錄。它只負責按需呼叫本地 CLI；規則仍保存在各專案的 `.promptforge/rules`。執行 `./scripts/check-skill.ps1` 可檢查本專案中的 skill檔案。
