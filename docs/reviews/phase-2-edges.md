@@ -10,7 +10,7 @@
 | task超過 4000字、frame超過 6000字 | 報明確長度錯誤 | RuleBoundaryTest；字元數不是 token數 |
 | 兩條命中規則互相衝突 | 不輸出 frame，exit 6，列兩個來源 | RuleConflictTest、CliTest、`examples/conflicts` |
 | 只有一條命中、或任務無關 | 不阻止執行 | RuleConflictTest |
-| symlink規則 | 程式拒絕 symlink | 本機無建立 symlink權限，測試跳過；仍需在有權限環境驗證 |
+| symlink規則 | 程式拒絕 symlink | 本機無建立 symlink權限，測試跳過；CI另設 Ubuntu runner，該環境若不能建立 symlink會令測試失敗，仍待遠端運行 |
 
 ## 實際用途是否相合
 

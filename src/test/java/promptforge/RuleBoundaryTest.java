@@ -22,7 +22,8 @@ public final class RuleBoundaryTest {
                     Files.createSymbolicLink(rules.resolve("external.rule"), outside);
                     expectRuleError(root, "symbolic link");
                 } catch (UnsupportedOperationException | java.io.IOException e) {
-                    System.out.println("SKIP symlink test: platform privilege unavailable");
+                    if (!System.getProperty("os.name").toLowerCase().contains("windows")) throw e;
+                    System.out.println("SKIP symlink test: Windows privilege unavailable");
                 }
             } finally {
                 Files.deleteIfExists(outside);
