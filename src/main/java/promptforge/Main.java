@@ -22,6 +22,7 @@ public final class Main {
         String task = null;
         String query = null;
         boolean stdin = false;
+        boolean validate = false;
         try {
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
@@ -40,14 +41,26 @@ public final class Main {
                     case "--stdin":
                         stdin = true;
                         break;
+                    case "--validate":
+                        validate = true;
+                        break;
                     default:
                         throw new IllegalArgumentException("unknown option: " + args[i]);
                 }
+            }
+            if (validate && (task != null || query != null || stdin)) {
+                throw new IllegalArgumentException("use --validate alone");
             }
             if (query != null && (task != null || stdin)) {
                 throw new IllegalArgumentException("use --query or --task/--stdin, not both");
             }
             if (!Files.isDirectory(project)) throw new IllegalArgumentException("project is not a directory: " + project);
+            if (validate) {
+                List<Rule> rules = new RuleFileLoader().load(project);
+                List<KnowledgeCard> cards = new KnowledgeCardLoader().load(project);
+                output.println("PASS: " + rules.size() + " rules, " + cards.size() + " knowledge cards");
+                return 0;
+            }
             if (query != null) {
                 if (query.isBlank() || query.length() > 4000) {
                     throw new IllegalArgumentException("query must be 1-4000 characters");

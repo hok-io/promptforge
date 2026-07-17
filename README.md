@@ -27,9 +27,12 @@ cd D:\PromptForge
 .\scripts\package.ps1
 java -jar .\build\PromptForge.jar --project .\examples\payments --task "修改付款重試"
 java -jar .\build\PromptForge.jar --project .\examples\payments --query "付款重試"
+java -jar .\build\PromptForge.jar --project .\examples\payments --validate
 ```
 
 修改 Java source後要重新打包；修改 `.rule`或知識卡片不用重新打包。
+
+更新規則／ADR的建議流程見 [維護說明](docs/maintenance.md)：Agent可提出 Git修改，先 `--validate`，再用實際任務檢查，由人 review後合併。
 
 ## Codex Skill
 
