@@ -27,6 +27,20 @@ public final class KnowledgeCardTest {
             } catch (KnowledgeFormatException expected) {
                 check(expected.getMessage().contains("retry.md"), "error names source");
             }
+            Files.writeString(adr.resolve("retry.md"), "# Empty body\n", StandardCharsets.UTF_8);
+            try {
+                new KnowledgeCardLoader().load(root);
+                throw new AssertionError("empty body should fail");
+            } catch (KnowledgeFormatException expected) {
+                check(expected.getMessage().contains("body"), "empty body error");
+            }
+            Files.writeString(adr.resolve("retry.md"), "# Too large\n" + "x".repeat(8200), StandardCharsets.UTF_8);
+            try {
+                new KnowledgeCardLoader().load(root);
+                throw new AssertionError("large card should fail");
+            } catch (KnowledgeFormatException expected) {
+                check(expected.getMessage().contains("too large"), "size error");
+            }
             System.out.println("PASS KnowledgeCardTest");
         } finally {
             try (var paths = Files.walk(root)) {

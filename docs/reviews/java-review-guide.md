@@ -10,5 +10,8 @@
 | CLI | `Main` | stdout與stderr分開有何用途？退出碼怎樣被其他工具使用？ | 測試未知參數 |
 | Boundaries | `RuleBoundaryTest`、`FrameBudgetException` | 大小限制如何防止意外長 prompt？為何字元不是 token？ | 測剛好 500字 instruction |
 | Conflicts | `RuleConflictChecker` | Map讓查找從反覆遍歷變成甚麼成本？為何不自動揀一條？ | 加反方向衝突測試 |
+| Knowledge | `KnowledgeCardLoader` | 為何一檔一卡、來源用相對路徑？讀檔時怎樣報錯？ | 測一張沒有正文的卡片 |
+| Retrieval | `Bm25Index` | TF、DF、IDF和排序各處理甚麼？中文雙字組有何限制？ | 加一張相似但不相關的卡片，看排名 |
+| Release | `scripts/package.ps1`、`Main` | `.java`如何變成 executable JAR？為何規則更新不用重包？ | 用 `java -jar`跑自己的專案 |
 
 Review時先回答「這個 class接受甚麼、保證甚麼、錯誤怎樣回報」，再看語法細節。可以逐個 commit問 Codex解釋或要求指出替代寫法；不要把整份程式一次交給模型重寫，否則會失去自己練 Java的機會。
