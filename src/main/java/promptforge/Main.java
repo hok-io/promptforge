@@ -13,7 +13,9 @@ public final class Main {
     private Main() { }
 
     public static void main(String[] args) {
-        int code = run(args, System.in, System.out, System.err);
+        PrintStream utf8Out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        PrintStream utf8Err = new PrintStream(System.err, true, StandardCharsets.UTF_8);
+        int code = run(args, System.in, utf8Out, utf8Err);
         if (code != 0) System.exit(code);
     }
 
