@@ -1,0 +1,42 @@
+# 先 review Java，再開始 Web
+
+整理日期：2026-09-26。原有實作基線：`a89db4b`，共 31 個 commit。這份文件和後續規劃是新文件，不代表你已批准原有實作。
+
+## 依序閱讀
+
+1. [逐個 commit review](commit-review.md)：31 個 commit各有用途、要看檔案、Java概念和 review問題。
+2. [Web前的核心整理](../plans/pre-web-foundation.md)：區分既有缺口、新資料模型和 Web開始條件。
+3. [本地 Prompt／Skill Workbench規劃](../plans/local-workbench.md)：新產品用途、畫面、資料、Spring Boot學習路線及細步實作。
+
+今天只整理 review和規劃。沒有增加 Spring dependency、controller、Web server或資料庫。現有 CLI source保持原有基線，方便你檢查當時的寫法。
+
+## 每次只 review一個 commit
+
+在 `D:\PromptForge`執行：
+
+```powershell
+git log --reverse --oneline
+git show --stat 8b0238f
+git show 8b0238f
+```
+
+之後換成清單中下一個 hash。`git show`不會切換或修改工作目錄。看歷史版本檔案可用 `git show <hash>:<path>`；目前檔案可能已被後面的 commit修改，不能把它當成當時內容。
+
+先回答四件事：這一步解決甚麼、資料怎樣經過 Java class、測試證明甚麼、你是否接受這個取捨。看不明白的地方先記錄，唔使假裝完成 review。可以逐個 hash問 Codex解釋，要求用原來任務例子逐行講。
+
+部分 `test:` commit刻意不能編譯，部分能編譯但 assertion失敗。這是當時測試先行的 red狀態；不要要求每一個歷史 commit都可交付。後面 `feat:`／`fix:`才是對應 green版本。測試在實作 commit內亦有追加，不能把 Git歷史說成每一項 edge test都先寫完。
+
+## 你的 review紀錄
+
+每個 commit頁有四個欄位：`我理解的用途`、`不明白／不同意`、`我想自己改的練習`、`結果`。結果填「未開始／理解但待修／接受」。31個項目目前全部未開始；自動測試或 subagent review不替代你的 review。
+
+## Web開始之前
+
+- [ ] 31個原有 commit都有人 review結果。
+- [ ] 高優先缺口已逐個小 commit修正並重新驗收。
+- [ ] Java 21、Maven Wrapper、JUnit及可重現建置已 review。
+- [ ] CLI和新 prompt／skill核心有共用 application services。
+- [ ] 結構化 prompt及 skill讀取／儲存／預覽先有 CLI測試。
+- [ ] 再根據 Web規劃開始 Spring Boot；不是讀完這份文件就自動開始。
+
+目前可證明的是歷史本機測試紀錄：12個 test classes、skill檢查和 JAR smoke通過。這不是12個 JUnit test cases，也不是模型評估。GitHub Actions設定了 Windows／Ubuntu，但沒有遠端成功結果；Windows symlink建立測試曾跳過。詳細限制見 [階段驗收](phase-3-4-retrieval-release.md)。
