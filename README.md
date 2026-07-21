@@ -1,5 +1,7 @@
 # PromptForge
 
+下一步先從 [逐 commit review 入口](docs/reviews/START-HERE.md) 開始。新增的 [本地 Web 工作台計劃](docs/plans/local-workbench.md) 尚未實作；先完成原有 Java review 與核心整理，再加入 Spring Boot。
+
 本地 Java CLI：為具體任務挑選專案規則，輸出短而可追溯的 task frame。無 LLM、API token 或 Spring Boot 依賴。
 
 目前是逐步實作的教學型 side project。每個功能的 ADR、測試、實作和驗收紀錄都會分開提交，方便逐個 commit review Java 寫法。
