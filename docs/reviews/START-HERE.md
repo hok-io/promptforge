@@ -1,6 +1,8 @@
 # 先 review Java，再開始 Web
 
-整理日期：2026-09-26。原有實作基線：`a89db4b`，共 31 個 commit。這份文件和後續規劃是新文件，不代表你已批准原有實作。
+Git 日期已依你的要求由 2026-09-01 起重新編排；本頁與 review 卡已更新 hash。原時間及新 hash 見 [對照紀錄](date-rewrite.md)。
+
+整理日期：2026-09-26。原有實作基線：`0891eb9`，共 31 個 commit。這份文件和後續規劃是新文件，不代表你已批准原有實作。
 
 ## 依序閱讀
 
@@ -16,8 +18,8 @@
 
 ```powershell
 git log --reverse --oneline
-git show --stat 8b0238f
-git show 8b0238f
+git show --stat b7f984e
+git show b7f984e
 ```
 
 之後換成清單中下一個 hash。`git show`不會切換或修改工作目錄。看歷史版本檔案可用 `git show <hash>:<path>`；目前檔案可能已被後面的 commit修改，不能把它當成當時內容。

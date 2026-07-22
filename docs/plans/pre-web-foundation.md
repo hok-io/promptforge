@@ -1,10 +1,10 @@
 # Web前先做好甚麼
 
-狀態：規劃，未實作。2026-09-26；基線 `a89db4b`。
+狀態：規劃，未實作。2026-09-26；基線 `0891eb9`。
 
 ## A：先 review原有31個 commit
 
-依 [review入口](../reviews/START-HERE.md)逐個檢查。保留 Git歷史；不 squash、不重寫原始 commit，也不一邊教原碼一邊大幅重構。你可以先把疑問記下，修正放在後面的新 commit，才容易比較前後寫法。
+依 [review入口](../reviews/START-HERE.md)逐個檢查。不 squash，也不一邊教原碼一邊大幅重構。2026-09-26 依你的要求重寫 commit 日期，內容與次序保留，對照見 [日期紀錄](../reviews/date-rewrite.md)。你可以先把疑問記下，修正放在後面的新 commit，才容易比較前後寫法。
 
 ## B：既有核心的修正
 
