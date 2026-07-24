@@ -1,0 +1,677 @@
+{
+  "measuredAt": "2026-09-26T12:23:18.4244427+08:00",
+  "jarSha256": "AB6CE2D8276D725B07575EF7A601AD3D44AC2350F48721E60928FB1C566D45F3",
+  "casesSha256": "A33791C0E10EDC658E9D2822C6CE58C20A43F566CB37673B2DB4877BBF873B69",
+  "sourceHashes": [
+    {
+      "path": "src/main/java/promptforge/Bm25Index.java",
+      "sha256": "F7580E670516ECB38E028077E8E19B45AA6FC789E2FC116B707C2E36016B57D4"
+    },
+    {
+      "path": "src/main/java/promptforge/FrameBudgetException.java",
+      "sha256": "F0169CB4F0221AA3ABB41FB01E3F8F5D23A49EE0EC70ED1893688454173114CD"
+    },
+    {
+      "path": "src/main/java/promptforge/KnowledgeCard.java",
+      "sha256": "B04ACEC2F345052BFD626189D9B588A3D0C2AC62BBB2FED9259A2AF79FEE59D9"
+    },
+    {
+      "path": "src/main/java/promptforge/KnowledgeCardLoader.java",
+      "sha256": "C60D16566A6CF91E10D561FEE2C4C95B5C7F9BFDCA4C62D5A679A977E4AD6C49"
+    },
+    {
+      "path": "src/main/java/promptforge/KnowledgeFormatException.java",
+      "sha256": "DDACF61D7B61BC2C2E70029CE3F9272EBE5151013922CEA40FD779D17B5919F3"
+    },
+    {
+      "path": "src/main/java/promptforge/Main.java",
+      "sha256": "DE90ACE8DAC24198DEC7D9FBD725523440091FE154E3E9A33BE90E8555D106C0"
+    },
+    {
+      "path": "src/main/java/promptforge/Rule.java",
+      "sha256": "7100953EE744494419A8AA6190120E8BB5C67CAB57F0CEE298788D1B2002CFE0"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleConflictChecker.java",
+      "sha256": "38C4314BE707DF28BE6773E7C008A43487F1502BC7A38B791AAAE369A5C5ED00"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleConflictException.java",
+      "sha256": "10E63C26580DDFB98078515F670D2183E0C1C3C164462331AB8ADC84303D4BB2"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleFileLoader.java",
+      "sha256": "4EED68EC4628D035FAD5B89088A8B94E897D90ECD3D561F2A376392E5833C31B"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleFormatException.java",
+      "sha256": "505032D89BD1A7E19BD93E6FE48D1EBF00D74CBE50074AC2ABE482D2F6F2B1EC"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleSelector.java",
+      "sha256": "53D4E40D2088BD3019F99302E1C864CBC972DA43656845A57C3608F6D7D20B23"
+    },
+    {
+      "path": "src/main/java/promptforge/SearchHit.java",
+      "sha256": "D85C8374A95B782F26ED15341D604324DA6BDBAAAAEF405038731732281BEE46"
+    },
+    {
+      "path": "src/main/java/promptforge/TaskFrame.java",
+      "sha256": "9BD2D8EE6A2DC22DD36230A95B29082AF75D9710E3CBD264B9EBB1A134306430"
+    },
+    {
+      "path": "src/main/java/promptforge/TaskFrameCompiler.java",
+      "sha256": "128BCF658FADDD376030E75AFB67449DC161AB40B1C8881397E4069868573974"
+    }
+  ],
+  "fixtureHashes": [
+    {
+      "path": ".promptforge/knowledge/adr/authorization.md",
+      "sha256": "2975AB57EB73313CB5D25376191CA0CA28820F05FDCE92756CAB9A63D0795871"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/compatibility.md",
+      "sha256": "1AFB1BDC3F06D65A9AA3B81E205589DA6EEC31D214C0685AA65C9819A98640A6"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/idempotency.md",
+      "sha256": "BDC89F7BE1D24052AB976205FB396CE71D5EC0960982C8AAC2C017F12F0A00BC"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/migration.md",
+      "sha256": "9E29976BCE33B5571AEB14BF607A95AC5BD8EF0DD5958391594E4369C50DE546"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/privacy.md",
+      "sha256": "DE02D52289F5E7A4533CD07D88E55A10FD635A2A80915ED257C1E1112703E584"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/readme.md",
+      "sha256": "BC19130A7F8B7FA17064672B1C3D295B3FCF85A4EBF88B22E2178DC8BC916198"
+    },
+    {
+      "path": ".promptforge/rules/api.compat.rule",
+      "sha256": "9B3A42852845ECE8D35861B1FFC1B094CAC603ACC882DF5C47E30109BBF28573"
+    },
+    {
+      "path": ".promptforge/rules/auth.permissions.rule",
+      "sha256": "EF070CC29CD5DE606BD9DEE76F87E2E034B0E7F179C67785C085282995917DBD"
+    },
+    {
+      "path": ".promptforge/rules/database.migration.rule",
+      "sha256": "510B20002CA71408F0BFF2E218D87CEF9F648C4FA9FA3B866A3D184647A83D8C"
+    },
+    {
+      "path": ".promptforge/rules/docs.readme.rule",
+      "sha256": "383C76DFF2F025154449C24B90237D0E4C22AFFD20C5A9D91E5E22106B5233A2"
+    },
+    {
+      "path": ".promptforge/rules/payment.retry.rule",
+      "sha256": "AE48596DCA79A92C0512FB0E597AC769ADB793C426CC3E3E84652A0090D87FE1"
+    },
+    {
+      "path": ".promptforge/rules/privacy.logs.rule",
+      "sha256": "EDE85993802080D06C79A2F7997B091E4F1E4BFCF667CFA416F4FB15B81ABF61"
+    },
+    {
+      "path": ".promptforge/rules/release.deployment.rule",
+      "sha256": "B86488D5824B15AA3ABD1ED253232C85571669131F44BB06B4EBE205AD3A1A98"
+    },
+    {
+      "path": ".promptforge/rules/tests.change.rule",
+      "sha256": "A33D8CA142C0DE8CAFCC5AF40350F5B5142DC3BB56612136F3792899BF1F8C88"
+    }
+  ],
+  "summary": {
+    "cases": 14,
+    "exactFrames": 8,
+    "expectedRuleItems": 19,
+    "selectedRuleItems": 16,
+    "correctRuleItems": 13,
+    "missedRuleItems": 6,
+    "extraRuleItems": 3,
+    "requiredKnowledgeItems": 9,
+    "missingKnowledgeItems": 0,
+    "returnedKnowledgeItems": 23,
+    "unrequestedKnowledgeItems": 14
+  },
+  "validation": {
+    "stdout": "PASS: 8 rules, 6 knowledge cards",
+    "stderr": "",
+    "exit": 0,
+    "milliseconds": 178
+  },
+  "conflict": {
+    "stdout": "",
+    "stderr": "Rule conflict: conflicting rules: payment.fast (.promptforge/rules/fast.rule) and payment.safe (.promptforge/rules/safe.rule)\r\n",
+    "exit": 6,
+    "milliseconds": 180
+  },
+  "maintenance": {
+    "conflictValidation": {
+      "stdout": "PASS: 2 rules, 0 knowledge cards",
+      "stderr": "",
+      "exit": 0,
+      "milliseconds": 198
+    },
+    "badValidation": {
+      "stdout": "",
+      "stderr": "Rule error: .promptforge/rules/maintenance.rule missing instruction\r\n",
+      "exit": 3,
+      "milliseconds": 164
+    },
+    "beforeUpdate": {
+      "stdout": "修改功能\n\n專案規則：\n- 版本一：確認回歸測試 [maintenance.check; .promptforge/rules/maintenance.rule]",
+      "stderr": "",
+      "exit": 0,
+      "milliseconds": 170
+    },
+    "afterUpdate": {
+      "stdout": "修改功能\n\n專案規則：\n- 版本二：確認回歸測試及回復方案 [maintenance.check; .promptforge/rules/maintenance.rule]",
+      "stderr": "",
+      "exit": 0,
+      "milliseconds": 153
+    }
+  },
+  "cases": [
+    {
+      "id": "F01",
+      "task": "修改付款重試，避免重複扣款",
+      "expectedRules": [
+        "payment.retry",
+        "tests.change"
+      ],
+      "selectedRules": [
+        "payment.retry",
+        "tests.change"
+      ],
+      "missingRules": [],
+      "extraRules": [],
+      "exactFrame": true,
+      "expectedKnowledge": [
+        "idempotency"
+      ],
+      "selectedKnowledge": [
+        "idempotency"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [],
+      "frame": {
+        "stdout": "修改付款重試，避免重複扣款\n\n專案規則：\n- 付款重試前查詢交易狀態；使用冪等鍵，並測試重複扣款。 [payment.retry; .promptforge/rules/payment.retry.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 157
+      },
+      "query": {
+        "stdout": "1. 付款重試與冪等性\n來源：.promptforge/knowledge/adr/idempotency.md\n摘錄：支付失敗後不可盲目再試。先查交易狀態，重複請求使用相同冪等鍵；逾時後也不可重複扣款。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 172
+      }
+    },
+    {
+      "id": "F02",
+      "task": "修正支付失敗後再試一次的流程，避免重複扣款",
+      "expectedRules": [
+        "payment.retry",
+        "tests.change"
+      ],
+      "selectedRules": [],
+      "missingRules": [
+        "payment.retry",
+        "tests.change"
+      ],
+      "extraRules": [],
+      "exactFrame": false,
+      "expectedKnowledge": [
+        "idempotency"
+      ],
+      "selectedKnowledge": [
+        "idempotency"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [],
+      "frame": {
+        "stdout": "修正支付失敗後再試一次的流程，避免重複扣款",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 164
+      },
+      "query": {
+        "stdout": "1. 付款重試與冪等性\n來源：.promptforge/knowledge/adr/idempotency.md\n摘錄：支付失敗後不可盲目再試。先查交易狀態，重複請求使用相同冪等鍵；逾時後也不可重複扣款。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 174
+      }
+    },
+    {
+      "id": "F03",
+      "task": "這次不改付款重試，只整理圖片",
+      "expectedRules": [],
+      "selectedRules": [
+        "payment.retry"
+      ],
+      "missingRules": [],
+      "extraRules": [
+        "payment.retry"
+      ],
+      "exactFrame": false,
+      "expectedKnowledge": [],
+      "selectedKnowledge": [
+        "idempotency"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "idempotency"
+      ],
+      "frame": {
+        "stdout": "這次不改付款重試，只整理圖片\n\n專案規則：\n- 付款重試前查詢交易狀態；使用冪等鍵，並測試重複扣款。 [payment.retry; .promptforge/rules/payment.retry.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 153
+      },
+      "query": {
+        "stdout": "1. 付款重試與冪等性\n來源：.promptforge/knowledge/adr/idempotency.md\n摘錄：支付失敗後不可盲目再試。先查交易狀態，重複請求使用相同冪等鍵；逾時後也不可重複扣款。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 175
+      }
+    },
+    {
+      "id": "F04",
+      "task": "修改日誌，遮罩客戶電話",
+      "expectedRules": [
+        "privacy.logs",
+        "tests.change"
+      ],
+      "selectedRules": [
+        "privacy.logs",
+        "tests.change"
+      ],
+      "missingRules": [],
+      "extraRules": [],
+      "exactFrame": true,
+      "expectedKnowledge": [
+        "privacy"
+      ],
+      "selectedKnowledge": [
+        "privacy",
+        "compatibility"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "compatibility"
+      ],
+      "frame": {
+        "stdout": "修改日誌，遮罩客戶電話\n\n專案規則：\n- 客戶電話、電郵及 token 必須遮罩，不可寫入日誌。 [privacy.logs; .promptforge/rules/privacy.logs.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 153
+      },
+      "query": {
+        "stdout": "1. 日誌與個人資料\n來源：.promptforge/knowledge/adr/privacy.md\n摘錄：log 記錄前遮罩電話、電郵與 token。錯誤診斷使用追蹤 ID，不可保留原始客戶資料。\n2. API 回應與相容性\n來源：.promptforge/knowledge/adr/compatibility.md\n摘錄：API 回應新增欄位時確認既有客戶端可以忽略未知欄位。改名或刪欄位須版本化；API 文件可以說明既有行為。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 225
+      }
+    },
+    {
+      "id": "F05",
+      "task": "修正 log 記錄，別把客戶電話寫进去",
+      "expectedRules": [
+        "privacy.logs",
+        "tests.change"
+      ],
+      "selectedRules": [],
+      "missingRules": [
+        "privacy.logs",
+        "tests.change"
+      ],
+      "extraRules": [],
+      "exactFrame": false,
+      "expectedKnowledge": [
+        "privacy"
+      ],
+      "selectedKnowledge": [
+        "privacy",
+        "compatibility"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "compatibility"
+      ],
+      "frame": {
+        "stdout": "修正 log 記錄，別把客戶電話寫?去",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 161
+      },
+      "query": {
+        "stdout": "1. 日誌與個人資料\n來源：.promptforge/knowledge/adr/privacy.md\n摘錄：log 記錄前遮罩電話、電郵與 token。錯誤診斷使用追蹤 ID，不可保留原始客戶資料。\n2. API 回應與相容性\n來源：.promptforge/knowledge/adr/compatibility.md\n摘錄：API 回應新增欄位時確認既有客戶端可以忽略未知欄位。改名或刪欄位須版本化；API 文件可以說明既有行為。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 175
+      }
+    },
+    {
+      "id": "F06",
+      "task": "修改資料庫遷移，新增欄位並保留舊資料",
+      "expectedRules": [
+        "database.migration",
+        "tests.change"
+      ],
+      "selectedRules": [
+        "database.migration",
+        "tests.change"
+      ],
+      "missingRules": [],
+      "extraRules": [],
+      "exactFrame": true,
+      "expectedKnowledge": [
+        "migration"
+      ],
+      "selectedKnowledge": [
+        "migration",
+        "compatibility",
+        "privacy"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "compatibility",
+        "privacy"
+      ],
+      "frame": {
+        "stdout": "修改資料庫遷移，新增欄位並保留舊資料\n\n專案規則：\n- 資料庫遷移必須相容現有資料，提供回復方案，並測試舊版本升級。 [database.migration; .promptforge/rules/database.migration.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 154
+      },
+      "query": {
+        "stdout": "1. 資料庫遷移方案\n來源：.promptforge/knowledge/adr/migration.md\n摘錄：migration 先新增相容欄位，再分批回填；確認舊資料升級與回復步驟。不能直接刪除舊程式仍讀取的欄位。\n2. API 回應與相容性\n來源：.promptforge/knowledge/adr/compatibility.md\n摘錄：API 回應新增欄位時確認既有客戶端可以忽略未知欄位。改名或刪欄位須版本化；API 文件可以說明既有行為。\n3. 日誌與個人資料\n來源：.promptforge/knowledge/adr/privacy.md\n摘錄：log 記錄前遮罩電話、電郵與 token。錯誤診斷使用追蹤 ID，不可保留原始客戶資料。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 172
+      }
+    },
+    {
+      "id": "F07",
+      "task": "修改 migration，新增欄位並保留舊資料",
+      "expectedRules": [
+        "database.migration",
+        "tests.change"
+      ],
+      "selectedRules": [
+        "tests.change"
+      ],
+      "missingRules": [
+        "database.migration"
+      ],
+      "extraRules": [],
+      "exactFrame": false,
+      "expectedKnowledge": [
+        "migration"
+      ],
+      "selectedKnowledge": [
+        "migration",
+        "compatibility",
+        "privacy"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "compatibility",
+        "privacy"
+      ],
+      "frame": {
+        "stdout": "修改 migration，新增欄位並保留舊資料\n\n專案規則：\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 163
+      },
+      "query": {
+        "stdout": "1. 資料庫遷移方案\n來源：.promptforge/knowledge/adr/migration.md\n摘錄：migration 先新增相容欄位，再分批回填；確認舊資料升級與回復步驟。不能直接刪除舊程式仍讀取的欄位。\n2. API 回應與相容性\n來源：.promptforge/knowledge/adr/compatibility.md\n摘錄：API 回應新增欄位時確認既有客戶端可以忽略未知欄位。改名或刪欄位須版本化；API 文件可以說明既有行為。\n3. 日誌與個人資料\n來源：.promptforge/knowledge/adr/privacy.md\n摘錄：log 記錄前遮罩電話、電郵與 token。錯誤診斷使用追蹤 ID，不可保留原始客戶資料。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 195
+      }
+    },
+    {
+      "id": "F08",
+      "task": "修改 API 回應，新增欄位並相容舊客戶端",
+      "expectedRules": [
+        "api.compat",
+        "tests.change"
+      ],
+      "selectedRules": [
+        "api.compat",
+        "tests.change"
+      ],
+      "missingRules": [],
+      "extraRules": [],
+      "exactFrame": true,
+      "expectedKnowledge": [
+        "compatibility"
+      ],
+      "selectedKnowledge": [
+        "compatibility",
+        "migration",
+        "privacy"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "migration",
+        "privacy"
+      ],
+      "frame": {
+        "stdout": "修改 API 回應，新增欄位並相容舊客戶端\n\n專案規則：\n- 變更 API 行為時保留既有客戶端相容性；改契約須明確版本化。 [api.compat; .promptforge/rules/api.compat.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 155
+      },
+      "query": {
+        "stdout": "1. API 回應與相容性\n來源：.promptforge/knowledge/adr/compatibility.md\n摘錄：API 回應新增欄位時確認既有客戶端可以忽略未知欄位。改名或刪欄位須版本化；API 文件可以說明既有行為。\n2. 資料庫遷移方案\n來源：.promptforge/knowledge/adr/migration.md\n摘錄：migration 先新增相容欄位，再分批回填；確認舊資料升級與回復步驟。不能直接刪除舊程式仍讀取的欄位。\n3. 日誌與個人資料\n來源：.promptforge/knowledge/adr/privacy.md\n摘錄：log 記錄前遮罩電話、電郵與 token。錯誤診斷使用追蹤 ID，不可保留原始客戶資料。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 175
+      }
+    },
+    {
+      "id": "F09",
+      "task": "修改 API 文件中的標點，不改任何程式行為",
+      "expectedRules": [],
+      "selectedRules": [
+        "api.compat",
+        "tests.change"
+      ],
+      "missingRules": [],
+      "extraRules": [
+        "api.compat",
+        "tests.change"
+      ],
+      "exactFrame": false,
+      "expectedKnowledge": [],
+      "selectedKnowledge": [
+        "compatibility",
+        "migration"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "compatibility",
+        "migration"
+      ],
+      "frame": {
+        "stdout": "修改 API 文件中的標點，不改任何程式行為\n\n專案規則：\n- 變更 API 行為時保留既有客戶端相容性；改契約須明確版本化。 [api.compat; .promptforge/rules/api.compat.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 154
+      },
+      "query": {
+        "stdout": "1. API 回應與相容性\n來源：.promptforge/knowledge/adr/compatibility.md\n摘錄：API 回應新增欄位時確認既有客戶端可以忽略未知欄位。改名或刪欄位須版本化；API 文件可以說明既有行為。\n2. 資料庫遷移方案\n來源：.promptforge/knowledge/adr/migration.md\n摘錄：migration 先新增相容欄位，再分批回填；確認舊資料升級與回復步驟。不能直接刪除舊程式仍讀取的欄位。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 248
+      }
+    },
+    {
+      "id": "F10",
+      "task": "更新 README 的安裝步驟",
+      "expectedRules": [
+        "docs.readme"
+      ],
+      "selectedRules": [
+        "docs.readme"
+      ],
+      "missingRules": [],
+      "extraRules": [],
+      "exactFrame": true,
+      "expectedKnowledge": [
+        "readme"
+      ],
+      "selectedKnowledge": [
+        "readme",
+        "migration"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "migration"
+      ],
+      "frame": {
+        "stdout": "更新 README 的安裝步驟\n\n專案規則：\n- 提供可執行的安裝與使用範例，並逐條驗證。 [docs.readme; .promptforge/rules/docs.readme.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 157
+      },
+      "query": {
+        "stdout": "1. README 安裝與使用\n來源：.promptforge/knowledge/adr/readme.md\n摘錄：安裝步驟應列 JDK 與可執行命令。使用範例包含輸入、輸出、錯誤處理；沒有做過的驗證不能宣稱成功。\n2. 資料庫遷移方案\n來源：.promptforge/knowledge/adr/migration.md\n摘錄：migration 先新增相容欄位，再分批回填；確認舊資料升級與回復步驟。不能直接刪除舊程式仍讀取的欄位。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 174
+      }
+    },
+    {
+      "id": "F11",
+      "task": "修改權限檢查，防止跨帳戶存取",
+      "expectedRules": [
+        "auth.permissions",
+        "tests.change"
+      ],
+      "selectedRules": [
+        "auth.permissions",
+        "tests.change"
+      ],
+      "missingRules": [],
+      "extraRules": [],
+      "exactFrame": true,
+      "expectedKnowledge": [
+        "authorization"
+      ],
+      "selectedKnowledge": [
+        "authorization"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [],
+      "frame": {
+        "stdout": "修改權限檢查，防止跨帳戶存取\n\n專案規則：\n- 權限必須在伺服器驗證，預設拒絕，覆蓋越權案例。 [auth.permissions; .promptforge/rules/auth.permissions.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 154
+      },
+      "query": {
+        "stdout": "1. 權限與伺服器驗證\n來源：.promptforge/knowledge/adr/authorization.md\n摘錄：每次請求都在伺服器驗證權限；使用者不能只靠前端隱藏按鈕限制存取。測試未登入、角色不足及跨帳戶存取。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 175
+      }
+    },
+    {
+      "id": "F12",
+      "task": "整理會議筆記",
+      "expectedRules": [],
+      "selectedRules": [],
+      "missingRules": [],
+      "extraRules": [],
+      "exactFrame": true,
+      "expectedKnowledge": [],
+      "selectedKnowledge": [],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [],
+      "frame": {
+        "stdout": "整理會議筆記",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 155
+      },
+      "query": {
+        "stdout": "沒有相關本地資料。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 191
+      }
+    },
+    {
+      "id": "F13",
+      "task": "部署新版付款服務，確保可回滾",
+      "expectedRules": [
+        "release.deployment"
+      ],
+      "selectedRules": [
+        "release.deployment"
+      ],
+      "missingRules": [],
+      "extraRules": [],
+      "exactFrame": true,
+      "expectedKnowledge": [],
+      "selectedKnowledge": [
+        "idempotency"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "idempotency"
+      ],
+      "frame": {
+        "stdout": "部署新版付款服務，確保可回滾\n\n專案規則：\n- 部署前確認健康檢查及回滾方案，避免中斷現有請求。 [release.deployment; .promptforge/rules/release.deployment.rule]",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 169
+      },
+      "query": {
+        "stdout": "1. 付款重試與冪等性\n來源：.promptforge/knowledge/adr/idempotency.md\n摘錄：支付失敗後不可盲目再試。先查交易狀態，重複請求使用相同冪等鍵；逾時後也不可重複扣款。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 186
+      }
+    },
+    {
+      "id": "F14",
+      "task": "上線新版付款服務，確保可回滾",
+      "expectedRules": [
+        "release.deployment"
+      ],
+      "selectedRules": [],
+      "missingRules": [
+        "release.deployment"
+      ],
+      "extraRules": [],
+      "exactFrame": false,
+      "expectedKnowledge": [],
+      "selectedKnowledge": [
+        "idempotency"
+      ],
+      "missingKnowledge": [],
+      "unrequestedKnowledge": [
+        "idempotency"
+      ],
+      "frame": {
+        "stdout": "上線新版付款服務，確保可回滾",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 156
+      },
+      "query": {
+        "stdout": "1. 付款重試與冪等性\n來源：.promptforge/knowledge/adr/idempotency.md\n摘錄：支付失敗後不可盲目再試。先查交易狀態，重複請求使用相同冪等鍵；逾時後也不可重複扣款。",
+        "stderr": "",
+        "exit": 0,
+        "milliseconds": 218
+      }
+    }
+  ]
+}
