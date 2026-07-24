@@ -1,0 +1,3 @@
+id=tests.change
+keywords=修改
+instruction=改動程式行為時先寫回歸測試，再確認既有案例仍通過。

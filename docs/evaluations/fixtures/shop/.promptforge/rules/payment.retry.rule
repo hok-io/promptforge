@@ -1,0 +1,3 @@
+id=payment.retry
+keywords=付款,重試
+instruction=付款重試前查詢交易狀態；使用冪等鍵，並測試重複扣款。

@@ -1,0 +1,134 @@
+[
+  {
+    "id": "F01",
+    "task": "修改付款重試，避免重複扣款",
+    "expectedRules": [
+      "payment.retry",
+      "tests.change"
+    ],
+    "expectedKnowledge": [
+      "idempotency"
+    ]
+  },
+  {
+    "id": "F02",
+    "task": "修正支付失敗後再試一次的流程，避免重複扣款",
+    "expectedRules": [
+      "payment.retry",
+      "tests.change"
+    ],
+    "expectedKnowledge": [
+      "idempotency"
+    ]
+  },
+  {
+    "id": "F03",
+    "task": "這次不改付款重試，只整理圖片",
+    "expectedRules": [],
+    "expectedKnowledge": []
+  },
+  {
+    "id": "F04",
+    "task": "修改日誌，遮罩客戶電話",
+    "expectedRules": [
+      "privacy.logs",
+      "tests.change"
+    ],
+    "expectedKnowledge": [
+      "privacy"
+    ]
+  },
+  {
+    "id": "F05",
+    "task": "修正 log 記錄，別把客戶電話寫进去",
+    "expectedRules": [
+      "privacy.logs",
+      "tests.change"
+    ],
+    "expectedKnowledge": [
+      "privacy"
+    ]
+  },
+  {
+    "id": "F06",
+    "task": "修改資料庫遷移，新增欄位並保留舊資料",
+    "expectedRules": [
+      "database.migration",
+      "tests.change"
+    ],
+    "expectedKnowledge": [
+      "migration"
+    ]
+  },
+  {
+    "id": "F07",
+    "task": "修改 migration，新增欄位並保留舊資料",
+    "expectedRules": [
+      "database.migration",
+      "tests.change"
+    ],
+    "expectedKnowledge": [
+      "migration"
+    ]
+  },
+  {
+    "id": "F08",
+    "task": "修改 API 回應，新增欄位並相容舊客戶端",
+    "expectedRules": [
+      "api.compat",
+      "tests.change"
+    ],
+    "expectedKnowledge": [
+      "compatibility"
+    ]
+  },
+  {
+    "id": "F09",
+    "task": "修改 API 文件中的標點，不改任何程式行為",
+    "expectedRules": [],
+    "expectedKnowledge": []
+  },
+  {
+    "id": "F10",
+    "task": "更新 README 的安裝步驟",
+    "expectedRules": [
+      "docs.readme"
+    ],
+    "expectedKnowledge": [
+      "readme"
+    ]
+  },
+  {
+    "id": "F11",
+    "task": "修改權限檢查，防止跨帳戶存取",
+    "expectedRules": [
+      "auth.permissions",
+      "tests.change"
+    ],
+    "expectedKnowledge": [
+      "authorization"
+    ]
+  },
+  {
+    "id": "F12",
+    "task": "整理會議筆記",
+    "expectedRules": [],
+    "expectedKnowledge": []
+  },
+  {
+    "id": "F13",
+    "task": "部署新版付款服務，確保可回滾",
+    "expectedRules": [
+      "release.deployment"
+    ],
+    "expectedKnowledge": []
+  },
+  {
+    "id": "F14",
+    "task": "上線新版付款服務，確保可回滾",
+    "expectedRules": [
+      "release.deployment"
+    ],
+    "expectedKnowledge": []
+  }
+]

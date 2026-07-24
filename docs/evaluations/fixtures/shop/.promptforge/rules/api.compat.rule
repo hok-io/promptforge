@@ -1,0 +1,3 @@
+id=api.compat
+keywords=API
+instruction=變更 API 行為時保留既有客戶端相容性；改契約須明確版本化。

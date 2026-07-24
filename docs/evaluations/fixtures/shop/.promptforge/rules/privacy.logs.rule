@@ -1,0 +1,3 @@
+id=privacy.logs
+keywords=日誌
+instruction=客戶電話、電郵及 token 必須遮罩，不可寫入日誌。

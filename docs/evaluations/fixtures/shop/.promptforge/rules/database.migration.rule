@@ -1,0 +1,3 @@
+id=database.migration
+keywords=資料庫,遷移
+instruction=資料庫遷移必須相容現有資料，提供回復方案，並測試舊版本升級。

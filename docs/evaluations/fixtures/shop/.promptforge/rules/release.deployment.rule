@@ -1,0 +1,3 @@
+id=release.deployment
+keywords=部署
+instruction=部署前確認健康檢查及回滾方案，避免中斷現有請求。
