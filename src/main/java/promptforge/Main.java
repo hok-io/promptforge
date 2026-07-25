@@ -25,6 +25,9 @@ public final class Main {
         String query = null;
         boolean stdin = false;
         boolean validate = false;
+        boolean listRules = false;
+        String explicitRules = null;
+        String excludedRules = null;
         try {
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
@@ -46,9 +49,29 @@ public final class Main {
                     case "--validate":
                         validate = true;
                         break;
+                    case "--list-rules":
+                        listRules = true;
+                        break;
+                    case "--rules":
+                        if (explicitRules != null) throw new IllegalArgumentException("--rules may appear only once");
+                        if (++i >= args.length) throw new IllegalArgumentException("--rules needs comma-separated IDs");
+                        explicitRules = args[i];
+                        break;
+                    case "--exclude":
+                        if (excludedRules != null) throw new IllegalArgumentException("--exclude may appear only once");
+                        if (++i >= args.length) throw new IllegalArgumentException("--exclude needs comma-separated IDs");
+                        excludedRules = args[i];
+                        break;
                     default:
                         throw new IllegalArgumentException("unknown option: " + args[i]);
                 }
+            }
+            boolean ruleOptions = explicitRules != null || excludedRules != null;
+            if (listRules && (task != null || stdin || query != null || validate || ruleOptions)) {
+                throw new IllegalArgumentException("use --list-rules alone");
+            }
+            if (ruleOptions && (query != null || validate)) {
+                throw new IllegalArgumentException("rule selection requires --task or --stdin");
             }
             if (validate && (task != null || query != null || stdin)) {
                 throw new IllegalArgumentException("use --validate alone");
@@ -57,6 +80,16 @@ public final class Main {
                 throw new IllegalArgumentException("use --query or --task/--stdin, not both");
             }
             if (!Files.isDirectory(project)) throw new IllegalArgumentException("project is not a directory: " + project);
+            if (listRules) {
+                List<Rule> rules = new RuleFileLoader().load(project);
+                if (rules.isEmpty()) output.println("沒有專案規則。");
+                for (Rule rule : rules) {
+                    output.println(rule.id() + " | keywords=" + String.join(",", rule.keywords()));
+                    output.println("指令：" + rule.instruction());
+                    output.println("來源：" + rule.source());
+                }
+                return 0;
+            }
             if (validate) {
                 List<Rule> rules = new RuleFileLoader().load(project);
                 List<KnowledgeCard> cards = new KnowledgeCardLoader().load(project);
@@ -87,7 +120,8 @@ public final class Main {
             if (stdin) task = new String(input.readAllBytes(), StandardCharsets.UTF_8).stripTrailing();
             if (task == null || task.isBlank()) throw new IllegalArgumentException("task must not be blank");
             List<Rule> rules = new RuleFileLoader().load(project);
-            output.println(new TaskFrameCompiler().compile(task, rules).text());
+            List<Rule> selected = new RuleSelection().select(task, rules, explicitRules, excludedRules);
+            output.println(new TaskFrameCompiler().compileSelected(task, selected).text());
             return 0;
         } catch (FrameBudgetException e) {
             errors.println("Frame budget error: " + e.getMessage());

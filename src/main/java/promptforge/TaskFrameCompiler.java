@@ -8,11 +8,15 @@ public final class TaskFrameCompiler {
     private final RuleConflictChecker conflicts = new RuleConflictChecker();
 
     public TaskFrame compile(String task, List<Rule> availableRules) {
+        return compileSelected(task, selector.select(task, availableRules));
+    }
+
+    /** Compiles a confirmed selection without applying keyword matching again. */
+    public TaskFrame compileSelected(String task, List<Rule> selected) {
         if (task == null || task.isBlank()) {
             throw new IllegalArgumentException("task must not be blank");
         }
         if (task.length() > 4000) throw new IllegalArgumentException("task exceeds 4000 characters");
-        List<Rule> selected = selector.select(task, availableRules);
         conflicts.check(selected);
         if (selected.isEmpty()) return new TaskFrame(task, selected);
         StringBuilder text = new StringBuilder(task);
