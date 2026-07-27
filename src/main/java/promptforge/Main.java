@@ -28,6 +28,7 @@ public final class Main {
         boolean listRules = false;
         String explicitRules = null;
         String excludedRules = null;
+        String knowledgeSources = null;
         try {
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
@@ -62,16 +63,21 @@ public final class Main {
                         if (++i >= args.length) throw new IllegalArgumentException("--exclude needs comma-separated IDs");
                         excludedRules = args[i];
                         break;
+                    case "--knowledge":
+                        if (knowledgeSources != null) throw new IllegalArgumentException("--knowledge may appear only once");
+                        if (++i >= args.length) throw new IllegalArgumentException("--knowledge needs comma-separated sources");
+                        knowledgeSources = args[i];
+                        break;
                     default:
                         throw new IllegalArgumentException("unknown option: " + args[i]);
                 }
             }
             boolean ruleOptions = explicitRules != null || excludedRules != null;
-            if (listRules && (task != null || stdin || query != null || validate || ruleOptions)) {
+            if (listRules && (task != null || stdin || query != null || validate || ruleOptions || knowledgeSources != null)) {
                 throw new IllegalArgumentException("use --list-rules alone");
             }
-            if (ruleOptions && (query != null || validate)) {
-                throw new IllegalArgumentException("rule selection requires --task or --stdin");
+            if ((ruleOptions || knowledgeSources != null) && (query != null || validate)) {
+                throw new IllegalArgumentException("rule or knowledge selection requires --task or --stdin");
             }
             if (validate && (task != null || query != null || stdin)) {
                 throw new IllegalArgumentException("use --validate alone");
@@ -121,7 +127,10 @@ public final class Main {
             if (task == null || task.isBlank()) throw new IllegalArgumentException("task must not be blank");
             List<Rule> rules = new RuleFileLoader().load(project);
             List<Rule> selected = new RuleSelection().select(task, rules, explicitRules, excludedRules);
-            output.println(new TaskFrameCompiler().compileSelected(task, selected).text());
+            TaskFrame frame = new TaskFrameCompiler().compileSelected(task, selected);
+            List<KnowledgeCard> selectedCards = knowledgeSources == null ? List.of()
+                    : new KnowledgeSelection().select(new KnowledgeCardLoader().load(project), knowledgeSources);
+            output.println(new PromptComposer().compose(frame, selectedCards));
             return 0;
         } catch (FrameBudgetException e) {
             errors.println("Frame budget error: " + e.getMessage());

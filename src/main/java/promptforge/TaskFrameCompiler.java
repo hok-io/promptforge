@@ -4,6 +4,7 @@ import java.util.List;
 
 /** Adds only applicable project rules to the original task. */
 public final class TaskFrameCompiler {
+    public static final int MAX_FRAME_CHARACTERS = 6000;
     private final RuleSelector selector = new RuleSelector();
     private final RuleConflictChecker conflicts = new RuleConflictChecker();
 
@@ -27,7 +28,7 @@ public final class TaskFrameCompiler {
                     .append(rule.source()).append("]\n");
         }
         String rendered = text.toString().stripTrailing();
-        if (rendered.length() > 6000) {
+        if (rendered.length() > MAX_FRAME_CHARACTERS) {
             throw new FrameBudgetException("frame exceeds 6000 characters; narrow the rule keywords");
         }
         return new TaskFrame(rendered, selected);
