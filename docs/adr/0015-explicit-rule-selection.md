@@ -9,3 +9,5 @@
 沒有新選項時保留舊行為。已選規則仍檢查衝突及 frame 上限；list 模式和任務／查詢／驗證／選擇選項不能混用。普通 Java RuleSelection 負責選擇，Main 只連接 CLI 與 compiler。
 
 替代：添加同義詞或否定句特例會引入新的誤選，且容易只修好測試集。明確選擇可避免使用者手動重抄來源，但仍需要人知道哪些規則適用，不能當成自動準確率提升。
+
+PowerShell frame wrapper 提供 -Rules／-Exclude／-Knowledge，僅在參數確實傳入時轉交，保留「省略」與「明確空選擇」的差別。先用跨平台 smoke test 驗證實際 native argument 傳遞，再做 wrapper；CI 執行同一條命令。

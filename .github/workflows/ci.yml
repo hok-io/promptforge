@@ -20,6 +20,9 @@ jobs:
       - name: Check Codex skill entrypoint
         shell: pwsh
         run: ./scripts/check-skill.ps1
+      - name: Smoke-test confirmed prompt workflow
+        shell: pwsh
+        run: ./scripts/confirmed-prompt-smoke.ps1
       - name: Package executable JAR
         shell: pwsh
         run: ./scripts/package.ps1
