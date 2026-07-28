@@ -21,6 +21,8 @@ public final class RuleSelectionCliTest {
             check(synonym.code == 0 && synonym.out.contains("保留冪等性"), "explicit ID recovers synonym miss");
             Result none = call(root, "--task", "不改付款重試", "--rules", "");
             check(none.code == 0 && none.out.strip().equals("不改付款重試"), "explicit empty selection overrides auto");
+            Result noRules = call(root, "--task", "不改付款重試", "--no-rules");
+            check(noRules.code == 0 && noRules.out.strip().equals("不改付款重試"), "no-rules survives native empty argument limitations");
             Result excluded = call(root, "--task", "不改付款重試", "--exclude", "payment.retry");
             check(excluded.code == 0 && excluded.out.strip().equals("不改付款重試"), "exclude removes inappropriate rule");
             Result conflict = call(root, "--task", "支付失敗", "--rules", "payment.retry,payment.fast");
@@ -34,6 +36,7 @@ public final class RuleSelectionCliTest {
             bad(root, "--validate", "--exclude", "payment.retry");
             bad(root, "--list-rules", "--task", "支付");
             bad(root, "--task", "支付", "--rules", "payment.retry", "--rules", "payment.fast");
+            bad(root, "--task", "支付", "--rules", "payment.retry", "--no-rules");
             Result ordinary = call(root, "--task", "修改付款重試");
             check(ordinary.code == 0 && ordinary.out.contains("保留冪等性"), "legacy default unchanged");
             System.out.println("PASS RuleSelectionCliTest");

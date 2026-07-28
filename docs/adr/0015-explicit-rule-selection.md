@@ -11,3 +11,5 @@
 替代：添加同義詞或否定句特例會引入新的誤選，且容易只修好測試集。明確選擇可避免使用者手動重抄來源，但仍需要人知道哪些規則適用，不能當成自動準確率提升。
 
 PowerShell frame wrapper 提供 -Rules／-Exclude／-Knowledge，僅在參數確實傳入時轉交，保留「省略」與「明確空選擇」的差別。先用跨平台 smoke test 驗證實際 native argument 傳遞，再做 wrapper；CI 執行同一條命令。
+
+本機 smoke 證實 PowerShell native 呼叫會丟掉空字串。因此新增 --no-rules，wrapper 把 -Rules '' 轉成這個旗標；空 Exclude／Knowledge 不轉交（沒有項目）。與 --rules 重複使用回輸入錯誤，不讓 native argument 行為改變使用者選擇。
