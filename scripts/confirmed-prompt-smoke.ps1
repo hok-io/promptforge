@@ -9,4 +9,7 @@ $none = & (Join-Path $root 'frame.ps1') '不改付款重試' -Project $project -
 if ($LASTEXITCODE -ne 0 -or ($none -join "`n") -ne '不改付款重試') { throw 'Empty selection was not forwarded.' }
 $excluded = & (Join-Path $root 'frame.ps1') '不改付款重試' -Project $project -Exclude 'payment.retry'
 if ($LASTEXITCODE -ne 0 -or ($excluded -join "`n") -ne '不改付款重試') { throw 'Exclusion was not forwarded.' }
+$unicodeTask = '修正 log，别写进客戶資料 🙂'
+$unicode = & (Join-Path $root 'frame.ps1') $unicodeTask -Project $project -Rules ''
+if ($LASTEXITCODE -ne 0 -or ($unicode -join "`n") -ne $unicodeTask) { throw 'Unicode task was corrupted by native arguments.' }
 Write-Host 'PASS confirmed prompt wrapper smoke test'
