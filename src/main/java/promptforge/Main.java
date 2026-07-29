@@ -58,6 +58,10 @@ public final class Main {
                         if (++i >= args.length) throw new IllegalArgumentException("--rules needs comma-separated IDs");
                         explicitRules = args[i];
                         break;
+                    case "--no-rules":
+                        if (explicitRules != null) throw new IllegalArgumentException("use --rules or --no-rules only once");
+                        explicitRules = "";
+                        break;
                     case "--exclude":
                         if (excludedRules != null) throw new IllegalArgumentException("--exclude may appear only once");
                         if (++i >= args.length) throw new IllegalArgumentException("--exclude needs comma-separated IDs");
