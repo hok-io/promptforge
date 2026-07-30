@@ -14,9 +14,19 @@ $cases = @(Get-Content -LiteralPath (Join-Path $root 'docs/evaluations/cases.jso
 function Invoke-Cli($target, $mode, $text, $name) {
     $errorFile = Join-Path $resultDir "$name.stderr.txt"
     $timer = [Diagnostics.Stopwatch]::StartNew()
-    $arguments = @('-jar', $jarPath, '--project', $target, "--$mode")
-    if ($null -ne $text) { $arguments += $text }
-    $output = @(& java @arguments 2> $errorFile)
+    $arguments = @('-jar', $jarPath, '--project', $target)
+    if ($mode -eq 'task') {
+        $arguments += '--stdin'
+        $previousOutputEncoding = $OutputEncoding
+        try {
+            $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+            $output = @($text | & java @arguments 2> $errorFile)
+        } finally { $OutputEncoding = $previousOutputEncoding }
+    } else {
+        $arguments += "--$mode"
+        if ($null -ne $text) { $arguments += $text }
+        $output = @(& java @arguments 2> $errorFile)
+    }
     $exitCode = $LASTEXITCODE
     $timer.Stop()
     $stdout = $output -join "`n"
