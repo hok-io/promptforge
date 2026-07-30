@@ -39,6 +39,15 @@ public final class RuleSelectionCliTest {
             bad(root, "--task", "支付", "--rules", "payment.retry", "--no-rules");
             Result ordinary = call(root, "--task", "修改付款重試");
             check(ordinary.code == 0 && ordinary.out.contains("保留冪等性"), "legacy default unchanged");
+            java.util.List<String> ids = new java.util.ArrayList<>();
+            for (int i = 0; i < 20; i++) {
+                String id = "extra." + i;
+                ids.add(id);
+                Files.writeString(rules.resolve(id + ".rule"), "id=" + id + "\nkeywords=limit\ninstruction=邊界規則" + i + "\n");
+            }
+            Result limit = call(root, "--task", "limit", "--rules", String.join(",", ids));
+            check(limit.code == 0 && limit.out.contains("extra.19"), "20 explicit IDs accepted");
+            bad(root, "--task", "limit", "--rules", String.join(",", ids) + ",payment.retry");
             System.out.println("PASS RuleSelectionCliTest");
         } finally {
             try (var paths = Files.walk(root)) {
