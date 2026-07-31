@@ -1,0 +1,182 @@
+{
+  "measuredAt": "2026-09-26T12:46:49.8449395+08:00",
+  "selectionProvidedBy": "Predefined gold selections supplied by evaluator, not inferred by the tool",
+  "jarSha256": "853EA9B524D68FA373BF43372284AAABF7E6717D6EEB8DD59DEAC66BA0BC4A75",
+  "passedCases": 14,
+  "cases": [
+    {
+      "id": "F01",
+      "task": "修改付款重試，避免重複扣款",
+      "providedRules": [
+        "payment.retry",
+        "tests.change"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/idempotency.md"
+      ],
+      "output": "修改付款重試，避免重複扣款\n\n專案規則：\n- 付款重試前查詢交易狀態；使用冪等鍵，並測試重複扣款。 [payment.retry; .promptforge/rules/payment.retry.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]\n\n選定的專案知識：\n\n## 付款重試與冪等性\n來源：.promptforge/knowledge/adr/idempotency.md\n\n支付失敗後不可盲目再試。先查交易狀態，重複請求使用相同冪等鍵；逾時後也不可重複扣款。",
+      "characters": 297,
+      "exit": 0
+    },
+    {
+      "id": "F02",
+      "task": "修正支付失敗後再試一次的流程，避免重複扣款",
+      "providedRules": [
+        "payment.retry",
+        "tests.change"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/idempotency.md"
+      ],
+      "output": "修正支付失敗後再試一次的流程，避免重複扣款\n\n專案規則：\n- 付款重試前查詢交易狀態；使用冪等鍵，並測試重複扣款。 [payment.retry; .promptforge/rules/payment.retry.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]\n\n選定的專案知識：\n\n## 付款重試與冪等性\n來源：.promptforge/knowledge/adr/idempotency.md\n\n支付失敗後不可盲目再試。先查交易狀態，重複請求使用相同冪等鍵；逾時後也不可重複扣款。",
+      "characters": 305,
+      "exit": 0
+    },
+    {
+      "id": "F03",
+      "task": "這次不改付款重試，只整理圖片",
+      "providedRules": [],
+      "providedSources": [],
+      "output": "這次不改付款重試，只整理圖片",
+      "characters": 14,
+      "exit": 0
+    },
+    {
+      "id": "F04",
+      "task": "修改日誌，遮罩客戶電話",
+      "providedRules": [
+        "privacy.logs",
+        "tests.change"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/privacy.md"
+      ],
+      "output": "修改日誌，遮罩客戶電話\n\n專案規則：\n- 客戶電話、電郵及 token 必須遮罩，不可寫入日誌。 [privacy.logs; .promptforge/rules/privacy.logs.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]\n\n選定的專案知識：\n\n## 日誌與個人資料\n來源：.promptforge/knowledge/adr/privacy.md\n\nlog 記錄前遮罩電話、電郵與 token。錯誤診斷使用追蹤 ID，不可保留原始客戶資料。",
+      "characters": 292,
+      "exit": 0
+    },
+    {
+      "id": "F05",
+      "task": "修正 log 記錄，別把客戶電話寫进去",
+      "providedRules": [
+        "privacy.logs",
+        "tests.change"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/privacy.md"
+      ],
+      "output": "修正 log 記錄，別把客戶電話寫进去\n\n專案規則：\n- 客戶電話、電郵及 token 必須遮罩，不可寫入日誌。 [privacy.logs; .promptforge/rules/privacy.logs.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]\n\n選定的專案知識：\n\n## 日誌與個人資料\n來源：.promptforge/knowledge/adr/privacy.md\n\nlog 記錄前遮罩電話、電郵與 token。錯誤診斷使用追蹤 ID，不可保留原始客戶資料。",
+      "characters": 300,
+      "exit": 0
+    },
+    {
+      "id": "F06",
+      "task": "修改資料庫遷移，新增欄位並保留舊資料",
+      "providedRules": [
+        "database.migration",
+        "tests.change"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/migration.md"
+      ],
+      "output": "修改資料庫遷移，新增欄位並保留舊資料\n\n專案規則：\n- 資料庫遷移必須相容現有資料，提供回復方案，並測試舊版本升級。 [database.migration; .promptforge/rules/database.migration.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]\n\n選定的專案知識：\n\n## 資料庫遷移方案\n來源：.promptforge/knowledge/adr/migration.md\n\nmigration 先新增相容欄位，再分批回填；確認舊資料升級與回復步驟。不能直接刪除舊程式仍讀取的欄位。",
+      "characters": 324,
+      "exit": 0
+    },
+    {
+      "id": "F07",
+      "task": "修改 migration，新增欄位並保留舊資料",
+      "providedRules": [
+        "database.migration",
+        "tests.change"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/migration.md"
+      ],
+      "output": "修改 migration，新增欄位並保留舊資料\n\n專案規則：\n- 資料庫遷移必須相容現有資料，提供回復方案，並測試舊版本升級。 [database.migration; .promptforge/rules/database.migration.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]\n\n選定的專案知識：\n\n## 資料庫遷移方案\n來源：.promptforge/knowledge/adr/migration.md\n\nmigration 先新增相容欄位，再分批回填；確認舊資料升級與回復步驟。不能直接刪除舊程式仍讀取的欄位。",
+      "characters": 329,
+      "exit": 0
+    },
+    {
+      "id": "F08",
+      "task": "修改 API 回應，新增欄位並相容舊客戶端",
+      "providedRules": [
+        "api.compat",
+        "tests.change"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/compatibility.md"
+      ],
+      "output": "修改 API 回應，新增欄位並相容舊客戶端\n\n專案規則：\n- 變更 API 行為時保留既有客戶端相容性；改契約須明確版本化。 [api.compat; .promptforge/rules/api.compat.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]\n\n選定的專案知識：\n\n## API 回應與相容性\n來源：.promptforge/knowledge/adr/compatibility.md\n\nAPI 回應新增欄位時確認既有客戶端可以忽略未知欄位。改名或刪欄位須版本化；API 文件可以說明既有行為。",
+      "characters": 319,
+      "exit": 0
+    },
+    {
+      "id": "F09",
+      "task": "修改 API 文件中的標點，不改任何程式行為",
+      "providedRules": [],
+      "providedSources": [],
+      "output": "修改 API 文件中的標點，不改任何程式行為",
+      "characters": 22,
+      "exit": 0
+    },
+    {
+      "id": "F10",
+      "task": "更新 README 的安裝步驟",
+      "providedRules": [
+        "docs.readme"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/readme.md"
+      ],
+      "output": "更新 README 的安裝步驟\n\n專案規則：\n- 提供可執行的安裝與使用範例，並逐條驗證。 [docs.readme; .promptforge/rules/docs.readme.rule]\n\n選定的專案知識：\n\n## README 安裝與使用\n來源：.promptforge/knowledge/adr/readme.md\n\n安裝步驟應列 JDK 與可執行命令。使用範例包含輸入、輸出、錯誤處理；沒有做過的驗證不能宣稱成功。",
+      "characters": 214,
+      "exit": 0
+    },
+    {
+      "id": "F11",
+      "task": "修改權限檢查，防止跨帳戶存取",
+      "providedRules": [
+        "auth.permissions",
+        "tests.change"
+      ],
+      "providedSources": [
+        ".promptforge/knowledge/adr/authorization.md"
+      ],
+      "output": "修改權限檢查，防止跨帳戶存取\n\n專案規則：\n- 權限必須在伺服器驗證，預設拒絕，覆蓋越權案例。 [auth.permissions; .promptforge/rules/auth.permissions.rule]\n- 改動程式行為時先寫回歸測試，再確認既有案例仍通過。 [tests.change; .promptforge/rules/tests.change.rule]\n\n選定的專案知識：\n\n## 權限與伺服器驗證\n來源：.promptforge/knowledge/adr/authorization.md\n\n每次請求都在伺服器驗證權限；使用者不能只靠前端隱藏按鈕限制存取。測試未登入、角色不足及跨帳戶存取。",
+      "characters": 310,
+      "exit": 0
+    },
+    {
+      "id": "F12",
+      "task": "整理會議筆記",
+      "providedRules": [],
+      "providedSources": [],
+      "output": "整理會議筆記",
+      "characters": 6,
+      "exit": 0
+    },
+    {
+      "id": "F13",
+      "task": "部署新版付款服務，確保可回滾",
+      "providedRules": [
+        "release.deployment"
+      ],
+      "providedSources": [],
+      "output": "部署新版付款服務，確保可回滾\n\n專案規則：\n- 部署前確認健康檢查及回滾方案，避免中斷現有請求。 [release.deployment; .promptforge/rules/release.deployment.rule]",
+      "characters": 113,
+      "exit": 0
+    },
+    {
+      "id": "F14",
+      "task": "上線新版付款服務，確保可回滾",
+      "providedRules": [
+        "release.deployment"
+      ],
+      "providedSources": [],
+      "output": "上線新版付款服務，確保可回滾\n\n專案規則：\n- 部署前確認健康檢查及回滾方案，避免中斷現有請求。 [release.deployment; .promptforge/rules/release.deployment.rule]",
+      "characters": 113,
+      "exit": 0
+    }
+  ]
+}

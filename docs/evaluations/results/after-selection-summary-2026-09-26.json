@@ -1,0 +1,150 @@
+{
+  "measuredAt": "2026-09-26T12:46:56.7893913+08:00",
+  "jarSha256": "853EA9B524D68FA373BF43372284AAABF7E6717D6EEB8DD59DEAC66BA0BC4A75",
+  "casesSha256": "A33791C0E10EDC658E9D2822C6CE58C20A43F566CB37673B2DB4877BBF873B69",
+  "sourceHashes": [
+    {
+      "path": "src/main/java/promptforge/Bm25Index.java",
+      "sha256": "F7580E670516ECB38E028077E8E19B45AA6FC789E2FC116B707C2E36016B57D4"
+    },
+    {
+      "path": "src/main/java/promptforge/FrameBudgetException.java",
+      "sha256": "F0169CB4F0221AA3ABB41FB01E3F8F5D23A49EE0EC70ED1893688454173114CD"
+    },
+    {
+      "path": "src/main/java/promptforge/KnowledgeCard.java",
+      "sha256": "B04ACEC2F345052BFD626189D9B588A3D0C2AC62BBB2FED9259A2AF79FEE59D9"
+    },
+    {
+      "path": "src/main/java/promptforge/KnowledgeCardLoader.java",
+      "sha256": "C60D16566A6CF91E10D561FEE2C4C95B5C7F9BFDCA4C62D5A679A977E4AD6C49"
+    },
+    {
+      "path": "src/main/java/promptforge/KnowledgeFormatException.java",
+      "sha256": "DDACF61D7B61BC2C2E70029CE3F9272EBE5151013922CEA40FD779D17B5919F3"
+    },
+    {
+      "path": "src/main/java/promptforge/KnowledgeSelection.java",
+      "sha256": "B6B0BD60A27647E507210921AC39F3C07C59BD4642817DBC2E8D020F805E5E43"
+    },
+    {
+      "path": "src/main/java/promptforge/Main.java",
+      "sha256": "E6DE259061D0F171C852689957371C4951BAFACB666B34EB942AB29A56E33B0F"
+    },
+    {
+      "path": "src/main/java/promptforge/PromptComposer.java",
+      "sha256": "AFDFD4C79913A8279182707197E4B45FEF1081F4DF539F181A38113093DFA1BD"
+    },
+    {
+      "path": "src/main/java/promptforge/Rule.java",
+      "sha256": "7100953EE744494419A8AA6190120E8BB5C67CAB57F0CEE298788D1B2002CFE0"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleConflictChecker.java",
+      "sha256": "38C4314BE707DF28BE6773E7C008A43487F1502BC7A38B791AAAE369A5C5ED00"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleConflictException.java",
+      "sha256": "10E63C26580DDFB98078515F670D2183E0C1C3C164462331AB8ADC84303D4BB2"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleFileLoader.java",
+      "sha256": "4EED68EC4628D035FAD5B89088A8B94E897D90ECD3D561F2A376392E5833C31B"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleFormatException.java",
+      "sha256": "505032D89BD1A7E19BD93E6FE48D1EBF00D74CBE50074AC2ABE482D2F6F2B1EC"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleSelection.java",
+      "sha256": "2D056E750AAD121EECF38F07DC994D2E2CFA271B5D10CC023B6A3F8EA214D2EE"
+    },
+    {
+      "path": "src/main/java/promptforge/RuleSelector.java",
+      "sha256": "53D4E40D2088BD3019F99302E1C864CBC972DA43656845A57C3608F6D7D20B23"
+    },
+    {
+      "path": "src/main/java/promptforge/SearchHit.java",
+      "sha256": "D85C8374A95B782F26ED15341D604324DA6BDBAAAAEF405038731732281BEE46"
+    },
+    {
+      "path": "src/main/java/promptforge/TaskFrame.java",
+      "sha256": "9BD2D8EE6A2DC22DD36230A95B29082AF75D9710E3CBD264B9EBB1A134306430"
+    },
+    {
+      "path": "src/main/java/promptforge/TaskFrameCompiler.java",
+      "sha256": "BABB2BFA23D5DA52905C9267F473C01CB6FD1C22CB5649334A52029242AAADDE"
+    }
+  ],
+  "fixtureHashes": [
+    {
+      "path": ".promptforge/knowledge/adr/authorization.md",
+      "sha256": "2975AB57EB73313CB5D25376191CA0CA28820F05FDCE92756CAB9A63D0795871"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/compatibility.md",
+      "sha256": "1AFB1BDC3F06D65A9AA3B81E205589DA6EEC31D214C0685AA65C9819A98640A6"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/idempotency.md",
+      "sha256": "BDC89F7BE1D24052AB976205FB396CE71D5EC0960982C8AAC2C017F12F0A00BC"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/migration.md",
+      "sha256": "9E29976BCE33B5571AEB14BF607A95AC5BD8EF0DD5958391594E4369C50DE546"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/privacy.md",
+      "sha256": "DE02D52289F5E7A4533CD07D88E55A10FD635A2A80915ED257C1E1112703E584"
+    },
+    {
+      "path": ".promptforge/knowledge/adr/readme.md",
+      "sha256": "BC19130A7F8B7FA17064672B1C3D295B3FCF85A4EBF88B22E2178DC8BC916198"
+    },
+    {
+      "path": ".promptforge/rules/api.compat.rule",
+      "sha256": "9B3A42852845ECE8D35861B1FFC1B094CAC603ACC882DF5C47E30109BBF28573"
+    },
+    {
+      "path": ".promptforge/rules/auth.permissions.rule",
+      "sha256": "EF070CC29CD5DE606BD9DEE76F87E2E034B0E7F179C67785C085282995917DBD"
+    },
+    {
+      "path": ".promptforge/rules/database.migration.rule",
+      "sha256": "510B20002CA71408F0BFF2E218D87CEF9F648C4FA9FA3B866A3D184647A83D8C"
+    },
+    {
+      "path": ".promptforge/rules/docs.readme.rule",
+      "sha256": "383C76DFF2F025154449C24B90237D0E4C22AFFD20C5A9D91E5E22106B5233A2"
+    },
+    {
+      "path": ".promptforge/rules/payment.retry.rule",
+      "sha256": "AE48596DCA79A92C0512FB0E597AC769ADB793C426CC3E3E84652A0090D87FE1"
+    },
+    {
+      "path": ".promptforge/rules/privacy.logs.rule",
+      "sha256": "EDE85993802080D06C79A2F7997B091E4F1E4BFCF667CFA416F4FB15B81ABF61"
+    },
+    {
+      "path": ".promptforge/rules/release.deployment.rule",
+      "sha256": "B86488D5824B15AA3ABD1ED253232C85571669131F44BB06B4EBE205AD3A1A98"
+    },
+    {
+      "path": ".promptforge/rules/tests.change.rule",
+      "sha256": "A33D8CA142C0DE8CAFCC5AF40350F5B5142DC3BB56612136F3792899BF1F8C88"
+    }
+  ],
+  "summary": {
+    "cases": 14,
+    "exactFrames": 8,
+    "expectedRuleItems": 19,
+    "selectedRuleItems": 16,
+    "correctRuleItems": 13,
+    "missedRuleItems": 6,
+    "extraRuleItems": 3,
+    "requiredKnowledgeItems": 9,
+    "missingKnowledgeItems": 0,
+    "returnedKnowledgeItems": 23,
+    "unrequestedKnowledgeItems": 14
+  }
+}

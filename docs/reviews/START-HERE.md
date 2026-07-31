@@ -1,5 +1,7 @@
 # 先 review Java，再開始 Web
 
+後續已根據用途測評完成 [確認規則／合併知識與重測](phase-5-confirmed-prompts.md)。原 31 張卡仍對照原實作；新增 commit 另列在階段五，請按 Git 差異看當時程式。
+
 Git 日期已依你的要求由 2026-09-01 起重新編排；本頁與 review 卡已更新 hash。原時間及新 hash 見 [對照紀錄](date-rewrite.md)。
 
 整理日期：2026-09-26。原有實作基線：`0891eb9`，共 31 個 commit。這份文件和後續規劃是新文件，不代表你已批准原有實作。
@@ -10,7 +12,7 @@ Git 日期已依你的要求由 2026-09-01 起重新編排；本頁與 review �
 2. [Web前的核心整理](../plans/pre-web-foundation.md)：區分既有缺口、新資料模型和 Web開始條件。
 3. [本地 Prompt／Skill Workbench規劃](../plans/local-workbench.md)：新產品用途、畫面、資料、Spring Boot學習路線及細步實作。
 
-今天只整理 review和規劃。沒有增加 Spring dependency、controller、Web server或資料庫。現有 CLI source保持原有基線，方便你檢查當時的寫法。
+初次整理本頁時只有 review 和規劃文件，沒有增加 Spring dependency、controller、Web server 或資料庫。後續 CLI 修正見上方階段五；Web 仍未開始。
 
 ## 每次只 review一個 commit
 

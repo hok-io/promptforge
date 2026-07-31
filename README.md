@@ -31,7 +31,9 @@
 
 | 功能 | 現在的行為 |
 |---|---|
-| Frame | 用 keyword 選擇規則，補到原任務並附來源 |
+| Frame | 自動建議規則，或使用你明確選擇／排除的規則，附上來源 |
+| 規則清單 | 顯示 ID、keywords、指令與來源，方便確認選擇 |
+| 知識合併 | 把你指定的最多 3 張知識卡正文與來源加入候選 prompt |
 | Query | 用 BM25 搜尋本地 Markdown，顯示最多 3 個結果與短摘錄 |
 | Validate | 檢查規則與知識卡格式，顯示讀取數量 |
 | 衝突檢查 | 拒絕互相衝突的已選規則 |
@@ -66,9 +68,33 @@ java -jar .\build\PromptForge.jar --project .\examples\payments --query "付款�
 java -jar .\build\PromptForge.jar --project .\examples\payments --validate
 ```
 
-也支援 `--stdin` 讀取 UTF-8 任務文字。每次只選 `--task`、`--stdin`、`--query` 或 `--validate` 一種模式。省略 `--project` 時使用目前目錄。
+也支援 `--stdin` 讀取 UTF-8 任務文字。每次只選 `--task`、`--stdin`、`--query`、`--validate` 或 `--list-rules` 一種模式。省略 `--project` 時使用目前目錄。
+
+`frame.ps1` 透過 UTF-8 stdin 傳遞任務，保留正文並移除尾端空白。本機 Windows Java 15 的直接 `--task`／`--query` 參數可能損壞碼頁外字元；任務請用 wrapper。Query 尚未有 stdin 模式，遇到這種情況可先用能正確傳遞的關鍵字搜尋。
 
 修改 Java source 後要重新打包。修改規則或知識卡不用重新打包，下次執行會讀取最新檔案。
+
+### 確認規則並合併知識
+
+自動匹配不能理解同義表達或否定。先查看規則和搜尋結果，再明確指定需要的內容：
+
+```powershell
+java -jar .\build\PromptForge.jar --project .\examples\payments --list-rules
+.\query.ps1 "付款重試" -Project .\examples\payments
+
+.\frame.ps1 "支付失敗後再試一次" -Project .\examples\payments -Rules "payment.retry" -Knowledge ".promptforge/knowledge/adr/0001-idempotency.md"
+```
+
+`-Rules` 取代自動選擇，逗號分隔多個 ID；不是把指定 ID 加到自動結果。`-Exclude` 從選擇中排除 ID。未知或重複 ID、同時選中及排除同一 ID 都會回報錯誤。
+
+```powershell
+.\frame.ps1 "這次不改付款重試，只整理圖片" -Project .\examples\payments -Exclude "payment.retry"
+.\frame.ps1 "修改 API 文件標點，不改程式" -Project .\examples\payments -Rules ''
+```
+
+`-Rules ''` 表示完全不選規則；省略 `-Rules` 才使用自動匹配。直接呼叫 JAR 可用 `--rules payment.retry`、`--exclude payment.retry`、`--knowledge 來源路徑`；不選規則用 `--no-rules`，避免 shell 丟失空字串。
+
+知識來源只可指定專案知識卡已存在的相對路徑，逗號分隔最多 3 張，按指定順序加入完整正文，不會自動加入 query 的其他結果。最終 prompt 上限 6000 字元，超限回報錯誤，不默默截斷；請選較少或較小的卡片。逗號分隔格式不支援來源檔名本身含逗號。規則與知識選項只可配合任務模式使用。
 
 ## 放入自己的專案
 
@@ -139,11 +165,12 @@ $LASTEXITCODE
 ```powershell
 .\scripts\test.ps1
 .\scripts\check-skill.ps1
+.\scripts\confirmed-prompt-smoke.ps1
 .\scripts\package.ps1
 .\scripts\package-smoke.ps1
 ```
 
-Java 測試使用 main 與 assertions，目前共 12 個測試類，尚未採用 JUnit。JAR smoke test 檢查打包後的規則選擇、知識搜尋與中文輸出；skill 檢查是檔案契約檢查，不是模型品質評估。
+Java 測試使用 main 與 assertions，目前共 14 個測試類，尚未採用 JUnit。Confirmed prompt smoke test 檢查 wrapper 的規則／知識選擇及空選擇。JAR smoke test 檢查打包後的規則選擇、知識搜尋與中文輸出；skill 檢查是檔案契約檢查，不是模型品質評估。
 
 [GitHub Actions 設定](.github/workflows/ci.yml) 包含 Windows／Ubuntu、JDK 21 的相同檢查。workflow 設定本身不代表已通過遠端 CI。部分 Windows 符號連結測試可能因權限而跳過，請留意 skip。
 
