@@ -3,4 +3,6 @@ out/
 *.class
 .idea/
 .vscode/
-
+.tools/
+**/target/
+/.promptforge/
