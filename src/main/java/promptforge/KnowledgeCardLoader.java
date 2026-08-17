@@ -5,6 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.FileVisitResult;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,27 +16,52 @@ import java.util.stream.Stream;
 
 /** Reads small Markdown cards without following symbolic links. */
 public final class KnowledgeCardLoader {
+    private static final int MAX_CARDS = 100;
+    private static final long MAX_TOTAL_BYTES = 256L * 1024L;
+
     public List<KnowledgeCard> load(Path projectRoot) throws IOException {
-        Path config = projectRoot.resolve(".promptforge");
-        Path knowledge = config.resolve("knowledge");
-        if (Files.isSymbolicLink(config) || Files.isSymbolicLink(knowledge)) {
-            throw new KnowledgeFormatException("symbolic link knowledge directory is not allowed");
-        }
-        if (!Files.isDirectory(knowledge)) return List.of();
-        List<Path> files;
-        try (Stream<Path> walk = Files.walk(knowledge)) {
-            files = walk.filter(p -> p.getFileName().toString().endsWith(".md"))
-                    .sorted(Comparator.comparing(p -> knowledge.relativize(p).toString()))
-                    .collect(Collectors.toList());
-        }
-        List<KnowledgeCard> cards = new java.util.ArrayList<>();
+        Path root = ProjectPaths.realProjectRoot(projectRoot, "knowledge");
+        Path knowledge = ProjectPaths.checkedPath(root, root.resolve(".promptforge/knowledge"), "knowledge");
+        if (!Files.isDirectory(knowledge, LinkOption.NOFOLLOW_LINKS)) return List.of();
+        List<Path> files = new ArrayList<>();
+        Files.walkFileTree(knowledge, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                ProjectPaths.checkedPath(root, dir, "knowledge");
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Path safeFile = ProjectPaths.checkedPath(root, file, "knowledge");
+                if (safeFile.getFileName().toString().endsWith(".md")) {
+                    if (files.size() >= MAX_CARDS) {
+                        throw new KnowledgeFormatException("knowledge card count exceeds 100 card limit");
+                    }
+                    files.add(safeFile);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        files.sort(Comparator.comparing(p -> knowledge.relativize(p).toString()));
+        List<KnowledgeCard> cards = new ArrayList<>();
+        long totalBytes = 0;
         for (Path file : files) {
-            if (Files.isSymbolicLink(file) || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
+            Path safeFile = ProjectPaths.checkedPath(root, file, "knowledge");
+            if (!Files.isRegularFile(safeFile, LinkOption.NOFOLLOW_LINKS)) {
                 throw new KnowledgeFormatException("symbolic link or non-file knowledge card: " + file);
             }
-            if (Files.size(file) > 8192) throw new KnowledgeFormatException("knowledge card too large: " + file);
-            String source = projectRoot.relativize(file).toString().replace('\\', '/');
-            List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
+            long fileBytes = Files.size(safeFile);
+            if (fileBytes > 8192) throw new KnowledgeFormatException("knowledge card too large: " + file);
+            totalBytes += fileBytes;
+            if (totalBytes > MAX_TOTAL_BYTES) {
+                throw new KnowledgeFormatException("knowledge cards exceed 256 KiB total limit");
+            }
+            if (cards.size() >= MAX_CARDS) {
+                throw new KnowledgeFormatException("knowledge card count exceeds 100 card limit");
+            }
+            String source = root.relativize(safeFile).toString().replace('\\', '/');
+            List<String> lines = Files.readAllLines(safeFile, StandardCharsets.UTF_8);
             int heading = 0;
             while (heading < lines.size() && lines.get(heading).isBlank()) heading++;
             if (heading >= lines.size() || !lines.get(heading).startsWith("# ")

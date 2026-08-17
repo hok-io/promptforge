@@ -8,23 +8,21 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** Loads human-editable rule files in a predictable order. */
 public final class RuleFileLoader {
-    private static final Set<String> KEYS = Set.of("id", "keywords", "instruction", "conflicts");
-    private static final Set<String> REQUIRED = Set.of("id", "keywords", "instruction");
+    private static final java.util.Set<String> KEYS = java.util.Set.of("id", "keywords", "instruction", "conflicts");
+    private static final List<String> REQUIRED = List.of("id", "keywords", "instruction");
 
     public List<Rule> load(Path projectRoot) throws IOException {
-        Path rulesDir = projectRoot.resolve(".promptforge/rules");
-        if (Files.isSymbolicLink(projectRoot.resolve(".promptforge")) || Files.isSymbolicLink(rulesDir)) {
-            throw new RuleFormatException("symbolic link rule directory is not allowed");
-        }
-        if (!Files.isDirectory(rulesDir)) return List.of();
+        Path root = ProjectPaths.realProjectRoot(projectRoot, "rule");
+        Path rulesDir = ProjectPaths.checkedPath(root, root.resolve(".promptforge/rules"), "rule");
+        if (!Files.isDirectory(rulesDir, LinkOption.NOFOLLOW_LINKS)) return List.of();
         List<Path> files;
         try (Stream<Path> entries = Files.list(rulesDir)) {
             files = entries.filter(p -> p.getFileName().toString().endsWith(".rule"))
@@ -33,13 +31,14 @@ public final class RuleFileLoader {
         List<Rule> result = new ArrayList<>();
         Map<String, String> sources = new HashMap<>();
         for (Path file : files) {
-            if (Files.isSymbolicLink(file) || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
+            Path safeFile = ProjectPaths.checkedPath(root, file, "rule");
+            if (!Files.isRegularFile(safeFile, LinkOption.NOFOLLOW_LINKS)) {
                 throw new RuleFormatException("symbolic link or non-file rule is not allowed: " + file.getFileName());
             }
-            if (Files.size(file) > 8192) {
+            if (Files.size(safeFile) > 8192) {
                 throw new RuleFormatException("rule file too large: " + file.getFileName());
             }
-            Rule rule = parse(projectRoot, file);
+            Rule rule = parse(root, safeFile);
             String firstSource = sources.putIfAbsent(rule.id(), rule.source());
             if (firstSource != null) {
                 throw new RuleFormatException("duplicate id " + rule.id() + " in " + firstSource + " and " + rule.source());
