@@ -110,8 +110,7 @@ public final class Main {
                 if (query.isBlank() || query.length() > 4000) {
                     throw new IllegalArgumentException("query must be 1-4000 characters");
                 }
-                List<KnowledgeCard> cards = new KnowledgeCardLoader().load(project);
-                List<SearchHit> hits = new Bm25Index(cards).search(query, 3);
+                List<SearchHit> hits = new KnowledgeQueryService().search(project, query);
                 if (hits.isEmpty()) {
                     output.println("沒有相關本地資料。");
                 } else {
@@ -127,14 +126,9 @@ public final class Main {
                 return 0;
             }
             if (stdin && task != null) throw new IllegalArgumentException("use --task or --stdin, not both");
-            if (stdin) task = new String(input.readAllBytes(), StandardCharsets.UTF_8).stripTrailing();
+            if (stdin) task = new TaskInputReader().read(input);
             if (task == null || task.isBlank()) throw new IllegalArgumentException("task must not be blank");
-            List<Rule> rules = new RuleFileLoader().load(project);
-            List<Rule> selected = new RuleSelection().select(task, rules, explicitRules, excludedRules);
-            TaskFrame frame = new TaskFrameCompiler().compileSelected(task, selected);
-            List<KnowledgeCard> selectedCards = knowledgeSources == null ? List.of()
-                    : new KnowledgeSelection().select(new KnowledgeCardLoader().load(project), knowledgeSources);
-            output.println(new PromptComposer().compose(frame, selectedCards));
+            output.println(new FrameService().prepare(project, task, explicitRules, excludedRules, knowledgeSources));
             return 0;
         } catch (FrameBudgetException e) {
             errors.println("Frame budget error: " + e.getMessage());
