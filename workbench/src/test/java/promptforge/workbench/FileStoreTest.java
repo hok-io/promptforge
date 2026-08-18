@@ -32,4 +32,22 @@ class FileStoreTest {
         assertThrows(WorkbenchException.class, () -> store.save(".promptforge/prompts/demo.json", first.revision(), "x".repeat(300_000)));
         assertEquals("keep", store.read(".promptforge/prompts/demo.json").text());
     }
+    @Test void concurrentEditorsCannotBothReplaceTheSameRevision() throws Exception {
+        RevisionFileStore store = new RevisionFileStore(new WorkspaceFiles(root));
+        VersionedText initial = store.save(".promptforge/prompts/race.json", "new", "initial");
+        java.util.concurrent.CountDownLatch start = new java.util.concurrent.CountDownLatch(1);
+        try (var pool = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            var attempts = java.util.stream.Stream.of("first", "second").map(text -> pool.submit(() -> {
+                start.await();
+                try { store.save(".promptforge/prompts/race.json", initial.revision(), text); return 200; }
+                catch (WorkbenchException conflict) { return conflict.status(); }
+            })).toList();
+            start.countDown();
+            var outcomes = new java.util.ArrayList<Integer>();
+            for (var attempt : attempts) outcomes.add(attempt.get(10, java.util.concurrent.TimeUnit.SECONDS));
+            outcomes.sort(Integer::compareTo);
+            assertEquals(java.util.List.of(200, 409), outcomes);
+            assertTrue(java.util.List.of("first", "second").contains(store.read(".promptforge/prompts/race.json").text()));
+        }
+    }
 }

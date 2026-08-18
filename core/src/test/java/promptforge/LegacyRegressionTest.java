@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 class LegacyRegressionTest {
     @TestFactory
     Stream<DynamicTest> existingContracts() {
-        return Stream.of("Bm25IndexTest", "CliTest", "KnowledgeCardTest", "KnowledgeFrameCliTest", "QueryCliTest",
+        return Stream.of("Bm25IndexTest", "CliTest", "KnowledgeCardTest", "KnowledgeFrameCliTest", "LoaderLimitsTest", "QueryCliTest",
                 "RuleBoundaryTest", "RuleConflictFieldTest", "RuleConflictTest", "RuleFileTest", "RuleSelectionCliTest",
                 "RuleSelectorTest", "SmokeTest", "TaskFrameTest", "ValidateCliTest")
                 .map(name -> DynamicTest.dynamicTest(name, () -> {

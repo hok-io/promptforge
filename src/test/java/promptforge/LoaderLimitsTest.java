@@ -9,7 +9,7 @@ public final class LoaderLimitsTest {
     private static final long MAX_TOTAL_BYTES = 256L * 1024L;
 
     public static void main(String[] args) throws Exception {
-        Path root = Files.createTempDirectory(Path.of("build"), "loader-limits-");
+        Path root = Files.createTempDirectory("loader-limits-");
         try {
             testCardCount(root);
             cleanPromptforge(root);
@@ -49,9 +49,10 @@ public final class LoaderLimitsTest {
         System.arraycopy(payload, 0, card, 0, payload.length);
         System.arraycopy(padding, 0, card, payload.length, padding.length);
         for (int i = 0; i < MAX_CARDS; i++) Files.write(knowledge.resolve(String.format("%03d.md", i)), card);
-        long total = Files.list(knowledge).mapToLong(p -> {
+        long total;
+        try (var files = Files.list(knowledge)) { total = files.mapToLong(p -> {
             try { return Files.size(p); } catch (Exception e) { throw new RuntimeException(e); }
-        }).sum();
+        }).sum(); }
         check(total > MAX_TOTAL_BYTES, "test fixture exceeds the aggregate limit while each card remains below 8 KiB");
         expectKnowledgeError(root, "256");
     }
@@ -131,5 +132,4 @@ public final class LoaderLimitsTest {
         if (!condition) throw new AssertionError(message);
     }
 }
-
 
