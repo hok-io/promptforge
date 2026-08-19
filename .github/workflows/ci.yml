@@ -29,3 +29,26 @@ jobs:
       - name: Smoke-test packaged CLI
         shell: pwsh
         run: ./scripts/package-smoke.ps1
+      - name: Build Java modules for browser installer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path build/test-tmp -Force | Out-Null
+          $env:MAVEN_USER_HOME = Join-Path (Get-Location) '.tools/maven-home'
+          if ($IsWindows) { ./mvnw.cmd -DskipTests install } else { ./mvnw -DskipTests install }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Install test browser
+        shell: pwsh
+        run: |
+          $env:MAVEN_USER_HOME = Join-Path (Get-Location) '.tools/maven-home'
+          $browserArguments = if ($IsWindows) { 'install chromium' } else { 'install --with-deps chromium' }
+          $arguments = @('-pl', 'web', 'exec:java', '-Dexec.classpathScope=test', '-Dexec.mainClass=com.microsoft.playwright.CLI', "-Dexec.args=$browserArguments")
+          if ($IsWindows) { ./mvnw.cmd @arguments } else { ./mvnw @arguments }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify all Java and browser workflows
+        shell: pwsh
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: |
+          $env:MAVEN_USER_HOME = Join-Path (Get-Location) '.tools/maven-home'
+          if ($IsWindows) { ./mvnw.cmd clean verify } else { ./mvnw clean verify }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
