@@ -37,6 +37,15 @@ class WebContractTest {
                 .andExpect(jsonPath("$.text").value(org.hamcrest.Matchers.containsString("先查詢交易狀態")));
         mvc.perform(post("/api/projects/demo/preview").with(csrf()).contentType("application/json").content(DOCUMENT.replace("payment.retry", "missing.id"))).andExpect(status().isUnprocessableEntity());
     }
+    @Test void knowledgeSearchUsesTheSharedIndexAndKeepsItsSource() throws Exception {
+        mvc.perform(get("/api/projects/demo/knowledge/search").param("q", "付款"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].source").value(".promptforge/knowledge/adr/payment.md"));
+        mvc.perform(get("/api/projects/demo/knowledge/search").param("q", "火星種植"))
+                .andExpect(status().isOk()).andExpect(content().json("[]"));
+        mvc.perform(get("/api/projects/demo/knowledge/search").param("q", ""))
+                .andExpect(status().isUnprocessableEntity());
+    }
     @Test void diffDoesNotSaveAndStaleWriteReturnsConflict() throws Exception {
         String request = "{\"revision\":\"new\",\"document\":" + DOCUMENT + "}";
         mvc.perform(post("/api/projects/demo/prompts/draft/diff").with(csrf()).contentType("application/json").content(request)).andExpect(status().isOk()).andExpect(jsonPath("$.before").value(""));
