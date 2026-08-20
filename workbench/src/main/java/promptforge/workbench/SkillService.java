@@ -122,6 +122,78 @@ public final class SkillService {
         return details(files, id, path);
     }
 
+    public SkillDetails transition(String projectId, String id, String revision, String action) {
+        SkillDetails current = get(projectId, id);
+        requireCurrent(current, revision);
+        WorkspaceFiles files = files(projectId);
+        String path = locate(files, id);
+        SkillMetadata meta = metadata(files, path, revision);
+        SkillMetadata updated;
+        switch (action) {
+            case "review" -> updated = meta.review(revision);
+            case "approve" -> {
+                if (!revision.equals(meta.reviewedHash())) {
+                    throw new WorkbenchException(409, "必須先 review 目前版本。");
+                }
+                updated = meta.approve(revision);
+            }
+            case "activate" -> {
+                if (!revision.equals(meta.approvedHash())) {
+                    throw new WorkbenchException(409, "必須先 approve 目前版本。");
+                }
+                updated = meta.activate(revision);
+            }
+            default -> throw new WorkbenchException(422, "不支援的狀態操作。");
+        }
+        // Only explicit human transitions advance the review and approval hashes.
+        writeMetadata(files, path, updated);
+        return details(files, id, path);
+    }
+
+    public String export(String projectId, String id, String revision, String target) {
+        WorkbenchException.id(target);
+        SkillDetails current = get(projectId, id);
+        requireCurrent(current, revision);
+        WorkspaceFiles files = files(projectId);
+        String source = locate(files, id);
+        Path destination = files.resolve(".promptforge/exports/" + target);
+        if (!revision.equals(metadata(files, source, revision).approvedHash())) throw new WorkbenchException(409, "只能匯出已批准的目前版本。");
+        WorkbenchException.require(destination.startsWith(files.resolve(".promptforge/exports")), "匯出路徑無效。");
+        if (Files.exists(destination)) {
+            throw new WorkbenchException(409, "匯出目的地已存在，不能覆寫。");
+        }
+        Path stageRoot = files.resolve(".promptforge/staging");
+        Path stage = null;
+        try {
+            Files.createDirectories(stageRoot);
+            stage = Files.createTempDirectory(stageRoot, "export-");
+            for (String file : skillFiles(files, source)) {
+                String relative = file.substring(source.length() + 1);
+                Path stagedFile = stage.resolve(relative).normalize();
+                WorkbenchException.require(stagedFile.startsWith(stage), "bundle 路徑無效。");
+                Files.createDirectories(stagedFile.getParent());
+                Files.copy(files.resolve(file), stagedFile);
+            }
+            // Recheck after staging so a concurrent edit cannot export an unapproved bundle.
+            if (!bundleHash(files, source).equals(revision)) {
+                throw new WorkbenchException(409, "匯出期間 Skill 已改變，未輸出內容。");
+            }
+            Files.createDirectories(destination.getParent());
+            if (Files.exists(destination)) {
+                throw new WorkbenchException(409, "匯出目的地已存在，不能覆寫。");
+            }
+            Files.move(stage, destination, StandardCopyOption.ATOMIC_MOVE);
+            stage = null;
+            return files.root().relativize(destination).toString().replace('\\', '/');
+        } catch (WorkbenchException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new WorkbenchException(500, "無法匯出 Skill。");
+        } finally {
+            if (stage != null) safeDeleteStage(files, stageRoot, stage);
+        }
+    }
+
     private SkillDetails details(WorkspaceFiles files, String id, String path) {
         String raw = files.read(path + "/SKILL.md");
         SkillParser.Header header = SkillParser.parse(raw);
