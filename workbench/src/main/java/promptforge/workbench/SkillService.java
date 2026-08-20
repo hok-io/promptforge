@@ -101,6 +101,27 @@ public final class SkillService {
         return List.copyOf(out);
     }
 
+    public ChangePreview diff(String projectId, String id, String revision, String raw) {
+        SkillDetails current = get(projectId, id);
+        requireCurrent(current, revision);
+        return new ChangePreview(current.raw(), raw, !current.raw().equals(raw));
+    }
+
+    public SkillDetails save(String projectId, String id, String revision, String raw) {
+        WorkbenchException.id(id);
+        SkillDetails current = get(projectId, id);
+        requireCurrent(current, revision);
+        SkillParser.parse(raw);
+        WorkspaceFiles files = files(projectId);
+        String path = locate(files, id);
+        String before = bundleHash(files, path);
+        if (!before.equals(revision)) throw new WorkbenchException(409, "Skill reference 已改變，請重新載入。");
+        new RevisionFileStore(files).save(path + "/SKILL.md", RevisionFileStore.hash(current.raw()), raw);
+        String after = bundleHash(files, path);
+        writeMetadata(files, path, SkillMetadata.imported(after));
+        return details(files, id, path);
+    }
+
     private SkillDetails details(WorkspaceFiles files, String id, String path) {
         String raw = files.read(path + "/SKILL.md");
         SkillParser.Header header = SkillParser.parse(raw);
@@ -220,6 +241,12 @@ public final class SkillService {
             }
         } catch (IOException | WorkbenchException ignored) {
             // Keep any path that cannot be verified inside the project's staging directory.
+        }
+    }
+
+    private void requireCurrent(SkillDetails details, String revision) {
+        if (revision == null || !details.revision().equals(revision)) {
+            throw new WorkbenchException(409, "Skill 已改變，請重新載入。");
         }
     }
 }
