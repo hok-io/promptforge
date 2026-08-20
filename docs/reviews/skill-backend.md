@@ -1,0 +1,5 @@
+# Skill backend implementation review
+
+The workbench service keeps imported bundles inside the registered project, preserves the original `SKILL.md` text, and computes revisions from the UTF-8 bundle files while excluding its workflow metadata. Review, approval, activation, and export are tied to the current bundle revision. Evaluation records are immutable JSON sidecars; evidence paths are resolved through `WorkspaceFiles` and their contents are hashed when recorded. TEST evaluations require evidence, MODEL_REVIEW evaluations require a finding, and neither action changes approval state.
+
+The Java sources and tests compile with the repository JDK 21 and offline Maven dependencies. The complete reactor test run is currently blocked before workbench tests execute: the unrelated core `LegacyRegressionTest` suite fails on existing CLI expectations and Windows `AccessDeniedException` for temporary directories under the system Temp path. See the Maven output for `promptforge-core` in this task.
