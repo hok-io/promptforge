@@ -20,6 +20,52 @@ public final class SkillService {
         this.projects = projects;
     }
 
+    public SkillDetails importSkill(String projectId, String id, String sourceInboxName) {
+        WorkbenchException.id(id);
+        WorkbenchException.id(sourceInboxName);
+        WorkspaceFiles files = files(projectId);
+        String source = ".promptforge/inbox/" + sourceInboxName;
+        List<String> sourceFiles = files.filesUnder(source);
+        WorkbenchException.require(sourceFiles.contains(source + "/SKILL.md"), "來源資料夾需要 SKILL.md。");
+        if (Files.exists(files.resolve(".promptforge/skills/local/" + id + "/SKILL.md"))) {
+            throw new WorkbenchException(409, "Skill ID 已存在，不能匯入重複項目。");
+        }
+        String dest = ".promptforge/skills/imports/" + id;
+        Path destination = files.resolve(dest);
+        if (Files.exists(destination)) throw new WorkbenchException(409, "Skill 已存在，不能覆寫。");
+        Path stagingRoot = files.resolve(".promptforge/staging");
+        Path stage = null;
+        try {
+            Files.createDirectories(stagingRoot);
+            stage = Files.createTempDirectory(stagingRoot, "skill-");
+            for (String sourceFile : sourceFiles) {
+                String content = files.read(sourceFile);
+                String rel = sourceFile.substring(source.length() + 1);
+                Path target = stage.resolve(rel).normalize();
+                WorkbenchException.require(target.startsWith(stage), "來源檔名無效。");
+                Files.createDirectories(target.getParent());
+                Files.writeString(target, content, StandardCharsets.UTF_8);
+            }
+            String raw = Files.readString(stage.resolve("SKILL.md"), StandardCharsets.UTF_8);
+            SkillParser.parse(raw);
+            Files.createDirectories(destination.getParent());
+            if (Files.exists(destination)) {
+                throw new WorkbenchException(409, "Skill 已存在，不能覆寫。");
+            }
+            Files.move(stage, destination, StandardCopyOption.ATOMIC_MOVE);
+            stage = null;
+            String hash = bundleHash(files, dest);
+            writeMetadata(files, dest, SkillMetadata.imported(hash));
+            return get(projectId, id);
+        } catch (WorkbenchException ex) {
+            throw ex;
+        } catch (IOException ex) {
+            throw new WorkbenchException(500, "無法匯入 Skill。");
+        } finally {
+            if (stage != null) safeDeleteStage(files, stagingRoot, stage);
+        }
+    }
+
     public SkillDetails get(String projectId, String id) {
         WorkbenchException.id(id);
         WorkspaceFiles files = files(projectId);
@@ -107,6 +153,17 @@ public final class SkillService {
         }
     }
 
+    private void writeMetadata(WorkspaceFiles files, String path, SkillMetadata value) {
+        String relative = path + "/.promptforge-metadata.json";
+        try {
+            Files.createDirectories(files.resolve(path));
+            VersionedText previous = new RevisionFileStore(files).readOrNew(relative);
+            new RevisionFileStore(files).save(relative, previous.revision(), JSON.writeValueAsString(value));
+        } catch (IOException e) {
+            throw new WorkbenchException(500, "無法保存 Skill 狀態。");
+        }
+    }
+
     private String locate(WorkspaceFiles files, String id) {
         String imported = ".promptforge/skills/imports/" + id;
         if (Files.exists(files.resolve(imported + "/SKILL.md"))) {
@@ -135,6 +192,34 @@ public final class SkillService {
             return entries;
         } catch (IOException e) {
             throw new WorkbenchException(500, "無法列出 Skills。");
+        }
+    }
+
+    private void safeDeleteStage(WorkspaceFiles files, Path stageRoot, Path stage) {
+        Path allowedRoot = stageRoot.toAbsolutePath().normalize();
+        Path target = stage.toAbsolutePath().normalize();
+        if (!target.startsWith(allowedRoot) || target.equals(allowedRoot)) {
+            return;
+        }
+        try {
+            if (!Files.exists(target) || Files.isSymbolicLink(target)) {
+                return;
+            }
+            try (var walk = Files.walk(target)) {
+                List<Path> paths = walk.sorted(Comparator.reverseOrder()).toList();
+                for (Path path : paths) {
+                    if (Files.isSymbolicLink(path)) {
+                        continue;
+                    }
+                    String relative = files.root().relativize(path).toString().replace('\\', '/');
+                    if (!files.resolve(relative).startsWith(allowedRoot)) {
+                        return;
+                    }
+                    Files.deleteIfExists(path);
+                }
+            }
+        } catch (IOException | WorkbenchException ignored) {
+            // Keep any path that cannot be verified inside the project's staging directory.
         }
     }
 }
