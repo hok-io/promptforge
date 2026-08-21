@@ -53,6 +53,21 @@ public class WorkbenchController {
         return Map.of("text", prompts.preview(project, document));
     }
 
+    @GetMapping("/projects/{project}/prompts/{id}")
+    public PromptVersion prompt(@PathVariable String project, @PathVariable String id) {
+        return prompts.repository(project).load(id);
+    }
+
+    @PostMapping("/projects/{project}/prompts/{id}/diff")
+    public ChangePreview promptDiff(@PathVariable String project, @PathVariable String id, @RequestBody PromptWrite request) {
+        checkId(id, request.document()); return prompts.repository(project).diff(request.document(), request.revision());
+    }
+
+    @PutMapping("/projects/{project}/prompts/{id}")
+    public PromptVersion savePrompt(@PathVariable String project, @PathVariable String id, @RequestBody PromptWrite request) {
+        checkId(id, request.document()); return prompts.repository(project).save(request.document(), request.revision());
+    }
+
     private void checkId(String id, PromptDocument document) { WorkbenchException.require(document != null && id.equals(document.id()), "網址與 Prompt ID 不同。"); }
     public record ProjectView(String id, String name) { }
     public record RuleView(String id, List<String> keywords, String instruction, String source) { }
