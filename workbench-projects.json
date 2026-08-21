@@ -1,0 +1,5 @@
+[
+  {"id":"payments","name":"付款範例","root":"examples/payments"},
+  {"id":"conflicts","name":"規則衝突範例","root":"examples/conflicts"},
+  {"id":"shop","name":"用途測評專案","root":"docs/evaluations/fixtures/shop"}
+]
