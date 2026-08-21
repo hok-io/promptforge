@@ -37,6 +37,22 @@ public class WorkbenchController {
         return new Context(rules, knowledge, documents, summaries);
     }
 
+    @GetMapping("/projects/{project}/knowledge/search")
+    public List<SearchView> search(@PathVariable String project, @RequestParam String q) throws IOException {
+        Project selected = projects.require(project);
+        return new KnowledgeQueryService().search(selected.root(), q).stream().map(hit -> {
+            String body = hit.card().body().replaceAll("\\s+", " ").trim();
+            int count = body.codePointCount(0, body.length());
+            String excerpt = count <= 180 ? body : body.substring(0, body.offsetByCodePoints(0, 177)) + "...";
+            return new SearchView(hit.card().title(), hit.card().source(), hit.score(), excerpt);
+        }).toList();
+    }
+
+    @PostMapping("/projects/{project}/preview")
+    public Map<String, String> preview(@PathVariable String project, @RequestBody PromptDocument document) {
+        return Map.of("text", prompts.preview(project, document));
+    }
+
     private void checkId(String id, PromptDocument document) { WorkbenchException.require(document != null && id.equals(document.id()), "網址與 Prompt ID 不同。"); }
     public record ProjectView(String id, String name) { }
     public record RuleView(String id, List<String> keywords, String instruction, String source) { }
