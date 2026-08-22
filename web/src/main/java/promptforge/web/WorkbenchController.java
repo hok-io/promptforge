@@ -68,6 +68,16 @@ public class WorkbenchController {
         checkId(id, request.document()); return prompts.repository(project).save(request.document(), request.revision());
     }
 
+    @GetMapping("/projects/{project}/skills/{id}")
+    public SkillDetails skill(@PathVariable String project, @PathVariable String id) {
+        return skills.get(project, id);
+    }
+
+    @PostMapping("/projects/{project}/skills/import")
+    public SkillDetails importSkill(@PathVariable String project, @RequestBody ImportSkill request) {
+        return skills.importSkill(project, request.id(), request.source());
+    }
+
     private void checkId(String id, PromptDocument document) { WorkbenchException.require(document != null && id.equals(document.id()), "網址與 Prompt ID 不同。"); }
     public record ProjectView(String id, String name) { }
     public record RuleView(String id, List<String> keywords, String instruction, String source) { }
