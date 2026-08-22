@@ -47,7 +47,6 @@ public class WorkbenchController {
             return new SearchView(hit.card().title(), hit.card().source(), hit.score(), excerpt);
         }).toList();
     }
-
     @PostMapping("/projects/{project}/preview")
     public Map<String, String> preview(@PathVariable String project, @RequestBody PromptDocument document) {
         return Map.of("text", prompts.preview(project, document));
@@ -62,12 +61,10 @@ public class WorkbenchController {
     public ChangePreview promptDiff(@PathVariable String project, @PathVariable String id, @RequestBody PromptWrite request) {
         checkId(id, request.document()); return prompts.repository(project).diff(request.document(), request.revision());
     }
-
     @PutMapping("/projects/{project}/prompts/{id}")
     public PromptVersion savePrompt(@PathVariable String project, @PathVariable String id, @RequestBody PromptWrite request) {
         checkId(id, request.document()); return prompts.repository(project).save(request.document(), request.revision());
     }
-
     @GetMapping("/projects/{project}/skills/{id}")
     public SkillDetails skill(@PathVariable String project, @PathVariable String id) {
         return skills.get(project, id);
@@ -91,6 +88,16 @@ public class WorkbenchController {
     @PostMapping("/projects/{project}/skills/{id}/state")
     public SkillDetails transition(@PathVariable String project, @PathVariable String id, @RequestBody Transition request) {
         return skills.transition(project, id, request.revision(), request.action());
+    }
+
+    @PostMapping("/projects/{project}/skills/{id}/evaluations")
+    public EvaluationView evaluate(@PathVariable String project, @PathVariable String id, @RequestBody EvaluationArtifact artifact) {
+        return skills.addEvaluation(project, id, artifact);
+    }
+
+    @PostMapping("/projects/{project}/skills/{id}/export")
+    public Map<String, String> export(@PathVariable String project, @PathVariable String id, @RequestBody ExportSkill request) {
+        return Map.of("path", skills.export(project, id, request.revision(), request.target()));
     }
 
     private void checkId(String id, PromptDocument document) { WorkbenchException.require(document != null && id.equals(document.id()), "網址與 Prompt ID 不同。"); }
