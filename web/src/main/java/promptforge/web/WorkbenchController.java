@@ -78,6 +78,21 @@ public class WorkbenchController {
         return skills.importSkill(project, request.id(), request.source());
     }
 
+    @PostMapping("/projects/{project}/skills/{id}/diff")
+    public ChangePreview skillDiff(@PathVariable String project, @PathVariable String id, @RequestBody SkillWrite request) {
+        return skills.diff(project, id, request.revision(), request.raw());
+    }
+
+    @PutMapping("/projects/{project}/skills/{id}")
+    public SkillDetails saveSkill(@PathVariable String project, @PathVariable String id, @RequestBody SkillWrite request) {
+        return skills.save(project, id, request.revision(), request.raw());
+    }
+
+    @PostMapping("/projects/{project}/skills/{id}/state")
+    public SkillDetails transition(@PathVariable String project, @PathVariable String id, @RequestBody Transition request) {
+        return skills.transition(project, id, request.revision(), request.action());
+    }
+
     private void checkId(String id, PromptDocument document) { WorkbenchException.require(document != null && id.equals(document.id()), "網址與 Prompt ID 不同。"); }
     public record ProjectView(String id, String name) { }
     public record RuleView(String id, List<String> keywords, String instruction, String source) { }
