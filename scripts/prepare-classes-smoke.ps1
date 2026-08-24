@@ -4,11 +4,16 @@ $buildRoot = Join-Path $root 'build'
 $prepare = Join-Path $PSScriptRoot 'prepare-classes.ps1'
 $testTmp = Join-Path $buildRoot 'test-tmp'
 [System.IO.Directory]::CreateDirectory($testTmp) | Out-Null
+$script:pathComparison = if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
+    [System.StringComparison]::OrdinalIgnoreCase
+} else {
+    [System.StringComparison]::Ordinal
+}
 
 function Assert-BuildDescendant([string] $Path, [string] $AllowedRoot) {
     $fullPath = [System.IO.Path]::GetFullPath($Path).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
     $fullRoot = [System.IO.Path]::GetFullPath($AllowedRoot).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
-    if (-not $fullPath.StartsWith($fullRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
+    if (-not $fullPath.StartsWith($fullRoot + [System.IO.Path]::DirectorySeparatorChar, $script:pathComparison)) {
         throw "Smoke cleanup path must be below build: $fullPath"
     }
 }
@@ -16,12 +21,26 @@ function Assert-BuildDescendant([string] $Path, [string] $AllowedRoot) {
 function Remove-SmokeEntry([string] $Path, [string] $AllowedRoot) {
     Assert-BuildDescendant $Path $AllowedRoot
     if (-not (Test-Path -LiteralPath $Path)) { return }
-    $entry = Get-Item -LiteralPath $Path -Force
-    if (($entry.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
-        Remove-Item -LiteralPath $Path -Force
-    } else {
-        Remove-Item -LiteralPath $Path -Recurse -Force
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $current = $fullPath
+    while ($current) {
+        $entry = Get-Item -LiteralPath $current -Force -ErrorAction SilentlyContinue
+        if ($entry -and (($entry.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+            if ([string]::Equals($current, $fullPath, $script:pathComparison)) {
+                Remove-Item -LiteralPath $Path -Force
+                return
+            }
+            throw "Smoke cleanup refuses reparse-point ancestor: $current"
+        }
+        $parent = [System.IO.Directory]::GetParent($current)
+        if ($parent) { $current = $parent.FullName } else { $current = $null }
     }
+    Get-ChildItem -LiteralPath $Path -Force -Recurse -ErrorAction Stop | ForEach-Object {
+        if (($_.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "Smoke cleanup refuses nested reparse point: $($_.FullName)"
+        }
+    }
+    Remove-Item -LiteralPath $Path -Recurse -Force
 }
 
 foreach ($name in @('classes', 'package-classes')) {
