@@ -28,7 +28,12 @@ public final class ProjectRegistry {
             var array = new ObjectMapper().readTree(Files.readString(configuration));
             WorkbenchException.require(array.isArray() && array.size() <= 20, "設定需是最多 20 個專案的陣列。");
             java.util.ArrayList<Project> entries = new java.util.ArrayList<>();
-            for (var item : array) entries.add(new Project(item.path("id").asText(), item.path("name").asText(), home.resolve(item.path("root").asText()).normalize()));
+            for (var item : array) {
+                WorkbenchException.require(item.isObject() && item.path("root").isTextual()
+                        && !item.path("root").asText().isBlank(), "每個專案必須明確提供非空 root 路徑。");
+                entries.add(new Project(item.path("id").asText(), item.path("name").asText(),
+                        home.resolve(item.path("root").asText()).normalize()));
+            }
             return new ProjectRegistry(entries);
         } catch (java.io.IOException error) { throw new WorkbenchException(422, "專案設定無法讀取：" + configuration); }
     }
