@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BrowserWorkflowTest {
     private static final Path HOME = TestProjects.create();
     private static final List<String> blockedRequests = new CopyOnWriteArrayList<>();
+    private static final List<String> unexpectedAlerts = new CopyOnWriteArrayList<>();
     private static Playwright playwright;
     private static Browser browser;
     private BrowserContext context;
@@ -72,15 +73,16 @@ class BrowserWorkflowTest {
 
     @Test
     void promptAndSkillFlowsWorkInTheRealBrowserWithoutExternalRequests() throws Exception {
-        blockedRequests.clear();
+        blockedRequests.clear(); unexpectedAlerts.clear();
         context = browser.newContext();
         page = context.newPage();
         page.route("**/*", route -> routeLocalOnly(route));
-        page.onDialog(dialog -> dialog.accept());
+        page.onDialog(dialog -> { if ("alert".equals(dialog.type())) { unexpectedAlerts.add(dialog.message()); dialog.dismiss(); } else dialog.accept(); });
         page.navigate("http://127.0.0.1:" + port + "/");
         page.locator("#connectionState.online").waitFor();
         page.locator("#projectSelect").selectOption("demo");
         assertThat(page.locator("#projectName")).hasText("Demo");
+        assertThat(page.locator("#rulesList")).containsText("<script>alert(1)</script>");
         page.locator("#knowledgeQuery").fill("付款");
         page.locator("#searchKnowledgeButton").click();
         assertThat(page.locator("#knowledgeSearchResults")).containsText("付款 ADR");
@@ -90,7 +92,7 @@ class BrowserWorkflowTest {
 
         page.locator("#promptName").fill("支付流程 🙂");
         page.locator("#promptId").fill("browser-flow");
-        page.locator("#taskInput").fill("支付失敗時先查詢狀態，再安全重試 🙂");
+        page.locator("#taskInput").fill("請由${audience}在付款失敗時先查詢狀態，再安全重試 🙂");
         page.locator("#variablesInput").fill("{\"audience\":\"工程團隊\",\"tone\":\"清楚\"}");
         page.locator("#modeSelect").selectOption("template");
         page.locator("#rulesList input[name='ruleMode'][value='manual']").check();
@@ -103,15 +105,14 @@ class BrowserWorkflowTest {
         blocks = page.locator("#blocksList .block-row");
         blocks.nth(2).locator(".block-name").fill("回覆格式");
         blocks.nth(2).locator("textarea").fill("以繁體中文列出檢查步驟");
+        blocks.nth(2).locator(".block-actions button[aria-label='上移區塊']").click();
+        blocks = page.locator("#blocksList .block-row");
+        assertEquals("回覆格式", blocks.nth(1).locator(".block-name").inputValue());
         page.locator("#refreshPreviewButton").click();
-        assertThat(page.locator("#previewOutput")).containsText("支付失敗時先查詢狀態，再安全重試 🙂");
-        Files.createDirectories(Path.of("build"));
-        page.screenshot(new Page.ScreenshotOptions().setPath(Path.of("build/browser-prompt.png").toAbsolutePath()));
+        assertThat(page.locator("#previewOutput")).containsText("工程團隊在付款失敗時先查詢狀態，再安全重試 🙂");
+        screenshotAtRootBuild("browser-prompt.png");
 
-        page.locator("#savePromptButton").click();
-        page.locator("#diffDialog").waitFor();
-        page.locator("#confirmSaveButton").click();
-        page.locator("#diffDialog").waitFor(new com.microsoft.playwright.Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN));
+        saveAndConfirmPrompt();
         assertThat(page.locator("#toast")).containsText("提示詞已儲存");
 
         page.reload();
@@ -119,13 +120,13 @@ class BrowserWorkflowTest {
         page.locator("#promptSelect").selectOption("browser-flow");
         assertThat(page.locator("#promptName")).hasValue("支付流程 🙂");
         assertThat(page.locator("#promptId")).hasValue("browser-flow");
-        assertThat(page.locator("#taskInput")).hasValue("支付失敗時先查詢狀態，再安全重試 🙂");
+        assertThat(page.locator("#taskInput")).hasValue("請由${audience}在付款失敗時先查詢狀態，再安全重試 🙂");
         assertThat(page.locator("#modeSelect")).hasValue("template");
         assertTrue(page.locator("#variablesInput").inputValue().contains("工程團隊"));
         assertEquals(3, page.locator("#blocksList .block-row").count());
-        assertThat(page.locator("#previewOutput")).containsText("支付失敗時先查詢狀態，再安全重試 🙂");
+        assertThat(page.locator("#blocksList .block-row .block-name").nth(1)).hasValue("回覆格式");
+        assertThat(page.locator("#previewOutput")).containsText("工程團隊在付款失敗時先查詢狀態，再安全重試 🙂");
 
-        page.locator("#skillsView").waitFor(new com.microsoft.playwright.Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED));
         page.locator(".side-tab[data-tab='skills']").click();
         page.locator("#importSkillButton").click();
         page.locator("#importId").fill("browser-skill");
@@ -133,11 +134,32 @@ class BrowserWorkflowTest {
         page.locator("#confirmImportButton").click();
         assertThat(page.locator("#skillState")).hasText("IMPORTED");
 
+        page.locator("#skillRaw").fill(page.locator("#skillRaw").inputValue() + "\n\n## Local edit\nKeep the source context.");
+        page.locator("#skillActionButton").click();
+        assertThat(page.locator("#toast")).containsText("先儲存技能編輯");
+        assertThat(page.locator("#skillState")).hasText("IMPORTED");
+        page.locator("#exportSkillButton").click();
+        page.locator("#exportTarget").fill("too-early");
+        page.locator("#confirmExportButton").click();
+        assertThat(page.locator("#toast")).containsText("先儲存技能編輯");
+        page.locator("#exportDialog .dialog-actions button[value='cancel']").click();
+
+        page.locator("#saveSkillButton").click();
+        page.locator("#diffDialog").waitFor(new com.microsoft.playwright.Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
+        page.locator("#confirmSaveButton").click();
+        page.locator("#diffDialog").waitFor(new com.microsoft.playwright.Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN));
+        assertThat(page.locator("#skillState")).hasText("IMPORTED");
+        page.locator("#exportSkillButton").click();
+        page.locator("#exportTarget").fill("too-early");
+        page.locator("#confirmExportButton").click();
+        assertThat(page.locator("#toast")).containsText("請先核准");
+        page.locator("#exportDialog .dialog-actions button[value='cancel']").click();
+
         page.locator("#skillActionButton").click();
         assertThat(page.locator("#skillState")).hasText("REVIEWED");
         page.locator("#skillActionButton").click();
         assertThat(page.locator("#skillState")).hasText("APPROVED");
-        page.screenshot(new Page.ScreenshotOptions().setPath(Path.of("build/browser-skill.png").toAbsolutePath()));
+        screenshotAtRootBuild("browser-skill.png");
 
         page.locator("#exportSkillButton").click();
         page.locator("#exportTarget").fill("browser-copy");
@@ -145,6 +167,76 @@ class BrowserWorkflowTest {
         assertThat(page.locator("#toast")).containsText(".promptforge/exports/browser-copy");
         assertTrue(Files.exists(HOME.resolve("demo/.promptforge/exports/browser-copy/SKILL.md")));
         assertTrue(blockedRequests.isEmpty(), "Unexpected external requests: " + blockedRequests);
+        assertTrue(unexpectedAlerts.isEmpty(), "Unexpected JavaScript alert dialogs: " + unexpectedAlerts);
+        page.setViewportSize(390, 844);
+        assertThat(page.locator("#knowledgeQuery")).isVisible();
+        assertThat(page.locator("#rulesList .rule-options input").first()).isVisible();
+    }
+
+    @Test
+    void missingTemplateVariableIsShownInPreview() {
+        openProject();
+        page.locator("#modeSelect").selectOption("template");
+        page.locator("#taskInput").fill("請回覆 ${missingValue}");
+        page.locator("#refreshPreviewButton").click();
+        assertThat(page.locator("#previewOutput")).containsText("缺少變數：missingValue");
+        assertTrue(blockedRequests.isEmpty(), "Unexpected external requests: " + blockedRequests);
+    }
+
+    @Test
+    void stalePromptRevisionIsRejectedWithoutOverwritingTheNewerVersion() {
+        openProject();
+        page.locator("#promptName").fill("版本衝突保護");
+        page.locator("#promptId").fill("stale-ui");
+        page.locator("#taskInput").fill("目前版本");
+        page.locator("#variablesInput").fill("{}");
+        saveAndConfirmPrompt();
+        page.locator("#taskInput").fill("本機草稿的變更");
+
+        Object result = page.evaluate("""
+                async () => {
+                  const current = await (await fetch('/api/projects/demo/prompts/stale-ui')).json();
+                  const csrf = await (await fetch('/api/csrf')).json();
+                  current.document.task = '另一個編輯者已保存';
+                  const response = await fetch('/api/projects/demo/prompts/stale-ui', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json', [csrf.headerName]: csrf.token},
+                    body: JSON.stringify({revision: current.revision, document: current.document})
+                  });
+                  return response.status;
+                }
+                """);
+        assertEquals(200, ((Number) result).intValue());
+
+        page.locator("#savePromptButton").click();
+        assertThat(page.locator("#toast")).containsText("409");
+        assertTrue(!page.locator("#diffDialog").isVisible(), "A stale diff should not show a save confirmation.");
+        page.locator("#promptSelect").selectOption("");
+        page.locator("#promptSelect").selectOption("stale-ui");
+        assertThat(page.locator("#taskInput")).hasValue("另一個編輯者已保存");
+        assertTrue(blockedRequests.isEmpty(), "Unexpected external requests: " + blockedRequests);
+    }
+
+    private void openProject() {
+        blockedRequests.clear(); unexpectedAlerts.clear();
+        context = browser.newContext(); page = context.newPage();
+        page.route("**/*", route -> routeLocalOnly(route));
+        page.onDialog(dialog -> { if ("alert".equals(dialog.type())) { unexpectedAlerts.add(dialog.message()); dialog.dismiss(); } else dialog.accept(); });
+        page.navigate("http://127.0.0.1:" + port + "/");
+        page.locator("#connectionState.online").waitFor();
+    }
+
+    private void saveAndConfirmPrompt() {
+        page.locator("#savePromptButton").click();
+        page.locator("#diffDialog").waitFor(new com.microsoft.playwright.Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
+        page.locator("#confirmSaveButton").click();
+        page.locator("#diffDialog").waitFor(new com.microsoft.playwright.Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN));
+    }
+
+    private void screenshotAtRootBuild(String filename) throws Exception {
+        Path rootBuild = Path.of(System.getProperty("java.io.tmpdir")).getParent();
+        Files.createDirectories(rootBuild);
+        page.screenshot(new Page.ScreenshotOptions().setPath(rootBuild.resolve(filename)));
     }
 
     private void routeLocalOnly(Route route) {
