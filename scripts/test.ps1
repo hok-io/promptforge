@@ -1,7 +1,12 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+$buildRoot = Join-Path $root 'build'
 $classes = Join-Path $root 'build/classes'
-New-Item -ItemType Directory -Path $classes -Force | Out-Null
+$prepareClasses = Join-Path $PSScriptRoot 'prepare-classes.ps1'
+$testTmp = Join-Path $buildRoot 'test-tmp'
+[System.IO.Directory]::CreateDirectory($testTmp) | Out-Null
+& (Join-Path $PSScriptRoot 'prepare-classes-smoke.ps1')
+& $prepareClasses -BuildRoot $buildRoot -TargetPath $classes
 $sources = @(Get-ChildItem -LiteralPath (Join-Path $root 'src') -Filter '*.java' -Recurse -File | Select-Object -ExpandProperty FullName)
 if ($sources.Count -eq 0) { throw 'No Java sources found.' }
 & javac --release 15 -encoding UTF-8 -d $classes $sources
@@ -10,7 +15,7 @@ $tests = @(Get-ChildItem -LiteralPath (Join-Path $root 'src/test/java') -Filter 
 foreach ($test in $tests) {
     $relative = $test.FullName.Substring((Join-Path $root 'src/test/java').Length + 1)
     $className = $relative.Replace('\', '.').Replace('/', '.').Replace('.java', '')
-    & java -ea '-Dfile.encoding=UTF-8' -cp $classes $className
+    & java -ea '-Dfile.encoding=UTF-8' "-Djava.io.tmpdir=$testTmp" -cp $classes $className
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 Write-Host "PASS: $($tests.Count) test classes"

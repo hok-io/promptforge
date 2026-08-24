@@ -1,8 +1,10 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+$buildRoot = Join-Path $root 'build'
 $classes = Join-Path $root 'build/package-classes'
 $jar = Join-Path $root 'build/PromptForge.jar'
-New-Item -ItemType Directory -Path $classes -Force | Out-Null
+$prepareClasses = Join-Path $PSScriptRoot 'prepare-classes.ps1'
+& $prepareClasses -BuildRoot $buildRoot -TargetPath $classes
 $sources = @(Get-ChildItem -LiteralPath (Join-Path $root 'src/main/java') -Filter '*.java' -Recurse -File | Select-Object -ExpandProperty FullName)
 if ($sources.Count -eq 0) { throw 'No Java sources found.' }
 & javac --release 15 -encoding UTF-8 -d $classes $sources
