@@ -93,7 +93,7 @@
   async function updatePreview(generation = state.generation) {
     if (!state.projectId) { els.preview.textContent = '請先選擇專案。'; return; }
     const sequence = ++state.previewSequence;
-    try { const doc = collectDocument(); els.meta.textContent = '正在更新預覽…'; const result = await request(currentPath('/preview'), { method: 'POST', body: JSON.stringify(doc) }, generation); if (generation !== state.generation || sequence !== state.previewSequence) return; els.preview.textContent = result.text || ''; els.meta.textContent = `${doc.mode === 'frame' ? '任務框架' : '提示詞範本'} · ${doc.blocks.length} 個區塊`; }
+    try { const doc = collectDocument(); if (!doc.task.trim() && !(doc.mode === 'template' && doc.blocks.some(block => block.text.trim()))) { els.meta.textContent = '等待任務內容'; els.preview.textContent = '輸入任務，或在提示詞範本加入區塊，再按更新預覽。'; return; } els.meta.textContent = '正在更新預覽…'; const result = await request(currentPath('/preview'), { method: 'POST', body: JSON.stringify(doc) }, generation); if (generation !== state.generation || sequence !== state.previewSequence) return; els.preview.textContent = result.text || ''; els.meta.textContent = `${doc.mode === 'frame' ? '任務框架' : '提示詞範本'} · ${doc.mode === 'template' ? doc.blocks.length : 0} 個區塊`; }
     catch (error) { if (generation === state.generation && sequence === state.previewSequence) { els.meta.textContent = '預覽未更新'; els.preview.textContent = error.message; if (error.status) toast(error.message, true); } }
   }
   function fillPrompt(documentData, revision, promptId) {
