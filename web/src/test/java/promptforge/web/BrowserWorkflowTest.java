@@ -184,6 +184,23 @@ class BrowserWorkflowTest {
     }
 
     @Test
+    void templateWithOnlyBlocksCanBeSavedAndReloaded() {
+        openProject();
+        page.locator("#modeSelect").selectOption("template");
+        page.locator("#promptId").fill("blocks-only");
+        page.locator("#promptName").fill("只有區塊的模板");
+        page.locator("#blocksList .block-row textarea").first().fill("根據專案規則整理任務。");
+        page.locator("#refreshPreviewButton").click();
+        assertThat(page.locator("#previewOutput")).containsText("根據專案規則整理任務。");
+        saveAndConfirmPrompt();
+        page.reload();
+        page.locator("#connectionState.online").waitFor();
+        page.locator("#promptSelect").selectOption("blocks-only");
+        assertThat(page.locator("#taskInput")).hasValue("");
+        assertThat(page.locator("#previewOutput")).containsText("根據專案規則整理任務。");
+    }
+
+    @Test
     void stalePromptRevisionIsRejectedWithoutOverwritingTheNewerVersion() {
         openProject();
         page.locator("#promptName").fill("版本衝突保護");
