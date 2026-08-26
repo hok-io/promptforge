@@ -8,3 +8,12 @@
 
 
 .knowledge-search{display:flex;gap:5px;margin:8px 0}.knowledge-search input{min-width:0;flex:1;width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 8px;font-size:10px}.knowledge-search-results{display:grid;gap:5px;margin-bottom:7px}.knowledge-search-results:empty{display:none}.knowledge-hit{display:grid;gap:4px;width:100%;text-align:left;background:#f7faf7;border:1px solid #e6eee7;border-radius:6px;padding:8px;cursor:pointer}.knowledge-hit:hover{border-color:#b5c8ba;background:#f1f7f2}.knowledge-hit strong{font-size:10px;color:#385746}.knowledge-hit-source{font-size:8px;color:#7c887f;overflow-wrap:anywhere}.knowledge-hit-excerpt{font-size:9px;color:#69766d;line-height:1.45}
+
+/* Keep Chinese labels and source paths readable without browser zoom. */
+body{font-size:14px}
+.brand small,.project-switch label,.eyebrow,.badge,.count,.small,.field-hint,.section-title,.sidebar-foot,.preview-meta,.preview-foot,.form-error,.connection{font-size:12px;line-height:1.6}
+.button,.side-tab,.field>span,.block-name-label,.radio-choice,.mode-control,.mode-control select,.project-switch select{font-size:13px}
+input,textarea,select,.code-input,.preview-output,.diff-columns pre{font-size:14px;line-height:1.65}
+.check-copy strong,.knowledge-copy strong,.skill-row strong,.knowledge-hit strong{font-size:13px}
+.check-copy small,.knowledge-copy small,.skill-row small,.knowledge-hit-source,.knowledge-hit-excerpt,.knowledge-search input{font-size:12px;line-height:1.6}
+@media(max-width:520px){.page-head p{font-size:12px}.mode-control,.mode-control select,.project-switch select{font-size:12px}}
