@@ -39,8 +39,37 @@
 | 衝突檢查 | 拒絕互相衝突的已選規則 |
 | JAR | 打包後用 java -jar 執行 |
 | Skill 入口 | 提供按需呼叫 CLI 的 prompt-frame skill 檔案 |
+| 本地 Web 工作台 | 選規則與知識卡、編排 prompt 區塊及變數，預覽和比較後保存 |
+| Skill 管理 | 匯入、查看正文與 references、修改、review／批准／啟用、匯出指定版本 |
+| 評估紀錄 | 匯入外部測試或模型意見及本地證據，內容更新後標示過期 |
 
-規則選擇是文字匹配，BM25 是文字檢索。目前不生成答案、不自動把搜尋結果注入 frame，也沒有 agent 自主執行迴圈。目前提供 CLI，沒有 Web 介面。輸出有字元限制，但沒有精確 token 計數或固定節省比例的保證。
+規則選擇是文字匹配，BM25 是文字檢索。目前不生成答案、不自動把搜尋結果注入 frame，也沒有 agent 自主執行迴圈。Web 與 CLI 使用同一套 Java 規則處理。輸出有字元限制，但沒有精確 token 計數或固定節省比例的保證。
+
+## 本地 Web：第一次使用
+
+需要 JDK 21、PowerShell 及 Edge（完整瀏覽器測試）。Maven Wrapper 首次建置會下載依賴；建好後執行不需要網絡。若 `.tools` 有專案自己的 JDK，腳本會優先使用。
+
+```powershell
+.\scripts\build-web.ps1
+.\scripts\start-web.ps1
+```
+
+開啟 [本地工作台](http://127.0.0.1:8080)。伺服器只綁定本機；終端按 Ctrl+C 停止。8080 被佔用時可用 `-Port 8081`。
+
+先用 Payments 範例試一次完整操作：
+
+1. 輸入「支付失敗後再試一次」，切換手動選規則，選 `payment.retry`。
+2. 選付款冪等性 ADR。預覽應包含任務、規則、卡片正文和來源。
+3. 加入「驗收」區塊，寫重複請求及逾時重試測試；完整模板模式可用 `${feature}` 及 JSON 變數，例如 `{"feature":"付款重試"}`。
+4. 輸入名稱和 ID，先比較差異，再確認保存。重新載入可讀回同一文件；另一分頁保存舊版本會顯示衝突。
+5. Skill 匯入來源填 `prompt-helper`，新 ID 填 `payment-helper`。來源來自 Payments 的 `.promptforge/inbox/prompt-helper`，不接受任意電腦路徑。
+6. 檢查正文及 references，標記已 review，再批准。只有目前已批准內容可以匯出；改正文或 reference 後舊批准失效。
+
+「啟用」只記錄工作台使用的版本，不會安裝到 Codex。匯出到目標專案 `.promptforge/exports/<名稱>`，不覆蓋已有目錄。你自行檢查後使用。
+
+評估頁可貼入外部評估 JSON：`kind` 為 `TEST` 或 `MODEL_REVIEW`，附 `subjectHash`、來源、時間、rubric、發現及證據路徑。TEST 的證據必須是專案內已存在檔案，會記錄 SHA-256；記錄不代表工作台重新執行該測試，也不會自動批准 skill。介面提供欄位提示。
+
+自己的專案加到根目錄 `workbench-projects.json`：每項有唯一 `id`、顯示 `name` 和專案 `root` 路徑。重啟服務後讀取。保存的是專案內 UTF-8 檔案，可以自行用 Git 檢查變更；工作台不自動 commit。
 
 ## 快速開始
 
@@ -170,7 +199,9 @@ $LASTEXITCODE
 .\scripts\package-smoke.ps1
 ```
 
-Java 測試使用 main 與 assertions，目前共 14 個測試類，尚未採用 JUnit。Confirmed prompt smoke test 檢查 wrapper 的規則／知識選擇及空選擇。JAR smoke test 檢查打包後的規則選擇、知識搜尋與中文輸出；skill 檢查是檔案契約檢查，不是模型品質評估。
+CLI 保留 15 個 main／assertion 測試，亦以 JUnit 接入 Maven。Web 建置執行 domain、真實檔案整合、MockMvc API、真實 localhost HTTP 及 Playwright 瀏覽器測試。Confirmed prompt smoke 檢查 wrapper 的規則／知識選擇及空選擇；JAR smoke 檢查打包後規則、搜尋和中文輸出。Skill 入口檢查是檔案契約，不是模型品質評估。
+
+完整 Web 測試使用 `scripts/build-web.ps1`。只有想先建置而暫不驗證瀏覽器時使用 `-SkipBrowser`；這不等於完整測試通過。其他作業系統可用 JDK 21、`./mvnw verify`，先安裝 Playwright Chromium。
 
 [GitHub Actions 設定](.github/workflows/ci.yml) 包含 Windows／Ubuntu、JDK 21 的相同檢查。workflow 設定本身不代表已通過遠端 CI。部分 Windows 符號連結測試可能因權限而跳過，請留意 skip。
 

@@ -1,6 +1,8 @@
 # Web前先做好甚麼
 
-狀態：規劃，未實作。2026-09-26；基線 `0891eb9`。
+狀態：2026-09-26 已實作必要基礎並接入 Web；原基線 `0891eb9`。使用者之後要求「先實作好了」，所以 A review 改為交付後學習，不再是啟動 gate。
+
+落地範圍：B01–B04、Maven/JDK21、共用 FrameService／KnowledgeQueryService、Project／Prompt／Skill／Evaluation 普通 Java service，以及本地 Web。C02 先以 JUnit dynamic tests 包裝 15 個 main 測試，尚未逐個改寫。ProjectValidationService 和完整 typed diagnostics 尚未抽出；現有 validate 保留 CLI 行為，這兩項作後續學習重構，不影響這版 Web 操作。
 
 ## A：先 review原有31個 commit
 
@@ -37,7 +39,7 @@ Spring Boot Web階段採Java 21；現有Java 15語法暫可沿用。不要同一
 
 ## D：新設計所需的核心，也要先在CLI成立
 
-目前沒有結構化Prompt、Skill registry、evaluation紀錄或Web editor。這些是新的功能，不是現有frame清單的別名。
+以下新能力已在 workbench 的普通 Java 類別和 JUnit 中實作，再由 Web adapter 呼叫。它們不依賴 Spring，但第一版沒有新增對應的結構化 CLI 子命令；原 CLI 的 frame/query 共用核心。
 
 | 小步 | 最小新能力 | 先做case | 真人驗收 |
 |---|---|---|---|
@@ -53,6 +55,6 @@ Spring Boot Web階段採Java 21；現有Java 15語法暫可沿用。不要同一
 
 ## 可以開始Web的條件
 
-A review完成；B必要缺口解決；C建置／共用services成立；D至少完成Project、Prompt預覽、Skill唯讀inspector與安全保存契約。Evaluation／approval UI可在核心D06/D07完成後再開始，不能提前以畫面假資料冒稱功能已存在。
+B必要缺口、C建置／共用services及D資料契約先成立，再接 Web。Evaluation／approval 使用真正的檔案與 hash，不以畫面假資料冒稱功能。
 
-各大階段用付款、文件、無關任務和你自己的skill做正反例驗收，記錄edge cases及輸出是否符合真正用途。你review記錄仍未填寫時，不進入Web實作。
+各大階段保留正反例及 edge cases。你逐 commit review 的學習入口見 [Java Web 路線](../learning/java-web-tour.md)；原計劃的等待 review 指示已由使用者撤回。

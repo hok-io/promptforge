@@ -1,4 +1,6 @@
-# 先 review Java，再開始 Web
+# 按 commit review Java
+
+Web 已按你之後「先實作好了」的要求落地，原 review gate 已撤回。新階段從 [Java Web 學習路線](../learning/java-web-tour.md) 和 [Web 逐 commit review](web-commit-review.md) 開始；實際測試結果另見 Web 驗證報告。你的原 review 仍可照常逐個完成。
 
 後續已根據用途測評完成 [確認規則／合併知識與重測](phase-5-confirmed-prompts.md)。原 31 張卡仍對照原實作；新增 commit 另列在階段五，請按 Git 差異看當時程式。
 
@@ -12,7 +14,7 @@ Git 日期已依你的要求由 2026-09-01 起重新編排；本頁與 review �
 2. [Web前的核心整理](../plans/pre-web-foundation.md)：區分既有缺口、新資料模型和 Web開始條件。
 3. [本地 Prompt／Skill Workbench規劃](../plans/local-workbench.md)：新產品用途、畫面、資料、Spring Boot學習路線及細步實作。
 
-初次整理本頁時只有 review 和規劃文件，沒有增加 Spring dependency、controller、Web server 或資料庫。後續 CLI 修正見上方階段五；Web 仍未開始。
+初次整理本頁時只有 review 和規劃文件。後續 CLI 修正見上方階段五；Web 新實作見本頁開頭的新入口。原 31 個 commit 的 review 卡仍描述當時程式。
 
 ## 每次只 review一個 commit
 
