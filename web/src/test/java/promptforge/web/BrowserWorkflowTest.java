@@ -110,6 +110,8 @@ class BrowserWorkflowTest {
         assertEquals("回覆格式", blocks.nth(1).locator(".block-name").inputValue());
         page.locator("#refreshPreviewButton").click();
         assertThat(page.locator("#previewOutput")).containsText("工程團隊在付款失敗時先查詢狀態，再安全重試 🙂");
+        page.locator("#rulesList .rule-options input").first().scrollIntoViewIfNeeded();
+        assertThat(page.locator("#rulesList .rule-options input").first()).isInViewport();
         screenshotAtRootBuild("browser-prompt.png");
 
         saveAndConfirmPrompt();
