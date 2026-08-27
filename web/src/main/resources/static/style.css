@@ -17,3 +17,4 @@ input,textarea,select,.code-input,.preview-output,.diff-columns pre{font-size:14
 .check-copy strong,.knowledge-copy strong,.skill-row strong,.knowledge-hit strong{font-size:13px}
 .check-copy small,.knowledge-copy small,.skill-row small,.knowledge-hit-source,.knowledge-hit-excerpt,.knowledge-search input{font-size:12px;line-height:1.6}
 @media(max-width:520px){.page-head p{font-size:12px}.mode-control,.mode-control select,.project-switch select{font-size:12px}}
+@media(min-width:801px){.sidebar{position:sticky;top:72px;align-self:start;height:calc(100vh - 72px);min-height:0;overflow-y:auto}}
