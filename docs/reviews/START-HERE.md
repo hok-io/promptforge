@@ -46,3 +46,7 @@ git show b7f984e
 - [ ] 再根據 Web規劃開始 Spring Boot；不是讀完這份文件就自動開始。
 
 目前可證明的是歷史本機測試紀錄：12個 test classes、skill檢查和 JAR smoke通過。這不是12個 JUnit test cases，也不是模型評估。GitHub Actions設定了 Windows／Ubuntu，但沒有遠端成功結果；Windows symlink建立測試曾跳過。詳細限制見 [階段驗收](phase-3-4-retrieval-release.md)。
+
+## 已完成的 Web 實作，下一步由你 review
+
+以上是原有 CLI 階段的 review 清單，並非目前 Web 的阻擋條件。Web 已按授權實作；從 [分段 Java／Spring 路線](../learning/spring-boot-stages.md) 開始，再逐個讀 [48 個 commit](web-commit-review.md)。自動測試沒有代替你的人手 review。

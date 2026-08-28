@@ -1,6 +1,6 @@
 # Web 實作驗證紀錄
 
-實測：2026-09-26，Windows 11、專案 JDK 21.0.12.1、Maven Wrapper／Maven 3.9.11、Spring Boot 3.5.16、Playwright 1.55.0、已安裝 Edge。Git 展示日期按使用者要求為 2026-09-16，不當成實際測試日期。
+實測：2026-09-26，Windows 11、專案 JDK 21.0.12.1、Maven Wrapper／Maven 3.9.11、Spring Boot 3.5.16、Playwright 1.55.0、已安裝 Edge。Git 展示日期按使用者要求為 2026-09-17–24，不當成實際測試日期。
 
 ## 已執行的測試
 
@@ -15,7 +15,7 @@ JUnit XML 的 skipped 為 0；但舊 main runner 有 **4 個 Windows symlink 子
 
 瀏覽器實際操作：搜尋 ADR、選規則和知識、Unicode 與變數、區塊排序、保存及重載、只有區塊的模板、缺變數、第二個編輯者的舊 revision、skill 匯入及編輯、未保存不得批准／匯出、review／批准／匯出、窄畫面控件。HTML 攻擊字串只顯示成文字，沒有 alert；攔截並確認沒有非本機請求。
 
-第一次完整瀏覽器測試發現 async handler 在 await 後讀 event.currentTarget，導致保存按鈕不能恢復。保留失敗 log，b9b0dd0 先捕捉 button 再 await，後續完整測試通過。這是實際操作測試找到的問題。
+第一次完整瀏覽器測試發現 async handler 在 await 後讀 event.currentTarget，導致保存按鈕不能恢復。保留失敗 log，0386b61 先捕捉 button 再 await，後續完整測試通過。這是實際操作測試找到的問題。
 
 ## 執行命令與證據
 
