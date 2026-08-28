@@ -25,5 +25,5 @@
 - 儲存技能只更新目前技能詳情與 revision，不重新載入專案 context，也不觸發提示詞預覽，因此不會清除提示詞草稿或 dirty 狀態。
 - 技能狀態按服務回傳的 `IMPORTED`、`REVIEWED`、`APPROVED`、`ACTIVE` 流程顯示操作。匯入的技能 ID 可與收件匣資料夾名稱不同。
 
-已核對所有 API 呼叫使用本機同源路徑，並以原生 DOM API 呈現回應內容。Playwright browser workflow 已加入，待合併後的 Maven 驗證執行。
+已執行 4 個 Playwright browser workflows，全部通過；完整 reactor 49 個 JUnit 結果通過。最後桌面側欄修正後亦以 Maven offline mode 重跑 browser tests 並重新打包。詳見 [實際驗證](../evaluations/web-verification.md)。中文文字已加大，桌面側欄固定在 viewport 內；窄画面保留原有捲動選擇。
 
