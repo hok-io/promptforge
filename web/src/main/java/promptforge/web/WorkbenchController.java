@@ -14,8 +14,13 @@ public class WorkbenchController {
     private final ProjectRegistry projects;
     private final PromptService prompts;
     private final SkillService skills;
-    public WorkbenchController(ProjectRegistry projects, PromptService prompts, SkillService skills) {
-        this.projects = projects; this.prompts = prompts; this.skills = skills;
+    private final ProjectContextService context;
+    public WorkbenchController(ProjectRegistry projects, PromptService prompts, SkillService skills,
+            ProjectContextService context) {
+        this.projects = projects;
+        this.prompts = prompts;
+        this.skills = skills;
+        this.context = context;
     }
     @GetMapping("/csrf")
     public Map<String, String> csrf(CsrfToken token) {
@@ -29,18 +34,16 @@ public class WorkbenchController {
 
     @GetMapping("/projects/{project}/context")
     public Context context(@PathVariable String project) throws IOException {
-        Project selected = projects.require(project);
-        var rules = new RuleFileLoader().load(selected.root()).stream().map(r -> new RuleView(r.id(), r.keywords(), r.instruction(), r.source())).toList();
-        var knowledge = new KnowledgeCardLoader().load(selected.root()).stream().map(k -> new KnowledgeView(k.title(), k.body(), k.source())).toList();
-        var documents = prompts.repository(project).list().stream().map(p -> new PromptSummary(p.document().id(), p.document().name(), p.revision())).toList();
+        var rules = context.rules(project).stream().map(r -> new RuleView(r.id(), r.keywords(), r.instruction(), r.source())).toList();
+        var knowledge = context.knowledge(project).stream().map(k -> new KnowledgeView(k.title(), k.body(), k.source())).toList();
+        var documents = prompts.list(project).stream().map(p -> new PromptSummary(p.document().id(), p.document().name(), p.revision())).toList();
         var summaries = skills.list(project).stream().map(s -> new SkillSummary(s.id(), s.name(), s.description(), s.revision(), s.state(), s.origin())).toList();
         return new Context(rules, knowledge, documents, summaries);
     }
 
     @GetMapping("/projects/{project}/knowledge/search")
     public List<SearchView> search(@PathVariable String project, @RequestParam String q) throws IOException {
-        Project selected = projects.require(project);
-        return new KnowledgeQueryService().search(selected.root(), q).stream().map(hit -> {
+        return context.search(project, q).stream().map(hit -> {
             String body = hit.card().body().replaceAll("\\s+", " ").trim();
             int count = body.codePointCount(0, body.length());
             String excerpt = count <= 180 ? body : body.substring(0, body.offsetByCodePoints(0, 177)) + "...";
@@ -54,16 +57,18 @@ public class WorkbenchController {
 
     @GetMapping("/projects/{project}/prompts/{id}")
     public PromptVersion prompt(@PathVariable String project, @PathVariable String id) {
-        return prompts.repository(project).load(id);
+        return prompts.load(project, id);
     }
 
     @PostMapping("/projects/{project}/prompts/{id}/diff")
     public ChangePreview promptDiff(@PathVariable String project, @PathVariable String id, @RequestBody PromptWrite request) {
-        checkId(id, request.document()); return prompts.repository(project).diff(request.document(), request.revision());
+        checkId(id, request.document());
+        return prompts.diff(project, request.document(), request.revision());
     }
     @PutMapping("/projects/{project}/prompts/{id}")
     public PromptVersion savePrompt(@PathVariable String project, @PathVariable String id, @RequestBody PromptWrite request) {
-        checkId(id, request.document()); return prompts.repository(project).save(request.document(), request.revision());
+        checkId(id, request.document());
+        return prompts.save(project, request.document(), request.revision());
     }
     @GetMapping("/projects/{project}/skills/{id}")
     public SkillDetails skill(@PathVariable String project, @PathVariable String id) {

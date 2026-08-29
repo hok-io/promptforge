@@ -21,6 +21,10 @@ public class WorkbenchConfiguration {
     }
     @Bean PromptService prompts(ProjectRegistry projects) { return new PromptService(projects, new PromptPreviewService(new FrameService())); }
     @Bean SkillService skills(ProjectRegistry projects) { return new SkillService(projects); }
+    @Bean ProjectContextService context(ProjectRegistry projects) {
+        return new ProjectContextService(projects, new promptforge.RuleFileLoader(),
+                new promptforge.KnowledgeCardLoader(), new promptforge.KnowledgeQueryService());
+    }
     @Bean SecurityFilterChain security(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")))
