@@ -26,6 +26,6 @@ final class SkillParser {
             WorkbenchException.require(((String) description).length() <= 1024, "frontmatter description 最多 1024 字元。");
             return new Header((String) name, (String) description);
         } catch (WorkbenchException ex) { throw ex; }
-        catch (Exception ex) { throw new WorkbenchException(422, "SKILL.md frontmatter YAML 無效。"); }
+        catch (Exception ex) { throw new WorkbenchException(FailureKind.INVALID_INPUT, "SKILL.md frontmatter YAML 無效。"); }
     }
 }

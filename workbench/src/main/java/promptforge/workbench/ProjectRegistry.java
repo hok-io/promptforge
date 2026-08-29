@@ -19,7 +19,7 @@ public final class ProjectRegistry {
     public List<Project> all() { return List.copyOf(projects.values()); }
     public Project require(String id) {
         Project project = projects.get(id);
-        if (project == null) throw new WorkbenchException(404, "找不到已登記的專案：" + id);
+        if (project == null) throw new WorkbenchException(FailureKind.NOT_FOUND, "找不到已登記的專案：" + id);
         return project;
     }
     public static ProjectRegistry load(Path home, Path configuration) {
@@ -35,6 +35,6 @@ public final class ProjectRegistry {
                         home.resolve(item.path("root").asText()).normalize()));
             }
             return new ProjectRegistry(entries);
-        } catch (java.io.IOException error) { throw new WorkbenchException(422, "專案設定無法讀取：" + configuration); }
+        } catch (java.io.IOException error) { throw new WorkbenchException(FailureKind.INVALID_INPUT, "專案設定無法讀取：" + configuration); }
     }
 }

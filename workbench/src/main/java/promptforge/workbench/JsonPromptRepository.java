@@ -18,7 +18,7 @@ public final class JsonPromptRepository implements PromptRepository {
             PromptDocument document = json.readValue(saved.text(), PromptDocument.class);
             WorkbenchException.require(document.id().equals(id), "Prompt 內部 ID 與檔案位置不同。");
             return new PromptVersion(saved.revision(), document);
-        } catch (java.io.IOException error) { throw new WorkbenchException(422, "Prompt JSON 格式錯誤：" + id); }
+        } catch (java.io.IOException error) { throw new WorkbenchException(FailureKind.INVALID_INPUT, "Prompt JSON 格式錯誤：" + id); }
     }
     @Override public List<PromptVersion> list() {
         List<PromptVersion> result = new ArrayList<>();
@@ -32,11 +32,11 @@ public final class JsonPromptRepository implements PromptRepository {
     }
     private String serialize(PromptDocument document) {
         try { return json.writerWithDefaultPrettyPrinter().writeValueAsString(document) + "\n"; }
-        catch (java.io.IOException error) { throw new WorkbenchException(500, "無法編譯 Prompt JSON。"); }
+        catch (java.io.IOException error) { throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法編譯 Prompt JSON。"); }
     }
     @Override public ChangePreview diff(PromptDocument document, String expectedRevision) {
         VersionedText old = store.readOrNew(path(document.id()));
-        if (!old.revision().equals(expectedRevision)) throw new WorkbenchException(409, "Prompt 已改變，請重新載入。");
+        if (!old.revision().equals(expectedRevision)) throw new WorkbenchException(FailureKind.CONFLICT, "Prompt 已改變，請重新載入。");
         String after = serialize(document);
         return new ChangePreview(old.text(), after, !old.text().equals(after));
     }

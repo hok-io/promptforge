@@ -41,7 +41,7 @@ class EvaluationWorkflowTest {
                 null, "reviewer", Instant.now().toString(), "rubric-v1", List.of("Needs clearer constraints"), List.of());
         service.addEvaluation("demo", "sample", valid);
         assertEquals("IMPORTED", service.get("demo", "sample").state());
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> service.transition("demo", "sample", skill.revision(), "approve")).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> service.transition("demo", "sample", skill.revision(), "approve")).kind());
     }
 
     @Test void staleRevisionsConflictAndLocalSkillsAreListed() throws Exception {
@@ -50,13 +50,13 @@ class EvaluationWorkflowTest {
         Files.writeString(local.resolve("SKILL.md"), "---\nname: local-one\ndescription: Local\n---\n# Local\n");
         assertEquals("local", service.get("demo", "local-one").origin());
         assertTrue(service.list("demo").stream().anyMatch(s -> s.id().equals("local-one")));
-        assertEquals(409, assertThrows(WorkbenchException.class,
-                () -> service.importSkill("demo", "local-one", "sample")).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class,
+                () -> service.importSkill("demo", "local-one", "sample")).kind());
         SkillDetails imported = service.importSkill("demo", "sample", "sample");
         service.save("demo", "sample", imported.revision(), imported.raw() + "changed\n");
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> service.diff("demo", "sample", imported.revision(), "new")).status());
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> service.transition("demo", "sample", imported.revision(), "review")).status());
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> service.export("demo", "sample", imported.revision(), "stale")).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> service.diff("demo", "sample", imported.revision(), "new")).kind());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> service.transition("demo", "sample", imported.revision(), "review")).kind());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> service.export("demo", "sample", imported.revision(), "stale")).kind());
     }
 
     @Test void evaluationEvidenceIsLimitedAndRecordsCannotBeOverwritten() throws Exception {
@@ -65,7 +65,7 @@ class EvaluationWorkflowTest {
         EvaluationArtifact artifact = new EvaluationArtifact("test-one", skill.revision(), EvaluationArtifact.Kind.TEST,
                 "model", "reviewer", Instant.now().toString(), "v1", List.of(), evidence);
         service.addEvaluation("demo", "sample", artifact);
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> service.addEvaluation("demo", "sample", artifact)).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> service.addEvaluation("demo", "sample", artifact)).kind());
         var tooMany = java.util.stream.IntStream.range(0, 21).mapToObj(i -> evidence.get(0)).toList();
         EvaluationArtifact invalid = new EvaluationArtifact("test-two", skill.revision(), EvaluationArtifact.Kind.TEST,
                 "model", "reviewer", Instant.now().toString(), "v1", List.of(), tooMany);

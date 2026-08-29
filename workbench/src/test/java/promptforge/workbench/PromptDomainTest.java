@@ -18,7 +18,7 @@ class PromptDomainTest {
     @Test void missingVariableAndInvalidDocumentAreReadable() {
         PromptDocument doc = new PromptDocument("draft", "任務", "${missing}", List.of(), Map.of(), null, List.of(), List.of(), "frame");
         WorkbenchException error = assertThrows(WorkbenchException.class, () -> new PromptTemplateCompiler().compile(doc));
-        assertEquals(422, error.status());
+        assertEquals(FailureKind.INVALID_INPUT, error.kind());
         assertTrue(error.getMessage().contains("missing"));
         assertThrows(WorkbenchException.class, () -> new PromptDocument("../outside", "x", "x", List.of(), Map.of(), null, List.of(), List.of(), "frame"));
     }

@@ -28,7 +28,7 @@ class PromptWorkflowTest {
         PromptVersion first = repository.save(document("支付失敗"), "new");
         assertEquals("支付失敗", repository.load("demo").document().task());
         repository.save(document("支付失敗，確認狀態"), first.revision());
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> repository.save(document("old"), first.revision())).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> repository.save(document("old"), first.revision())).kind());
         assertEquals(1, repository.list().size());
     }
 }

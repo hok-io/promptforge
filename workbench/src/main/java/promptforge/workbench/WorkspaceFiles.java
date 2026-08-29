@@ -21,7 +21,7 @@ public final class WorkspaceFiles {
             }
             this.root = absolute.toRealPath();
             WorkbenchException.require(Files.isDirectory(this.root), "專案目錄不存在。");
-        } catch (IOException error) { throw new WorkbenchException(422, "無法讀取專案目錄。"); }
+        } catch (IOException error) { throw new WorkbenchException(FailureKind.INVALID_INPUT, "無法讀取專案目錄。"); }
     }
 
     public Path root() { return root; }
@@ -42,16 +42,16 @@ public final class WorkspaceFiles {
                 }
             }
             return candidate;
-        } catch (IOException error) { throw new WorkbenchException(422, "檔案路徑不可用：" + relative); }
+        } catch (IOException error) { throw new WorkbenchException(FailureKind.INVALID_INPUT, "檔案路徑不可用：" + relative); }
     }
 
     public String read(String relative) {
         Path path = resolve(relative);
-        if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) throw new WorkbenchException(404, "找不到檔案：" + relative);
+        if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) throw new WorkbenchException(FailureKind.NOT_FOUND, "找不到檔案：" + relative);
         try {
             WorkbenchException.require(Files.size(path) <= MAX_BYTES, "檔案超過 256 KiB：" + relative);
             return Files.readString(path, java.nio.charset.StandardCharsets.UTF_8);
-        } catch (IOException error) { throw new WorkbenchException(500, "讀取檔案失敗：" + relative); }
+        } catch (IOException error) { throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "讀取檔案失敗：" + relative); }
     }
 
     public List<String> filesUnder(String relative) {
@@ -74,6 +74,6 @@ public final class WorkspaceFiles {
             }
             results.sort(String::compareTo);
             return List.copyOf(results);
-        } catch (IOException error) { throw new WorkbenchException(500, "無法列出資料夾：" + relative); }
+        } catch (IOException error) { throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法列出資料夾：" + relative); }
     }
 }

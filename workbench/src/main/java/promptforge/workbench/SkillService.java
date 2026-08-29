@@ -28,11 +28,11 @@ public final class SkillService {
         List<String> sourceFiles = files.filesUnder(source);
         WorkbenchException.require(sourceFiles.contains(source + "/SKILL.md"), "來源資料夾需要 SKILL.md。");
         if (Files.exists(files.resolve(".promptforge/skills/local/" + id + "/SKILL.md"))) {
-            throw new WorkbenchException(409, "Skill ID 已存在，不能匯入重複項目。");
+            throw new WorkbenchException(FailureKind.CONFLICT, "Skill ID 已存在，不能匯入重複項目。");
         }
         String dest = ".promptforge/skills/imports/" + id;
         Path destination = files.resolve(dest);
-        if (Files.exists(destination)) throw new WorkbenchException(409, "Skill 已存在，不能覆寫。");
+        if (Files.exists(destination)) throw new WorkbenchException(FailureKind.CONFLICT, "Skill 已存在，不能覆寫。");
         Path stagingRoot = files.resolve(".promptforge/staging");
         Path stage = null;
         try {
@@ -50,7 +50,7 @@ public final class SkillService {
             SkillParser.parse(raw);
             Files.createDirectories(destination.getParent());
             if (Files.exists(destination)) {
-                throw new WorkbenchException(409, "Skill 已存在，不能覆寫。");
+                throw new WorkbenchException(FailureKind.CONFLICT, "Skill 已存在，不能覆寫。");
             }
             Files.move(stage, destination, StandardCopyOption.ATOMIC_MOVE);
             stage = null;
@@ -60,7 +60,7 @@ public final class SkillService {
         } catch (WorkbenchException ex) {
             throw ex;
         } catch (IOException ex) {
-            throw new WorkbenchException(500, "無法匯入 Skill。");
+            throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法匯入 Skill。");
         } finally {
             if (stage != null) safeDeleteStage(files, stagingRoot, stage);
         }
@@ -115,7 +115,7 @@ public final class SkillService {
         WorkspaceFiles files = files(projectId);
         String path = locate(files, id);
         String before = bundleHash(files, path);
-        if (!before.equals(revision)) throw new WorkbenchException(409, "Skill reference 已改變，請重新載入。");
+        if (!before.equals(revision)) throw new WorkbenchException(FailureKind.CONFLICT, "Skill reference 已改變，請重新載入。");
         new RevisionFileStore(files).save(path + "/SKILL.md", RevisionFileStore.hash(current.raw()), raw);
         String after = bundleHash(files, path);
         writeMetadata(files, path, SkillMetadata.imported(after));
@@ -133,17 +133,17 @@ public final class SkillService {
             case "review" -> updated = meta.review(revision);
             case "approve" -> {
                 if (!revision.equals(meta.reviewedHash())) {
-                    throw new WorkbenchException(409, "必須先 review 目前版本。");
+                    throw new WorkbenchException(FailureKind.CONFLICT, "必須先 review 目前版本。");
                 }
                 updated = meta.approve(revision);
             }
             case "activate" -> {
                 if (!revision.equals(meta.approvedHash())) {
-                    throw new WorkbenchException(409, "必須先 approve 目前版本。");
+                    throw new WorkbenchException(FailureKind.CONFLICT, "必須先 approve 目前版本。");
                 }
                 updated = meta.activate(revision);
             }
-            default -> throw new WorkbenchException(422, "不支援的狀態操作。");
+            default -> throw new WorkbenchException(FailureKind.INVALID_INPUT, "不支援的狀態操作。");
         }
         // Only explicit human transitions advance the review and approval hashes.
         writeMetadata(files, path, updated);
@@ -157,10 +157,10 @@ public final class SkillService {
         WorkspaceFiles files = files(projectId);
         String source = locate(files, id);
         Path destination = files.resolve(".promptforge/exports/" + target);
-        if (!revision.equals(metadata(files, source, revision).approvedHash())) throw new WorkbenchException(409, "只能匯出已批准的目前版本。");
+        if (!revision.equals(metadata(files, source, revision).approvedHash())) throw new WorkbenchException(FailureKind.CONFLICT, "只能匯出已批准的目前版本。");
         WorkbenchException.require(destination.startsWith(files.resolve(".promptforge/exports")), "匯出路徑無效。");
         if (Files.exists(destination)) {
-            throw new WorkbenchException(409, "匯出目的地已存在，不能覆寫。");
+            throw new WorkbenchException(FailureKind.CONFLICT, "匯出目的地已存在，不能覆寫。");
         }
         Path stageRoot = files.resolve(".promptforge/staging");
         Path stage = null;
@@ -176,11 +176,11 @@ public final class SkillService {
             }
             // Recheck after staging so a concurrent edit cannot export an unapproved bundle.
             if (!bundleHash(files, source).equals(revision)) {
-                throw new WorkbenchException(409, "匯出期間 Skill 已改變，未輸出內容。");
+                throw new WorkbenchException(FailureKind.CONFLICT, "匯出期間 Skill 已改變，未輸出內容。");
             }
             Files.createDirectories(destination.getParent());
             if (Files.exists(destination)) {
-                throw new WorkbenchException(409, "匯出目的地已存在，不能覆寫。");
+                throw new WorkbenchException(FailureKind.CONFLICT, "匯出目的地已存在，不能覆寫。");
             }
             Files.move(stage, destination, StandardCopyOption.ATOMIC_MOVE);
             stage = null;
@@ -188,7 +188,7 @@ public final class SkillService {
         } catch (WorkbenchException e) {
             throw e;
         } catch (IOException e) {
-            throw new WorkbenchException(500, "無法匯出 Skill。");
+            throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法匯出 Skill。");
         } finally {
             if (stage != null) safeDeleteStage(files, stageRoot, stage);
         }
@@ -208,7 +208,7 @@ public final class SkillService {
         try {
             Instant.parse(artifact.timestamp());
         } catch (Exception e) {
-            throw new WorkbenchException(422, "timestamp 必須是 ISO-8601 時間。");
+            throw new WorkbenchException(FailureKind.INVALID_INPUT, "timestamp 必須是 ISO-8601 時間。");
         }
         List<String> findings = artifact.findings() == null ? List.of() : List.copyOf(artifact.findings());
         WorkbenchException.require(findings.size() <= 20
@@ -239,18 +239,18 @@ public final class SkillService {
         String rel = ".promptforge/evaluations/" + id + "/" + artifact.subjectHash() + "/" + artifact.id() + ".json";
         Path destination = files.resolve(rel);
         if (Files.exists(destination)) {
-            throw new WorkbenchException(409, "評估 ID 已存在，不能覆寫。");
+            throw new WorkbenchException(FailureKind.CONFLICT, "評估 ID 已存在，不能覆寫。");
         }
         try {
             Files.createDirectories(destination.getParent());
             new RevisionFileStore(files).save(rel, "new", JSON.writeValueAsString(view));
         } catch (WorkbenchException e) {
-            if (e.status() == 409) {
-                throw new WorkbenchException(409, "評估 ID 已存在，不能覆寫。");
+            if (e.kind() == FailureKind.CONFLICT) {
+                throw new WorkbenchException(FailureKind.CONFLICT, "評估 ID 已存在，不能覆寫。");
             }
             throw e;
         } catch (IOException e) {
-            throw new WorkbenchException(500, "無法保存評估。");
+            throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法保存評估。");
         }
         return view;
     }
@@ -290,7 +290,7 @@ public final class SkillService {
             views.sort(Comparator.comparing(EvaluationView::timestamp).reversed());
             return List.copyOf(views);
         } catch (IOException e) {
-            throw new WorkbenchException(500, "無法讀取評估紀錄。");
+            throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法讀取評估紀錄。");
         }
     }
 
@@ -333,7 +333,7 @@ public final class SkillService {
             VersionedText previous = new RevisionFileStore(files).readOrNew(relative);
             new RevisionFileStore(files).save(relative, previous.revision(), JSON.writeValueAsString(value));
         } catch (IOException e) {
-            throw new WorkbenchException(500, "無法保存 Skill 狀態。");
+            throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法保存 Skill 狀態。");
         }
     }
 
@@ -346,7 +346,7 @@ public final class SkillService {
         if (Files.exists(files.resolve(local + "/SKILL.md"))) {
             return local;
         }
-        throw new WorkbenchException(404, "找不到 Skill：" + id);
+        throw new WorkbenchException(FailureKind.NOT_FOUND, "找不到 Skill：" + id);
     }
 
     private WorkspaceFiles files(String projectId) {
@@ -364,7 +364,7 @@ public final class SkillService {
             WorkbenchException.require(entries.size() <= 100, "Skill 資料夾最多 100 個項目。");
             return entries;
         } catch (IOException e) {
-            throw new WorkbenchException(500, "無法列出 Skills。");
+            throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法列出 Skills。");
         }
     }
 
@@ -398,7 +398,7 @@ public final class SkillService {
 
     private void requireCurrent(SkillDetails details, String revision) {
         if (revision == null || !details.revision().equals(revision)) {
-            throw new WorkbenchException(409, "Skill 已改變，請重新載入。");
+            throw new WorkbenchException(FailureKind.CONFLICT, "Skill 已改變，請重新載入。");
         }
     }
 }

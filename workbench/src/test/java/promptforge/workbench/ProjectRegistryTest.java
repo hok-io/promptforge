@@ -15,7 +15,7 @@ class ProjectRegistryTest {
         Files.writeString(config, "[]");
         ProjectRegistry registry = ProjectRegistry.load(home, config);
         assertTrue(registry.all().isEmpty());
-        assertEquals(404, assertThrows(WorkbenchException.class, () -> registry.require("missing")).status());
+        assertEquals(FailureKind.NOT_FOUND, assertThrows(WorkbenchException.class, () -> registry.require("missing")).kind());
     }
 
     @Test void duplicateIdsAndMissingDirectoriesAreRejected() {

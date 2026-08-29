@@ -33,17 +33,17 @@ public final class RevisionFileStore {
         WorkbenchException.require(expectedRevision != null, "保存需要舊 revision，新增請用 new。");
         Path destination = files.resolve(relative);
         synchronized (LOCKS.computeIfAbsent(destination, key -> new Object())) {
-            if (!readOrNew(relative).revision().equals(expectedRevision)) throw new WorkbenchException(409, "檔案已改變，請重新載入後比較，沒有覆蓋。");
+            if (!readOrNew(relative).revision().equals(expectedRevision)) throw new WorkbenchException(FailureKind.CONFLICT, "檔案已改變，請重新載入後比較，沒有覆蓋。");
             Path temporary = null;
             try {
                 Files.createDirectories(destination.getParent());
                 files.resolve(relative);
                 temporary = Files.createTempFile(destination.getParent(), ".promptforge-", ".tmp");
                 Files.writeString(temporary, text, StandardCharsets.UTF_8);
-                if (!readOrNew(relative).revision().equals(expectedRevision)) throw new WorkbenchException(409, "檔案保存前已被修改，沒有覆蓋。");
+                if (!readOrNew(relative).revision().equals(expectedRevision)) throw new WorkbenchException(FailureKind.CONFLICT, "檔案保存前已被修改，沒有覆蓋。");
                 Files.move(temporary, destination, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
                 return new VersionedText(hash(text), text);
-            } catch (IOException error) { throw new WorkbenchException(500, "無法原子保存檔案，原檔案保留。"); }
+            } catch (IOException error) { throw new WorkbenchException(FailureKind.STORAGE_FAILURE, "無法原子保存檔案，原檔案保留。"); }
             finally {
                 if (temporary != null) try { Files.deleteIfExists(temporary); } catch (IOException ignored) { /* old content is never replaced by a partial write */ }
             }

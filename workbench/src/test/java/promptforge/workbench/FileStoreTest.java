@@ -15,14 +15,14 @@ class FileStoreTest {
         VersionedText second = store.save(".promptforge/prompts/demo.json", first.revision(), "第二版");
         assertNotEquals(first.revision(), second.revision());
         WorkbenchException stale = assertThrows(WorkbenchException.class, () -> store.save(".promptforge/prompts/demo.json", first.revision(), "覆蓋"));
-        assertEquals(409, stale.status()); assertEquals("第二版", store.read(".promptforge/prompts/demo.json").text());
+        assertEquals(FailureKind.CONFLICT, stale.kind()); assertEquals("第二版", store.read(".promptforge/prompts/demo.json").text());
     }
     @Test void externalChangesAndTraversalAreRejected() throws Exception {
         WorkspaceFiles files = new WorkspaceFiles(root);
         RevisionFileStore store = new RevisionFileStore(files);
         VersionedText first = store.save(".promptforge/prompts/demo.json", "new", "one");
         Files.writeString(root.resolve(".promptforge/prompts/demo.json"), "external");
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> store.save(".promptforge/prompts/demo.json", first.revision(), "mine")).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> store.save(".promptforge/prompts/demo.json", first.revision(), "mine")).kind());
         assertThrows(WorkbenchException.class, () -> files.resolve("../outside"));
         assertThrows(WorkbenchException.class, () -> files.resolve(root.toAbsolutePath().toString()));
     }
@@ -39,14 +39,15 @@ class FileStoreTest {
         try (var pool = java.util.concurrent.Executors.newFixedThreadPool(2)) {
             var attempts = java.util.stream.Stream.of("first", "second").map(text -> pool.submit(() -> {
                 start.await();
-                try { store.save(".promptforge/prompts/race.json", initial.revision(), text); return 200; }
-                catch (WorkbenchException conflict) { return conflict.status(); }
+                try { store.save(".promptforge/prompts/race.json", initial.revision(), text); return "saved"; }
+                catch (WorkbenchException conflict) { return conflict.kind(); }
             })).toList();
             start.countDown();
-            var outcomes = new java.util.ArrayList<Integer>();
+            var outcomes = new java.util.ArrayList<Object>();
             for (var attempt : attempts) outcomes.add(attempt.get(10, java.util.concurrent.TimeUnit.SECONDS));
-            outcomes.sort(Integer::compareTo);
-            assertEquals(java.util.List.of(200, 409), outcomes);
+            assertEquals(2, outcomes.size());
+            assertTrue(outcomes.contains("saved"));
+            assertTrue(outcomes.contains(FailureKind.CONFLICT));
             assertTrue(java.util.List.of("first", "second").contains(store.read(".promptforge/prompts/race.json").text()));
         }
     }

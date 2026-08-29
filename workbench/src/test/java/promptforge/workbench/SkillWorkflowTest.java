@@ -20,7 +20,7 @@ class SkillWorkflowTest {
         SkillDetails imported = service.importSkill("demo", "prompt-frame", "prompt-frame");
         assertEquals("IMPORTED", imported.state()); assertEquals(1, imported.references().size());
         assertTrue(imported.raw().contains("custom: 保留未知欄位"));
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> service.transition("demo", "prompt-frame", imported.revision(), "approve")).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> service.transition("demo", "prompt-frame", imported.revision(), "approve")).kind());
         SkillDetails reviewed = service.transition("demo", "prompt-frame", imported.revision(), "review");
         assertEquals("REVIEWED", reviewed.state());
         SkillDetails approved = service.transition("demo", "prompt-frame", reviewed.revision(), "approve");
@@ -28,7 +28,7 @@ class SkillWorkflowTest {
         assertEquals("ACTIVE", service.transition("demo", "prompt-frame", approved.revision(), "activate").state());
         SkillDetails edited = service.save("demo", "prompt-frame", approved.revision(), approved.raw() + "\n新指令\n");
         assertEquals("IMPORTED", edited.state());
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> service.save("demo", "prompt-frame", approved.revision(), "old")).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> service.save("demo", "prompt-frame", approved.revision(), "old")).kind());
     }
     @Test void referenceChangesAlsoInvalidateApprovalAndExportNeverOverwrites() throws Exception {
         inbox(); SkillService service = service();
@@ -37,7 +37,7 @@ class SkillWorkflowTest {
         service.transition("demo", "prompt-frame", skill.revision(), "approve");
         String exported = service.export("demo", "prompt-frame", skill.revision(), "review-copy");
         assertTrue(Files.exists(root.resolve(exported).resolve("SKILL.md")));
-        assertEquals(409, assertThrows(WorkbenchException.class, () -> service.export("demo", "prompt-frame", skill.revision(), "review-copy")).status());
+        assertEquals(FailureKind.CONFLICT, assertThrows(WorkbenchException.class, () -> service.export("demo", "prompt-frame", skill.revision(), "review-copy")).kind());
         Files.writeString(root.resolve(".promptforge/skills/imports/prompt-frame/references/policy.md"), "外部更新");
         assertEquals("IMPORTED", service.get("demo", "prompt-frame").state());
         assertThrows(WorkbenchException.class, () -> service.importSkill("demo", "other", "../outside"));
