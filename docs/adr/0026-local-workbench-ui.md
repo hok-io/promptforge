@@ -1,6 +1,6 @@
 # ADR 0026：把操作和版本狀態顯示給人
 
-本地 HTML／CSS／JavaScript 呼叫 Java JSON API。不用另一套前端框架，讓學習重點留在 Java 的 domain、service、repository 和 Controller。
+本地 HTML／CSS／JavaScript 呼叫 Java JSON API。不用另一套前端框架，讓業務流程集中在 Java 的 domain、service、repository 和 Controller。
 
 Prompt 頁提供手動／自動規則、知識搜尋與選擇、有序區塊、變數、保存前比較。任務框架只用任務文字；提示詞範本才加入區塊。預覽由按鈕觸發，不在每次打字時發請求。同專案晚到的預覽只可顯示最後一次；切換專案後捨棄原專案回應。新草稿重設模式、變數和選擇。
 

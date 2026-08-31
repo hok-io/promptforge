@@ -217,6 +217,19 @@ CLI 成功時回傳 0；錯誤寫到 stderr：
 
 ## Skill 入口
 
-[prompt-frame/SKILL.md](skills/prompt-frame/SKILL.md) 按需呼叫本地 CLI，專案規則仍放在各專案的 .promptforge/rules。目前 skill 內的呼叫位置是 `D:\PromptForge\frame.ps1`；搬動專案後要同步修改。
+[prompt-frame/SKILL.md](skills/prompt-frame/SKILL.md) 按需呼叫本地 CLI，專案規則仍放在各專案的 .promptforge/rules。Skill 用 `PROMPTFORGE_HOME` 指定 PromptForge checkout；仍放在 repo 內時亦可由自身位置找到 CLI。獨立安裝後，請在啟動 agent 前設定此環境變數，例如在 PromptForge 根目錄執行 `$env:PROMPTFORGE_HOME = (Get-Location).Path`。目標專案另用 `-Project` 指定。
 
 本 repo 保存 skill 原始檔。是否安裝、觸發及執行成功取決於使用端設定；CLI 本身不需要 agent 或模型服務。
+
+
+## 架構與文件
+
+`web → workbench → core`：Spring 處理 HTTP；普通 Java 服務處理 Prompt／Skill；核心處理規則、檢索和 frame。檔案是本地來源，沒有必需的模型或資料庫。
+
+- [功能規格與验收](docs/specs/behavior.md)：支援的行為、錯誤及邊界。
+- [架構](docs/architecture.md)：責任分工、儲存與呼叫路徑。
+- [ADR](docs/adr/README.md)：設計取捨及後續變更。
+- [建置及測試](docs/testing.md)：Windows／Linux 命令及證據限制。
+- [更新規則與知識](docs/maintenance.md)：維護自己的專案資料。
+
+公開交付 repo 從整理後的原始碼快照開始，不包含完整開發歷史。請以功能規格和可重跑測試判斷行為。

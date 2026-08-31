@@ -1,6 +1,6 @@
 # 範例專案
 
-從 `D:\PromptForge` 執行：
+從 PromptForge repository 根目錄執行：
 
 ```powershell
 .\frame.ps1 "請修改付款重試邏輯，保持既有測試通過" -Project .\examples\payments
