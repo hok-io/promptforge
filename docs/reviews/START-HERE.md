@@ -1,3 +1,7 @@
+# 目前版本的學習入口
+
+先讀 [整理後的 Java 架構](../learning/read-the-clean-architecture.md)，按預覽、保存、Skill、錯誤處理四段實際操作。下面保留舊階段的 review 記錄；最新責任分工以這份學習入口為準。
+
 # 按 commit review Java
 
 Web 已按你之後「先實作好了」的要求落地，原 review gate 已撤回。新階段從 [Java Web 學習路線](../learning/java-web-tour.md) 和 [Web 逐 commit review](web-commit-review.md) 開始；實際測試結果另見 Web 驗證報告。你的原 review 仍可照常逐個完成。

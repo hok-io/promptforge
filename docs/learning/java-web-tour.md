@@ -1,3 +1,7 @@
+# 目前版本先從這裡開始
+
+架構已整理；請先讀 [沿一個操作學 Java](read-the-clean-architecture.md)。以下路線保留歷史脈絡，Skill 內部方法已分到 SkillBundleStore、SkillTransfer、SkillEvaluationService；workbench 錯誤現在使用 FailureKind。
+
 # 用 Web 工作台學 Java
 
 這份是你的本地 review 路線。先跑功能，再追一條操作如何穿過 Java；每次只 review 一個 commit，不需要一次學完整 Spring。

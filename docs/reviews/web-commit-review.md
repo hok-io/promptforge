@@ -1,3 +1,17 @@
+# 架構整理後的新增步驟
+
+以下是原有提交之後的整理，日期為 9/24 晚上；9/25–26 仍留空。學習入口：[從一個操作學 Java](../learning/read-the-clean-architecture.md)。
+
+| Commit | 用途 | Review 問題 |
+|---|---|---|
+| e46b39a | 先定架構邊界測試及 ADR | 哪些依賴不能出現在核心？ |
+| 7e3cffc | 先定錯誤與 HTTP 的映射 | Java 錯誤與 HTTP 回應為何分開？ |
+| f989158 | 以 FailureKind 表达應用錯誤 | 同一個錯誤在 CLI 可以如何顯示？ |
+| 4e70a54 | 拆分 Skill 的檔案、搬移、評估與流程 | 改批准條件需要讀哪個類別？ |
+| f0b1e0c | Controller 經服務取得 context 和保存 Prompt | 為何不把 repository 交給 Controller？ |
+
+測試先行提交在對應實作完成前可以是紅色。下面的 48 個提交和日期分布是重構前階段的記錄。
+
 # Web 階段逐 commit review
 
 先讀 [分段學習路線](../learning/spring-boot-stages.md)，再用 `git show <commit>` 逐步看修改。48 個實作／測試提交及文件整理分配到 2026-09-17–24；日期是展示與學習安排，實測日期仍是 2026-09-26。測試先行提交可能暫時失敗；靜態版面提交尚未串接 API。
