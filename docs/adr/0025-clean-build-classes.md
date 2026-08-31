@@ -1,6 +1,6 @@
 # ADR 0025：每次編譯先重建 class 目錄
 
-狀態：Accepted。實際觀察日 2026-09-26，
+狀態：Accepted。實際觀察日 2026-09-26。
 
 CLI、測試與可執行 JAR 都先呼叫 `scripts/prepare-classes.ps1`，清除各自的輸出目錄再編譯。這避免舊 `.class` 殘留讓已刪除或改名的型別繼續出現在執行結果中。測試 JVM 的 `java.io.tmpdir` 固定在 `build/test-tmp`，臨時測試檔不散落到系統暫存路徑。
 

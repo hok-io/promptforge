@@ -1,6 +1,6 @@
 # ADR 0017：任務文字經 UTF-8 stdin 傳遞
 
-狀態：Accepted。實際觀察日 2026-09-26，
+狀態：Accepted。實際觀察日 2026-09-26。
 
 真人流程重測 F05 發現本機 Windows Java 15 的 native command-line 把「进」轉成「?」。設定 file.encoding／sun.jnu.encoding 仍無法保留。Java 程式收到參數前已損壞，Main.run 的單元測試不能重現此邊界。
 

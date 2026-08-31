@@ -1,6 +1,6 @@
 # ADR 0016：合併人選定的知識卡
 
-狀態：Accepted。實作日 2026-09-26
+狀態：Accepted。實作日 2026-09-26。
 
 測評顯示 query 找得到必要來源，但額外結果增加篩選，且使用者還須手動合併。新增 --knowledge，使用逗號分隔的專案相對來源，例如 .promptforge/knowledge/adr/idempotency.md。
 
