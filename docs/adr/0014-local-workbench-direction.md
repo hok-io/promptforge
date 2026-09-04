@@ -1,19 +1,19 @@
-# ADR 0014：本地 Prompt / Skill 工作台方向
+# ADR 0014 — Direction for a Local Prompt and Skill Workbench
 
-狀態：已由 [0019](0019-web-build-and-test-boundary.md) 確定實作方式；本文件保留早期提案。
+Status: The implementation approach was settled by [ADR 0019](0019-web-build-and-test-boundary.md); this file preserves the earlier proposal.
 
-## 原因
+## Context
 
-CLI 已提供規則 frame 與本地知識查詢。新需求是看清楚及編輯 prompt / skill 結構，保存評估證據與人手批准。單純 CLI 不方便處理這些互動。
+The CLI already provides rule-based frames and local knowledge queries. The new need is to inspect and edit prompt/Skill structure, preserve evaluation evidence, and record human approval. These interactions are inconvenient in a CLI alone.
 
-## 提議
+## Proposal
 
-提議加入 Spring Boot MVC 本地 Web adapter。普通 Java core 共用於 CLI 與 Web；`.promptforge` 檔案與 Git 是來源，不增加必要 LLM 或付費服務。
+Add a local Spring Boot MVC Web adapter. Share the ordinary Java core between CLI and Web. `.promptforge` files and Git remain the source of truth; no required LLM or paid service is added.
 
-匯入內容預設草稿，評估與批准分開，批准綁定內容 hash。預覽表示準備交給 agent 的候選內容，不能聲稱觀察 agent 實際上下文。
+Imported content starts as a draft. Evaluation and approval are separate, and approval is bound to a content hash. A preview is a candidate for an agent; it does not claim to observe the agent's actual context.
 
-## 代價與替代
+## Costs and Alternatives
 
-需學習 Maven、Spring injection、Controller、template 與 HTTP 測試，並處理安全顯示、revision 衝突及原子保存。僅擴充 CLI 可保持簡單，但不符合可視化編輯用途；先採 MVC / Thymeleaf，避免同时引入另一套大型前端框架。
+This requires learning Maven, Spring injection, controllers, templates, and HTTP testing, as well as handling safe rendering, revision conflicts, and atomic writes. Extending the CLI would be simpler but would not meet the visual editing need. The proposal chose MVC/Thymeleaf to avoid introducing another large frontend framework at the outset.
 
-這不改寫既有 ADR 的歷史決策；原先無 Spring 的 core 繼續成立。目前範圍見 [功能規格](../specs/behavior.md)。
+This does not reverse earlier decisions: the core without Spring remains valid. Current scope is defined in the [behavior specification](../specs/behavior.md).

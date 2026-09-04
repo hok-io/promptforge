@@ -1,9 +1,9 @@
-# ADR 0025：每次編譯先重建 class 目錄
+# ADR 0025 — Rebuild Class Directories Before Every Compilation
 
-狀態：Accepted。實際觀察日 2026-09-26。
+Status: Accepted. Observed in practice on 2026-09-26.
 
-CLI、測試與可執行 JAR 都先呼叫 `scripts/prepare-classes.ps1`，清除各自的輸出目錄再編譯。這避免舊 `.class` 殘留讓已刪除或改名的型別繼續出現在執行結果中。測試 JVM 的 `java.io.tmpdir` 固定在 `build/test-tmp`，臨時測試檔不散落到系統暫存路徑。
+The CLI, tests, and executable JAR all call `scripts/prepare-classes.ps1` first. It clears each output directory before compiling so stale `.class` files cannot leave deleted or renamed types in the result. Set the test JVM's `java.io.tmpdir` to `build/test-tmp` so temporary test files do not spread across the system temp directory.
 
-清理器只接受位於絕對 `build` 根目錄之下的輸出目錄。遞迴刪除前逐層檢查輸出路徑及其祖先的 ReparsePoint 屬性，遇到 symbolic link、junction 或其他可識別的 reparse point 即拒絕。通過檢查後以 LiteralPath 移除舊目錄，再建立空目錄供 javac 使用。
+The cleaner accepts only output directories below the absolute `build` root. Before recursive deletion, inspect each level of the output path and its ancestors for the ReparsePoint attribute. Reject symbolic links, junctions, or other detectable reparse points. After validation, remove the old directory with `LiteralPath` and create an empty directory for `javac`.
 
-`prepare-classes-smoke.ps1` 會先在 classes 與 package-classes 放入過期 marker，證明共用 build 清理流程會刪除它；並將輸出目錄替換為指向另一個 build 暫存目錄的 junction（Windows）或 symbolic link（其他平台），確認清理器拒絕操作且外部 sentinel 保留。smoke 清理 link 時只移除 link 本身，遞迴清理前先確認目標仍在 build 根目錄之下。此檢查縮小了路徑誤刪風險，但檢查與刪除之間仍存在一般檔案系統的競態窗口。
+`prepare-classes-smoke.ps1` places stale markers in `classes` and `package-classes` to prove the shared build cleanup removes them. It also replaces an output directory with a junction (Windows) or symbolic link (other platforms) to another build temp directory, then verifies the cleaner rejects it and preserves an external sentinel. Smoke cleanup removes only the link itself; before recursive cleanup, it verifies the target remains beneath the build root. These checks reduce accidental deletion risk but do not remove the file-system race window between checking and deleting.

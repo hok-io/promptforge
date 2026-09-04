@@ -1,16 +1,16 @@
-# ADR 0006 — 限制規則檔的讀取邊界與大小
+# ADR 0006 — Bound Rule File Access and Size
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-CLI會讀取指定專案中的規則。若 `.rule` 是連到專案外的 symbolic link，或規則檔過大，程式可能把不預期的內容放進 task frame，亦可能浪費 context。
+The CLI reads rules from a selected project. A `.rule` symlink pointing outside the project or an oversized rule file could add unexpected content to a task frame or waste context.
 
-## 決定
+## Decision
 
-不接受 symlink規則目錄及 symlink規則檔；每個規則檔最多 8 KiB，單條 instruction最多 500字元。超過限制即報錯，不能靜默截斷。輸入 task最多 4000字元，最終 frame最多 6000字元。這些只是保守的字元／byte邊界，**不宣稱是精確 token數**。
+Reject symlink rule directories and files. Limit each rule file to 8 KiB and each instruction to 500 characters. Exceeding a limit is an error; never silently truncate. Limit task input to 4,000 characters and the final frame to 6,000 characters. These are conservative character/byte limits, **not exact token counts**.
 
-## 後果
+## Consequences
 
-輸出上限更容易預測，可信來源仍以專案內受 Git管理的文字檔為主。這不能阻止有權修改規則的人寫出惡意 instruction；使用者仍要 review rule diff。若未來需要長篇 ADR，應檢索小段 evidence而非把整份檔案作 instruction。
+Output bounds are easier to predict, and trusted sources remain text files managed inside the project. This cannot stop someone authorized to edit rules from writing a malicious instruction; users must still review rule diffs. For long ADRs, retrieve small evidence excerpts instead of using the whole document as an instruction.

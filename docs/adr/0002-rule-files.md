@@ -1,17 +1,16 @@
-# ADR 0002 — 一條規則一個可讀文字檔
+# ADR 0002 — One Readable Text File per Rule
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-使用者要在 Git 中更新專案規則，也要看得出輸出來自哪個檔案。第一版若先加入 YAML parser、schema和索引，會增加安裝和理解成本。
+Users need to update project rules in Git and trace each output to its source file. Adding a YAML parser, schema, and index in the first version would increase installation and comprehension costs.
 
-## 決定
+## Decision
 
-使用 `.promptforge/rules/*.rule` 的 UTF-8 文字檔，每行 `key=value`；允許空行和 `#` 註解。必填 `id`、`keywords`、`instruction`。`keywords` 用逗號分隔，下一功能定義 matching 語意。未知欄位、重複欄位、空值、重複 ID 一律報清楚錯誤；不猜測或靜默忽略。source由檔案相對路徑產生，方便追溯。
+Store UTF-8 text files under `.promptforge/rules/*.rule`, with one `key=value` pair per line. Blank lines and `#` comments are allowed. `id`, `keywords`, and `instruction` are required; keyword matching semantics will be defined in a later feature. Unknown fields, duplicate fields, empty values, and duplicate IDs produce clear errors rather than guesses or silent omissions. Derive `source` from the file's relative path for traceability.
 
-## 後果
+## Consequences
 
-人能用普通編輯器修改、Git diff容易審查；一條 instruction暫限單行，未來需要多行才另寫 ADR擴展。這是規則來源格式，不將檔案內容視為可執行指令。
-
+People can edit files with an ordinary editor and review them easily in Git diffs. An instruction is limited to one line for now; support for multiline values requires a separate ADR. Rule files are data sources, not executable instructions.

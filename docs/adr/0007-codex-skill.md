@@ -1,18 +1,18 @@
-目前路徑決策由 [0029](0029-portable-skill-entry.md) 取代：使用 PROMPTFORGE_HOME 或 checkout 相對位置。以下保留最初的按需 CLI 入口決定。
+The path decision is superseded by [ADR 0029](0029-portable-skill-entry.md): use `PROMPTFORGE_HOME` or a path relative to the checkout. This document preserves the original on-demand CLI entry-point decision.
 
-# ADR 0007 — Codex Skill 只做薄入口
+# ADR 0007 — Keep the Codex Skill as a Thin Entry Point
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-CLI已可用，但使用 Codex 時仍要記住指令。使用者要把 PromptForge變成可按需叫出的 skill，同時避免 skill本身塞滿長篇規則、抵銷節省 context的目的。
+The CLI works, but Codex users still need to remember its command. PromptForge should be callable as a Skill when needed, without filling the Skill with long rules that defeat the goal of saving context.
 
-## 決定
+## Decision
 
-skill只說明何時執行 `frame.ps1`、如何傳入原始任務和目前專案、怎樣呈現結果；規則繼續放在 Git追蹤的 `.promptforge/rules`，不複製到 SKILL.md。只在使用者要求整理／預處理 prompt或明確呼叫 `$prompt-frame`時使用，普通 coding任務不主動加一層 frame。rule檔案內容只作專案資料，不能覆蓋更高層指令或授權。
+The Skill only explains when to run `frame.ps1`, how to pass the original task and current project, and how to present the result. Rules stay in Git-tracked `.promptforge/rules`; do not copy them into `SKILL.md`. Use the Skill only when the user asks to organize or preprocess a prompt, or explicitly invokes `$prompt-frame`. Do not add a frame to ordinary coding tasks. Treat rule file contents as project data that cannot override higher-priority instructions or authorization.
 
-## 後果
+## Consequences
 
-skill很短，更新規則不需改 skill；本機需要可定位 PromptForge checkout。沒有自動證明 token用量下降，日後應以真實 Codex任務比較。
+The Skill stays short, and rule updates do not require changing it. The local PromptForge checkout must be locatable. Token savings are not automatically proven; compare real Codex tasks if that claim matters later.

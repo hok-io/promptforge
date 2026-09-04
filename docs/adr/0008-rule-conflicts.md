@@ -1,17 +1,16 @@
-# ADR 0008 — 規則可以明確聲明衝突
+# ADR 0008 — Allow Rules to Declare Conflicts Explicitly
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-兩條規則可能同時命中任務，但要求互相矛盾。若直接把兩者放進 prompt，Codex只能自行猜。這也是值得親手練 Java domain model和集合檢查的真實情況。
+Two rules may both match a task and still contradict each other. If both are inserted into a prompt, Codex has to guess. This is also a realistic case for practicing Java domain modeling and collection checks.
 
-## 決定
+## Decision
 
-規則檔可選填 `conflicts=另一規則ID,...`，表示這兩條規則不能同時進入同一 frame；單向聲明已足夠，檢查時視為雙向。`conflicts`保存在不可變 list，空 ID、重複 ID和自己衝突屬格式錯誤。若兩條都命中，編譯器報兩個 ID及來源，不輸出矛盾 frame。未命中的規則不造成衝突。
+Rule files may include `conflicts=another-rule-id,...` to declare that two rules cannot appear in the same frame. A one-sided declaration is sufficient; treat it as mutual during checks. Store `conflicts` as an immutable list. Empty IDs, duplicate IDs, and self-conflicts are format errors. If both rules match, the compiler reports both IDs and sources and emits no contradictory frame. Unmatched rules do not cause conflicts.
 
-## 後果
+## Consequences
 
-人可以在 Git diff中審查衝突關係；目前不做自動優先級／supersedes，避免靜默選擇。之後若需要 requires／supersedes graph，另寫 ADR和 cycle測試。
-
+People can review conflict relationships in Git diffs. There is no automatic priority or `supersedes` behavior; avoid silent choices. Add an ADR and cycle tests if a `requires`/`supersedes` graph is needed later.

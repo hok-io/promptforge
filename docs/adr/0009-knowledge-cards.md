@@ -1,17 +1,16 @@
-# ADR 0009 — 把 ADR與政策讀作可引用的本地卡片
+# ADR 0009 — Read ADRs and Policies as Citable Local Cards
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-規則檔適合短 instruction；完整 ADR、agent behavior和 policy仍需要有來源的本地檢索。直接把全文加入 task frame會太長，也會使相關性不明。
+Rule files are suited to short instructions, while full ADRs, agent behavior, and policies need local retrieval with sources. Adding entire documents to a task frame would be too long and obscure relevance.
 
-## 決定
+## Decision
 
-在 `.promptforge/knowledge/`下按 `adr/`、`behavior/`、`policy/`、`practice/`等子目錄放 UTF-8 Markdown；每檔第一個非空行必須是 `# 標題`，餘下是內文。第一版一檔一卡，最多 8 KiB，禁止 symlink檔案；結果記錄相對來源。loader只讀取資料，不把 Markdown當作指令執行。檢索與是否附加到 frame是後續獨立決策。
+Store UTF-8 Markdown under `.promptforge/knowledge/` in subdirectories such as `adr/`, `behavior/`, `policy/`, and `practice/`. The first non-empty line of each file must be a `# Heading`; the rest is its body. The first version treats each file as one card, caps each at 8 KiB, and rejects symlink files. Results record relative sources. The loader reads data; it does not execute Markdown as instructions. Retrieval and whether to attach results to a frame are separate future decisions.
 
-## 後果
+## Consequences
 
-Git diff可審、來源清楚；長 ADR需拆卡片或日後加入 chunking。暫時不支援 front matter或版本欄位，避免過早增加格式負擔。
-
+Git diffs remain reviewable and sources are clear. Long ADRs must be split into cards or handled with chunking later. Front matter and version fields are not supported yet, avoiding premature format complexity.

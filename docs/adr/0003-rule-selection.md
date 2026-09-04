@@ -1,17 +1,16 @@
-# ADR 0003 — 先用可解釋的全部關鍵字匹配
+# ADR 0003 — Start with Explainable All-Keyword Matching
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-工具不能把每條規則都塞進任務；也不能假裝無 LLM 的程式知道句子真正意思。需要一個人能預測、能測試的第一版選擇法。
+The tool must not include every rule in every task, and a program without an LLM must not pretend to understand a sentence's true meaning. The first selection method needs to be predictable and testable by people.
 
-## 決定
+## Decision
 
-一條 rule 的所有 `keywords` 都要在任務文字出現才匹配；英文字母忽略大小寫，中文直接做字串包含。空任務不匹配。結果按 rule ID排序，輸入檔案順序不影響結果。CLI日後必須顯示命中規則與來源；不做隱形語意擴展。
+All keywords in a rule must appear in the task text for the rule to match. English letters are case-insensitive; Chinese is matched by substring. An empty task matches nothing. Sort results by rule ID, independent of file order. The CLI must show matching rules and sources; it must not add hidden semantic expansion.
 
-## 後果
+## Consequences
 
-容易解釋及排查誤加規則；同義詞和改寫句可能漏選。之後可加明確的 `any` keyword group或本地檢索，但先用真實任務記錄漏選與誤選，避免一開始過度設計。
-
+False inclusions are easy to explain and diagnose, but synonyms and paraphrases may be missed. An explicit `any` keyword group or local retrieval can be considered later, after recording misses and false matches on real tasks.

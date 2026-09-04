@@ -1,7 +1,7 @@
-# ADR 0024：本地 Spring MVC 接口
+# ADR 0024 — Local Spring MVC Interface
 
-Web 綁 127.0.0.1、使用已登記 project ID；Controller 呼叫普通 Java services。Spring Security 保留 CSRF，GET /api/csrf 提供 token，mutating fetch 必須帶 header。拒絕未知 Host／跨來源寫入，HTTP body 上限 64 KiB（包括 chunked），資料作純文字顯示，沒有 CDN。
+Bind the Web service to `127.0.0.1` and use registered project IDs. Controllers call ordinary Java services. Keep Spring Security CSRF enabled; expose a token through `GET /api/csrf`, and require mutating fetch requests to send it in a header. Reject unknown Host values and cross-origin writes. Limit HTTP bodies to 64 KiB, including chunked bodies. Render data as plain text and use no CDN.
 
-MockMvc 測每種路由與錯誤：400 壞 JSON、404 未登記專案／文件、409 stale revision、422 domain 錯誤、413 過大 body、403 CSRF／Host。另有真實 localhost 埠測試，不能只用mock假稱 server可用。
+MockMvc tests cover each route and error: 400 for malformed JSON, 404 for an unregistered project or document, 409 for a stale revision, 422 for a domain error, 413 for oversized bodies, and 403 for CSRF/Host failures. Add a real localhost-port test; do not claim the server works based only on mocks.
 
-所有 skill 狀態／保存／匯出都需要 revision；Preview 不保存資料。服務沒有 HTTP 或 shell 呼叫，核心與 CLI 保持分層。
+All Skill state changes, saves, and exports require a revision. Preview does not save data. Services do not call HTTP or a shell; the core remains separate from the CLI.

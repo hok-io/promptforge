@@ -1,15 +1,13 @@
-# ADR 0015：讓人確認與修正規則選擇
+# ADR 0015 — Let People Confirm and Correct Rule Selection
 
-狀態：Accepted；實作日 2026-09-26。
+Status: Accepted. Implemented 2026-09-26.
 
-測評發現同義詞漏選、否定句及文件任務誤選。先增加可確認的 CLI 選擇，不把關鍵字比對假装成理解任務。
+Evaluation found missed synonyms, negations, and false matches on document tasks. Add confirmable CLI selection rather than pretending keyword matching understands a task.
 
-新增 --list-rules 顯示 ID、keywords、指令與來源；--rules 以逗號分隔 ID 指定完整選擇，取代自動匹配，空字串代表不選；--exclude 排除指定 ID。未知／重複 ID、選中與排除同一 ID 回輸入錯誤，不默默忽略。選擇最多 20 項，順序按 ID 穩定排列。
+Add `--list-rules` to show IDs, keywords, instructions, and sources. `--rules` selects an explicit comma-separated list of IDs and replaces automatic matching; an empty string means select none. `--exclude` excludes IDs. Unknown or duplicate IDs, and an ID that is both selected and excluded, produce input errors rather than being ignored. Select at most 20 rules and sort them deterministically by ID.
 
-沒有新選項時保留舊行為。已選規則仍檢查衝突及 frame 上限；list 模式和任務／查詢／驗證／選擇選項不能混用。普通 Java RuleSelection 負責選擇，Main 只連接 CLI 與 compiler。
+Without the new options, preserve existing behavior. Selected rules still undergo conflict and frame-size checks. List mode cannot be combined with task, query, validation, or selection options. Ordinary Java `RuleSelection` owns selection; `Main` only connects the CLI to the compiler.
 
-替代：添加同義詞或否定句特例會引入新的誤選，且容易只修好測試集。明確選擇可避免使用者手動重抄來源，但仍需要人知道哪些規則適用，不能當成自動準確率提升。
+Adding synonyms or special cases for negation could introduce new false matches and overfit the test set. Explicit selection avoids retyping sources but still requires people to know which rules apply; it does not claim to improve automatic accuracy.
 
-PowerShell frame wrapper 提供 -Rules／-Exclude／-Knowledge，僅在參數確實傳入時轉交，保留「省略」與「明確空選擇」的差別。先用跨平台 smoke test 驗證實際 native argument 傳遞，再做 wrapper；CI 執行同一條命令。
-
-本機 smoke 證實 PowerShell native 呼叫會丟掉空字串。因此新增 --no-rules，wrapper 把 -Rules '' 轉成這個旗標；空 Exclude／Knowledge 不轉交（沒有項目）。與 --rules 重複使用回輸入錯誤，不讓 native argument 行為改變使用者選擇。
+The PowerShell frame wrapper exposes `-Rules`, `-Exclude`, and `-Knowledge`, forwarding them only when supplied so that omission differs from an explicitly empty selection. Cross-platform smoke tests first revealed that PowerShell native calls drop empty strings. Therefore, `--no-rules` represents `-Rules ''`; empty `Exclude`/`Knowledge` are omitted because they contain no entries. Combining `--no-rules` with `--rules` is an input error. CI runs the same wrapper smoke command.

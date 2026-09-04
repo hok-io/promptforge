@@ -1,16 +1,16 @@
-# ADR 0001 — 先用本機 JDK 建立可驗證的 Java 核心
+# ADR 0001 — Start with a Verifiable Java Core Using the Local JDK
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-本機只有 JDK 15，沒有 Maven；專案目標是練 Java 並先得到可用的本地 CLI。若開工先等框架和 build tool，便無法先驗證業務行為。
+The local machine has JDK 15 but no Maven. The project aims to practice Java and first provide a usable local CLI. Waiting for a framework and build tool would prevent early verification of business behavior.
 
-## 決定
+## Decision
 
-第一階段只用標準 Java 15 語法，`scripts/test.ps1` 負責編譯主程式和測試，GitHub Actions 用 JDK 21在 Windows及 Ubuntu跑同一支 script。每個功能先提交 ADR 和會失敗的測試，再提交最小實作和驗收紀錄。將來引入 Maven/JUnit 時，需另寫 ADR 並保持現有行為測試。
+The first phase uses only standard Java 15 syntax. `scripts/test.ps1` compiles the application and tests, while GitHub Actions runs the same script on Windows and Ubuntu with JDK 21. For each feature, first commit an ADR and a failing test, then commit the smallest implementation and its acceptance record. Introducing Maven/JUnit later requires another ADR and preservation of the existing behavior tests.
 
-## 後果
+## Consequences
 
-本機無需額外安裝或付費；可直接練 class、interface、集合、NIO、例外和演算法。這個輕量測試 runner 沒有 JUnit 的報告功能；CI workflow 只有在連接 GitHub 並 push 後才會真正執行，現階段以本機同一命令驗證。
+No extra local installation or paid service is required; the project can practice classes, interfaces, collections, NIO, exceptions, and algorithms directly. This lightweight test runner lacks JUnit's reporting features. CI only runs after connecting GitHub and pushing; for now, the same local command is the verification path.

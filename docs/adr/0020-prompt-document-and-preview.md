@@ -1,7 +1,7 @@
-# ADR 0020：結構化 Prompt 與普通 Java 預覽
+# ADR 0020 — Structured Prompts and Plain-Java Preview
 
-PromptDocument 用 Java record 表達不可變資料；包含自訂有序區塊、variables 與明確選擇。frame 模式保留短任務，template 模式依序加入非空區塊，沒有必填角色。變數只作單次文字替換，缺值回可理解的 422 錯誤，不執行或遞迴展開。
+Represent `PromptDocument` as an immutable Java record with ordered custom blocks, variables, and explicit selection. Frame mode preserves a short task; template mode appends non-empty blocks in order, with no required role. Variables use a single literal substitution pass. Missing values return a clear 422 error; do not execute or recursively expand substitutions.
 
-普通 Java PromptPreviewService 呼叫共享 FrameService，CLI 與 Web 都直接用同一核心，不透過 shell。測試先驗證順序、缺值、字面替換及 auto／empty 的差別，再測與 CLI 的同資料一致性。Domain 不知道 HTTP；WorkbenchException 保存應用錯誤分類，HTTP adapter 才映射狀態碼。
+Plain-Java `PromptPreviewService` calls the shared `FrameService`; CLI and Web both use the same core without a shell. Tests first verify ordering, missing values, literal substitution, and the difference between automatic and empty selection, then verify parity with the CLI using the same data. The domain does not know about HTTP; `WorkbenchException` stores application error categories, which the HTTP adapter maps to status codes.
 
-代價：結構化編輯要由人選合適區塊，沒有語義補全。預览仍是候選 prompt，不代表 agent 實際上下文。
+The trade-off is that people must choose suitable blocks during structured editing; there is no semantic completion. A preview is still a candidate prompt and does not represent the agent's actual context.

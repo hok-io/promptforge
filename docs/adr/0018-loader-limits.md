@@ -1,11 +1,11 @@
-# ADR 0018：Loader 資料大小與路徑邊界
+# ADR 0018 — Bound Loader Data Size and Paths
 
-狀態：Accepted。實際觀察日 2026-09-26。
+Status: Accepted. Observed in practice on 2026-09-26.
 
-Knowledge loader 最多接受 100 張 Markdown 卡片，卡片檔案的 UTF-8 原始 bytes 合計最多 256 KiB。每個 rule 與 knowledge 檔仍各自最多 8 KiB。累計按檔案系統回報的大小計算；超出任一限制就停止並回報格式錯誤。限制在載入全部內容前執行，避免把不受限制的資料集合交給後續檢索。
+The knowledge loader accepts at most 100 Markdown cards and 256 KiB total of their raw UTF-8 bytes. Each rule and knowledge file remains limited to 8 KiB. The total is calculated from file-system-reported sizes. Exceeding any limit stops loading with a format error. Apply limits before loading all content so an unbounded collection cannot reach retrieval.
 
-兩個 loader 共用 `ProjectPaths`：檢查 project root 到檔案系統根的路徑元件，拒絕可識別的 symbolic link，並在存取設定目錄及內容檔時確認 real path 位於 project root real path 之下。這涵蓋 `.promptforge`、rules/knowledge 子目錄、卡片巢狀目錄及候選檔。Java NIO 對 Windows junction 的分類依檔案系統提供的 `isSymbolicLink`／`toRealPath` 行為；即使 junction 未被辨識成 symbolic link，real-path 越界仍會拒絕。若 junction 位於指定 project root 之前，解析後的 root 會作為此載入呼叫的專案根界線。
+Both loaders share `ProjectPaths`. Check every path component from the project root to the file-system root, reject detectable symbolic links, and verify on access that each configured directory and content file's real path stays under the project's real path. This covers `.promptforge`, rules/knowledge directories, nested card directories, and candidate files. Java NIO's classification of Windows junctions depends on the file system's `isSymbolicLink` and `toRealPath` behavior; even if a junction is not identified as a symbolic link, a real-path escape is rejected. If a junction occurs before the selected project root, the resolved root is the boundary for that load call.
 
-Rule 必填欄位的錯誤順序固定為 `id`、`keywords`、`instruction`，讓同一份無效檔案每次都先指出相同欄位。
+Keep the validation order for required rule fields fixed as `id`, `keywords`, `instruction`, so repeated validation of the same invalid file reports the same first field.
 
-限制是載入邊界，不是語意驗證；卡片內容仍由使用者維護。超過總量時 loader 不會部分載入。
+These limits define loading boundaries, not semantic validation; users remain responsible for card content. The loader does not partially load data after a total limit is exceeded.

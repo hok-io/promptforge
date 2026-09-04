@@ -1,17 +1,16 @@
-# ADR 0011 — 檢索結果先獨立查閱
+# ADR 0011 — Inspect Retrieval Results Separately First
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-BM25核心已能排名，但人不能直接使用。若未經確認便把檢索結果自動附在 prompt，可能將只有字面相似的 ADR當成正確背景。
+BM25 can rank cards, but people need a way to use it. Automatically attaching results to a prompt before review might treat a merely similar ADR as correct context.
 
-## 決定
+## Decision
 
-加入 `query.ps1 -Query "..." -Project <目錄>`，Java CLI使用 `--query`讀 `.promptforge/knowledge`，最多顯示三個標題、來源與短摘錄。沒有命中時明確說沒有相關本地資料。`--query`與 `--task`互斥；查詢命令只返回 evidence，不生成結論，也不修改規則。
+Add `query.ps1 -Query "..." -Project <directory>`. The Java CLI uses `--query` to search `.promptforge/knowledge` and displays at most three headings, sources, and short excerpts. State clearly when no local data matches. `--query` and `--task` are mutually exclusive. The query command returns evidence only; it does not draw conclusions or modify rules.
 
-## 後果
+## Consequences
 
-使用者可先查看來源再決定是否新增／調整規則；Agent未來也可以把它當讀取工具。這仍不是多步 Agentic loop，下一階段需要按實際任務決定是否值得加入。
-
+Users can inspect sources before deciding whether to add or adjust a rule. An agent may later use this as a read tool. This is not a multi-step agent loop; decide whether one is worthwhile based on actual tasks.

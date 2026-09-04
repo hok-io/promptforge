@@ -1,17 +1,16 @@
-# ADR 0004 — 只輸出任務需要的增量
+# ADR 0004 — Output Only the Increment Needed by the Task
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-舊 spike 把一句任務擴成七段長模板，對實際 Coding Agent 常是噪音。使用者要節省重複貼規則的成本，並知道每條要求來自哪裡。
+An earlier spike expanded a one-sentence task into a long, seven-part template that often adds noise for a coding agent. Users want to avoid repeatedly pasting rules and to know where each requirement came from.
 
-## 決定
+## Decision
 
-保留使用者任務原文，只在有命中規則時追加 `專案規則` 短清單，每項列出 instruction、ID、相對來源。沒有命中便原文返回（BYPASS）。Frame資料與文字呈現分開；空任務回明確錯誤，不編造目標。不強加角色、固定步驟或輸出格式。
+Keep the user's original task text. Append a short `Project Rules` list only when rules match; each item includes its instruction, ID, and relative source. If nothing matches, return the original task (BYPASS). Keep frame data separate from its text rendering. Return a clear error for an empty task instead of inventing a goal. Do not impose a role, fixed steps, or output format.
 
-## 後果
+## Consequences
 
-輸出短、可複製、可追溯；它不是會自動理解隱含需求的 LLM。若規則很多，下一階段需加明確預算和衝突檢查。
-
+Output is short, copyable, and traceable. It does not automatically infer implicit requirements. If the rule set grows, add an explicit budget and conflict checks.

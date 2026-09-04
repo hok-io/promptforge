@@ -1,9 +1,7 @@
-# 0028：應用服務的責任分工
+# ADR 0028 — Separate Application Service Responsibilities
 
-狀態：Accepted。
+`SkillService` handled approval, file copying, and evaluation JSON together, coupling storage-format changes to business-flow changes. Split it into `SkillService` (operation entry point), `SkillBundleStore` (bundle I/O and revisions), `SkillTransfer` (import/export), and `SkillEvaluationService` (evaluation validation and storage). Reuse `WorkspaceFiles` and `RevisionFileStore`; do not add an interface with one implementation and no replacement need.
 
-SkillService 同時處理批准、檔案複製和評估 JSON，使儲存格式與業務流程的變更互相牽連。將它拆成 SkillService（操作入口）、SkillBundleStore（bundle 讀寫與版本）、SkillTransfer（匯入／匯出）、SkillEvaluationService（評估驗證與保存）。共用 WorkspaceFiles 和 RevisionFileStore，不新增只有一個實作且沒有替換需求的介面。
+`PromptService` provides load/list/diff/save without exposing the repository to HTTP. `ProjectContextService` provides context and search. Controllers retain HTTP routes and conversion to display DTOs. Centralize object assembly in Spring configuration.
 
-PromptService 提供 load/list/diff/save，不將 repository 暴露給 HTTP。ProjectContextService 提供 context 和搜尋；Controller 保留 HTTP 路由及顯示 DTO 轉換。Spring configuration 集中組裝物件。
-
-先保留既有 SkillWorkflowTest、EvaluationWorkflowTest、PromptWorkflowTest、WebContractTest 的行為契約，再補模組依賴及服務入口的架構檢查。完成後跑完整測試及瀏覽器流程。重構不增加新功能，不承諾跨程序檔案交易。
+Keep the behavior contracts in `SkillWorkflowTest`, `EvaluationWorkflowTest`, `PromptWorkflowTest`, and `WebContractTest`; add module dependency and service-entry architecture checks. Run the full test suite and browser flows after the refactor. The refactor adds no features and does not promise cross-process file transactions.

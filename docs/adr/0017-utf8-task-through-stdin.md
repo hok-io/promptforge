@@ -1,9 +1,9 @@
-# ADR 0017：任務文字經 UTF-8 stdin 傳遞
+# ADR 0017 — Pass Task Text Through UTF-8 Standard Input
 
-狀態：Accepted。實際觀察日 2026-09-26。
+Status: Accepted. Observed in practice on 2026-09-26.
 
-真人流程重測 F05 發現本機 Windows Java 15 的 native command-line 把「进」轉成「?」。設定 file.encoding／sun.jnu.encoding 仍無法保留。Java 程式收到參數前已損壞，Main.run 的單元測試不能重現此邊界。
+A retest of the real F05 workflow found that Windows' native command-line handling on the local Java 15 machine changed the Chinese character `进` to `?`. Setting `file.encoding` or `sun.jnu.encoding` did not preserve it. The text was already corrupted before Java received the argument, which a unit test of `Main.run` could not reproduce.
 
-frame.ps1 改用既有 --stdin，以 UTF-8 編碼傳任務，選擇 ID／來源仍作為參數。保存及還原 PowerShell OutputEncoding。Main 的 stdin 契約會移除結尾空白，不保證原有尾端空白；正文必須完整保留。smoke 增加非本機碼頁字元與 emoji。
+Change `frame.ps1` to use the existing `--stdin` option and send task text as UTF-8; selection IDs and sources remain arguments. Save and restore PowerShell's `OutputEncoding`. The stdin contract removes trailing whitespace and does not preserve it, while preserving the body. Smoke tests include characters outside the local code page and emoji.
 
-用途 runner 的 task 模式使用相同 UTF-8 stdin，以驗證實際可用流程。直接 Java 15 --task／--query 的 Unicode 參數仍可能受本機碼頁限制，不能聲稱 PrintStream UTF-8 已修好输入。此步只修 task wrapper；query 路徑限制在 README 明示，不在這個 patch 增加新查詢模式。
+The task mode of the use-case runner uses the same UTF-8 stdin path to verify the real workflow. Unicode arguments passed directly to Java 15 with `--task` or `--query` may still be limited by the local code page; do not claim that UTF-8 `PrintStream` fixes input corruption. This change fixes only the task wrapper. Document the query limitation in the README rather than adding a new query mode in this patch.

@@ -1,17 +1,16 @@
-# ADR 0010 — 用本地 BM25 排序知識卡片
+# ADR 0010 — Rank Knowledge Cards with Local BM25
 
-- 狀態：接受
-- 日期：2026-09-22
+- Status: Accepted
+- Date: 2026-09-22
 
-## 問題
+## Context
 
-ADR／policy卡片已可讀，但專案一多，逐份翻閱不實用。希望用零 LLM、零 embedding、零 API token做可重現的相關性排名，同時練到 Java集合和搜尋演算法。
+ADR and policy cards can be read, but browsing them individually does not scale. The project needs reproducible relevance ranking with no LLM, embeddings, or API tokens, and an opportunity to practice Java collections and search algorithms.
 
-## 決定
+## Decision
 
-沿用舊 spike中手寫 BM25的概念，在新專案獨立實作 `Bm25Index`：英文字轉小寫，連續中文字切雙字組；標題與內文一同索引，標題命中稍加權。只返回分數大於零的卡片，按分數降序、來源路徑升序打破平手。只負責檢索和引用，不生成答案；第一版不自動把搜尋結果加入 task frame。
+Implement `Bm25Index` independently in the new project, based on the hand-written BM25 concept from the earlier spike. Lowercase English terms and split consecutive Chinese text into bigrams. Index headings and body together, with a modest boost for heading matches. Return only cards with scores above zero, ordered by score descending and source path ascending for ties. Retrieval provides citations but does not generate answers or automatically add results to a task frame in the first version.
 
-## 後果
+## Consequences
 
-檢索可在本機測試，無模型成本；它是 lexical retrieval，同義詞和語意改寫可能漏。小型本地知識庫足夠，資料量增長後再考慮 Lucene adapter，不先加入依賴。
-
+Retrieval is testable locally without model costs. It is lexical retrieval, so synonyms and semantic paraphrases may be missed. The local knowledge base is small enough for now; consider a Lucene adapter only if the data grows, and do not add a dependency preemptively.
