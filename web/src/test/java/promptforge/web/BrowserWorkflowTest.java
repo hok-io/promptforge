@@ -90,9 +90,11 @@ class BrowserWorkflowTest {
         page.locator("#knowledgeSearchResults .knowledge-hit").click();
         assertTrue(page.locator("#knowledgeList input").first().isChecked());
 
+        page.locator("#saveOptions summary").click();
         page.locator("#promptName").fill("支付流程 🙂");
         page.locator("#promptId").fill("browser-flow");
         page.locator("#taskInput").fill("請由${audience}在付款失敗時先查詢狀態，再安全重試 🙂");
+        page.locator("#variablesCard summary").click();
         page.locator("#variablesInput").fill("{\"audience\":\"工程團隊\",\"tone\":\"清楚\"}");
         page.locator("#modeSelect").selectOption("template");
         page.locator("#rulesList input[name='ruleMode'][value='manual']").check();
@@ -119,6 +121,7 @@ class BrowserWorkflowTest {
 
         page.reload();
         page.locator("#connectionState.online").waitFor();
+        page.locator("#saveOptions summary").click();
         page.locator("#promptSelect").selectOption("browser-flow");
         assertThat(page.locator("#promptName")).hasValue("支付流程 🙂");
         assertThat(page.locator("#promptId")).hasValue("browser-flow");
@@ -171,6 +174,8 @@ class BrowserWorkflowTest {
         assertTrue(blockedRequests.isEmpty(), "Unexpected external requests: " + blockedRequests);
         assertTrue(unexpectedAlerts.isEmpty(), "Unexpected JavaScript alert dialogs: " + unexpectedAlerts);
         page.setViewportSize(390, 844);
+        assertThat(page.locator("#knowledgeQuery")).isHidden();
+        page.locator(".side-tab[data-tab='prompt']").click();
         assertThat(page.locator("#knowledgeQuery")).isVisible();
         assertThat(page.locator("#rulesList .rule-options input").first()).isVisible();
     }
@@ -178,7 +183,9 @@ class BrowserWorkflowTest {
     @Test
     void missingTemplateVariableIsShownInPreview() {
         openProject();
+        assertThat(page.locator("#blocksCard")).isHidden();
         page.locator("#modeSelect").selectOption("template");
+        assertThat(page.locator("#blocksCard")).isVisible();
         page.locator("#taskInput").fill("請回覆 ${missingValue}");
         page.locator("#refreshPreviewButton").click();
         assertThat(page.locator("#previewOutput")).containsText("缺少變數：missingValue");
@@ -189,6 +196,7 @@ class BrowserWorkflowTest {
     void templateWithOnlyBlocksCanBeSavedAndReloaded() {
         openProject();
         page.locator("#modeSelect").selectOption("template");
+        page.locator("#saveOptions summary").click();
         page.locator("#promptId").fill("blocks-only");
         page.locator("#promptName").fill("只有區塊的模板");
         page.locator("#blocksList .block-row textarea").first().fill("根據專案規則整理任務。");
@@ -197,6 +205,7 @@ class BrowserWorkflowTest {
         saveAndConfirmPrompt();
         page.reload();
         page.locator("#connectionState.online").waitFor();
+        page.locator("#saveOptions summary").click();
         page.locator("#promptSelect").selectOption("blocks-only");
         assertThat(page.locator("#taskInput")).hasValue("");
         assertThat(page.locator("#previewOutput")).containsText("根據專案規則整理任務。");
@@ -205,9 +214,11 @@ class BrowserWorkflowTest {
     @Test
     void stalePromptRevisionIsRejectedWithoutOverwritingTheNewerVersion() {
         openProject();
+        page.locator("#saveOptions summary").click();
         page.locator("#promptName").fill("版本衝突保護");
         page.locator("#promptId").fill("stale-ui");
         page.locator("#taskInput").fill("目前版本");
+        page.locator("#variablesCard summary").click();
         page.locator("#variablesInput").fill("{}");
         saveAndConfirmPrompt();
         page.locator("#taskInput").fill("本機草稿的變更");
