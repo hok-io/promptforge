@@ -45,7 +45,7 @@ public final class ProgramController {
         if (!store.readOrNew(OUTLINE).revision().equals(write.revision()))
             throw new WorkbenchException(FailureKind.CONFLICT, "大綱已有較新修改，請重新載入。");
         String source;
-        try { source = json.writerWithDefaultPrettyPrinter().writeValueAsString(write.outline()) + "\n"; }
+        try { source = json.writerWithDefaultPrettyPrinter().writeValueAsString(write.outline()).replace("\r\n", "\n") + "\n"; }
         catch (IOException error) { throw new WorkbenchException(FailureKind.INVALID_INPUT, "無法序列化大綱。"); }
         String main = compile(write.outline());
         String context = contextSkill();
