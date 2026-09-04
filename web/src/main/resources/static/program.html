@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PromptForge 大綱管理</title><link rel="stylesheet" href="/program.css"></head>
+<body><main><header><div><h1>PromptForge 大綱管理</h1><p>完整大綱留在本地；只有勾選步驟及依賴會生成給 agent。</p></div><a href="/">舊工作台</a></header>
+<div id="status" role="status"></div><div class="toolbar"><button id="add">新增步驟</button><button id="save">Save 並生成</button></div><div id="steps"></div>
+<h2>實際生成的 /PromptForge</h2><pre id="generated"></pre><h2>/PromptForge-context</h2><pre id="context"></pre>
+<p>入口位於此 repo 的 <code>.agents/skills/</code>。保存後請重新開啟 agent 工作階段；目前對話不會即時重新載入。</p></main><script src="/program.js"></script></body></html>
