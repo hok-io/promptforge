@@ -37,3 +37,24 @@ Web 的 `/legacy.html` 也顯示這份清單，並保留 `/workbench.html` 與 `
 ## 驗證範圍
 
 `ProgramControllerTest` 覆蓋四步選兩步、重新讀取、修改再生成、版本衝突、缺依賴時保留舊版及 HTTP 讀寫。Skill 指令中的 ReAct 與 context 四類輸出經生成檔案檢查。格式及檔案存在不能證明 agent 實際會遵循指令；需在重新載入後用真實任務測試。
+
+## 2026-09-30 後續：Skill library、資源管理與清理
+
+本節取代上面的「待使用者決定」狀態；上文記錄前一階段的既有行為。
+
+使用者已批准移除舊功能。刪除手動 prompt、固定問卷、評估匯入、舊 Skill 審核／批准／匯出、多專案及舊 CLI 的專用程式與測試。保留共用的 WorkspaceFiles、RevisionFileStore、錯誤類型及其邊界／衝突測試。移除 core 模組，workbench 模組目前只提供共用檔案儲存。舊資料、examples、workbench-projects.json 和歷史設計文件保留但不再被程式讀取；Git 舊 commit 未重寫。刪除前將包括未提交變更在內的舊檔案備份至 `.private/before-2026-09-30-cleanup/`。
+
+新 GUI 可建立多個獨立 Skill（同一個 project），各有用途、步驟與勾選；新增 `GET /api/skills`、`GET/PUT /api/skills/{name}`、preview 及 files/file API。來源位於 `.promptforge/outlines/<name>.json`，PromptForge 的舊來源路徑保留。自訂 Skill 不會被強制生成為 prompt 整理流程。
+
+GUI 可保存 UTF-8 文字腳本、references 與文字 assets，帶 revision 衝突保護；可加入步驟並描述使用方式、執行命令及 requires 檔案依賴。生成器驗證已選依賴、被引用 Skill 的 Markdown 本地檔案連結與生成依賴，循環或缺檔報錯。動態 import、套件及 runtime 不會由靜態路徑檢查自動安裝／證實，須在步驟描述並由 agent 實際檢查。腳本不由 Web 或 MCP 自動執行。資源保存立即更新本地檔案，已引用該路徑的 Skill 下次讀取會看到新版；資源不是不可變快照。
+
+MCP 新增 list_skills 和 get_skill(name)。連接頁提供網址、CLI 命令、TOML 設定、複製按鈕及實際 agent 測試句，明確區分服務連線與 agent 接入。指令依據：https://developers.openai.com/learn/docs-mcp 。
+
+### 2026-09-30 實際驗證
+
+- `mvnw.cmd verify`：13 項測試通過，包含真實 Edge 瀏覽器新增自訂 Skill、建立 JavaScript、加入步驟、保存／重開、未選內容排除、MCP 指定 Skill 回傳；測試腳本用 Node 實際執行並輸出 `SCRIPT_OK`。
+- 衝突、越界、四步選兩步、缺少直接與間接依賴、失敗保留上一份版本均有測試。
+- 新版服務啟動後，本對話實際呼叫 `get_selected_skill` 及 `get_context_skill` 成功。
+- 新 Codex CLI 工作階段實際完成 `promptforge/list_skills`、`promptforge/get_skill`，列出兩個入口，回報目前已選的兩步。結果存於本機 `build/mcp-library-agent-result.txt`。這次新工具驗證只讀取 Skill，沒有執行原任務。
+- 新 GUI 的實際本地資料仍為四步、選兩步；舊頁面重導到新 GUI。自訂 Skill／腳本測試資料留在隔離的測試目錄，沒有新增到使用者正式大綱。
+- 本次測試不代表所有使用者腳本都可執行，也不驗證其他 MCP 客戶端或雲端連接。二進位素材上傳未實作；目前資源編輯器只處理 UTF-8 文字。

@@ -26,11 +26,11 @@ class LocalServerTest {
         assertEquals(200, page.statusCode());
         var tokenResponse = client.send(HttpRequest.newBuilder(URI.create(base + "/api/csrf")).GET().build(), HttpResponse.BodyHandlers.ofString());
         var token = new ObjectMapper().readTree(tokenResponse.body());
-        var preview = client.send(HttpRequest.newBuilder(URI.create(base + "/api/projects/demo/preview"))
+        var preview = client.send(HttpRequest.newBuilder(URI.create(base + "/api/program/preview"))
                 .header("Content-Type", "application/json").header(token.path("headerName").asText(), token.path("token").asText())
-                .POST(HttpRequest.BodyPublishers.ofString(WebContractTest.DOCUMENT)).build(), HttpResponse.BodyHandlers.ofString());
+                .POST(HttpRequest.BodyPublishers.ofString("{\"steps\":[{\"id\":\"one\",\"title\":\"支付失敗再試\",\"selected\":true}]}")).build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, preview.statusCode(), preview.body()); assertTrue(preview.body().contains("支付失敗再試"));
-        var oversized = client.send(HttpRequest.newBuilder(URI.create(base + "/api/projects/demo/preview"))
+        var oversized = client.send(HttpRequest.newBuilder(URI.create(base + "/api/program/preview"))
                 .header("Content-Type", "application/json").header(token.path("headerName").asText(), token.path("token").asText())
                 .POST(HttpRequest.BodyPublishers.ofInputStream(() -> new java.io.ByteArrayInputStream(new byte[70_000]))).build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(413, oversized.statusCode(), oversized.body());

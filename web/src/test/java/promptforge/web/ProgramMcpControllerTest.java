@@ -20,7 +20,7 @@ class ProgramMcpControllerTest {
         program.save(new ProgramController.Write("new", source));
         ProgramMcpController mcp = new ProgramMcpController(root.toString());
         assertEquals("2025-06-18", response(mcp, 1, "initialize", null).path("result").path("protocolVersion").asText());
-        assertEquals(3, response(mcp, 2, "tools/list", null).path("result").path("tools").size());
+        assertEquals(5, response(mcp, 2, "tools/list", null).path("result").path("tools").size());
         String generated = response(mcp, 3, "tools/call", "get_selected_skill").path("result").path("content").get(0).path("text").asText();
         assertTrue(generated.contains("Selected"));
         assertFalse(generated.contains("Unselected"));

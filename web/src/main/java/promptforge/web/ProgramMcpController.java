@@ -47,12 +47,18 @@ public final class ProgramMcpController {
                     "serverInfo", Map.of("name", "promptforge-local", "version", "1.0"));
             case "ping" -> result = Map.of();
             case "tools/list" -> result = Map.of("tools", List.of(
+                    tool("list_skills", "List locally generated Skills available to read."),
+                    Map.of("name", "get_skill", "description", "Read a generated Skill by name. Follow its project root and dependency paths; this tool does not execute scripts.",
+                            "inputSchema", Map.of("type", "object", "properties", Map.of("name", Map.of("type", "string")), "required", List.of("name"), "additionalProperties", false),
+                            "annotations", Map.of("readOnlyHint", true)),
                     tool("get_selected_skill", "Read the exact currently generated PromptForge Skill. Only selected steps and dependencies are present."),
                     tool("get_context_skill", "Read the currently generated PromptForge-context Skill for checking context without executing the task."),
                     tool("get_program_status", "Read generation status, selected step names, and revisions without exposing the full management outline.")));
             case "tools/call" -> {
                 String name = request.path("params").path("name").asText("");
                 result = switch (name) {
+                    case "list_skills" -> skillList();
+                    case "get_skill" -> namedSkill(request.path("params").path("arguments").path("name").asText(""));
                     case "get_selected_skill" -> readTool(MAIN);
                     case "get_context_skill" -> readTool(CONTEXT);
                     case "get_program_status" -> statusTool();
@@ -63,6 +69,22 @@ public final class ProgramMcpController {
             default -> { return ResponseEntity.ok(error(id, -32601, "Method not found: " + method)); }
         }
         return ResponseEntity.ok(Map.of("jsonrpc", "2.0", "id", id, "result", result));
+    }
+
+    private Map<String, Object> skillList() {
+        try {
+            List<String> names = files.filesUnder(".agents/skills").stream()
+                    .filter(path -> path.endsWith("/SKILL.md"))
+                    .map(path -> Path.of(path).getParent().getFileName().toString()).toList();
+            return toolText(json.writeValueAsString(names));
+        } catch (Exception error) { return toolError(error.getMessage()); }
+    }
+    private Map<String, Object> namedSkill(String name) {
+        if (!name.equals("PromptForge-context")) {
+            try { ProgramController.validateName(name); }
+            catch (RuntimeException error) { return toolError(error.getMessage()); }
+        }
+        return readTool(".agents/skills/" + name + "/SKILL.md");
     }
 
     private static Map<String, Object> tool(String name, String description) {

@@ -1,9 +1,11 @@
 ---
 name: PromptForge
-description: Turn a user's task into an executable prompt using the selected local PromptForge outline. Invoke as $PromptForge (or /PromptForge when the client exposes skills as slash entries).
+description: "Turn a user's task into an executable prompt using the selected local PromptForge outline."
 ---
 
 # PromptForge
+
+Project root: `D:/PromptForge`. Resolve dependency paths against this root.
 
 Input: the user's original task. Preserve goal, scope, constraints, expected result, and acceptance checks.
 

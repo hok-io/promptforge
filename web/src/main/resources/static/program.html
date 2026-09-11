@@ -9,7 +9,7 @@
 <body>
   <header class="site-head">
     <div class="brand"><span class="mark">P</span><div><strong>PromptForge</strong><small>本地 Skill 管理</small></div></div>
-    <nav aria-label="主要導覽"><a href="#outline">管理大綱</a><a href="#output">生成內容</a><a href="#agent">Agent 連接</a><a href="/legacy.html">舊功能清單</a></nav>
+    <nav aria-label="主要導覽"><a href="#outline">管理大綱</a><a href="#output">生成內容</a><a href="#agent">Agent 連接</a><a href="#resources">腳本與資料</a></nav>
   </header>
   <main>
     <section class="intro">
@@ -23,12 +23,33 @@
       <div><span>保存狀態</span><strong id="saveState">載入中</strong><small id="revision">—</small></div>
       <div><span>本地 MCP</span><strong id="mcpState">檢查中</strong><small>讀取已生成版本</small></div>
     </section>
+    <section class="editor" id="library">
+<h2>我的 Skill</h2><p>每個 Skill 是一套不同的做事方法，可以有自己的步驟、腳本和參考資料。PromptForge 用來整理任務；PromptForge-context 專門檢查 context，由程式一併產生。</p>
+<label class="field">目前編輯<select id="skillSelect"></select></label><button id="newSkill" type="button">＋ 建立新 Skill</button>
+<div id="newSkillForm" hidden><label class="field">新 Skill ID<input id="newSkillId" placeholder="例如 review-code"></label><button id="createSkill" type="button">建立草稿</button><button id="cancelNewSkill" type="button">取消</button></div>
+<label class="field">用途與使用時機<textarea id="skillDescription" placeholder="這個 Skill 幫你做甚麼？甚麼時候應該用？"></textarea></label><p id="skillLocation" class="subtle"></p></section>
     <section id="outline" class="section-head"><div><p class="eyebrow">01 / MANAGE</p><h2>完整大綱</h2><p>選步驟、調整順序，再編輯每步的 ReAct 設定與依賴。</p></div><button id="addStep" type="button">＋ 新增步驟</button></section>
     <div class="workspace"><aside class="step-list" aria-label="步驟清單"><div id="steps"></div></aside><section id="editor" class="editor" aria-label="步驟設定"><p class="empty">選一個步驟開始編輯。</p></section></div>
     <section id="output" class="output-section"><div class="section-head"><div><p class="eyebrow">02 / OUTPUT</p><h2>生成內容</h2><p id="outputHint">這裏顯示目前已保存的 Agent 版本；預覽不會寫入檔案。</p></div><button id="reload" type="button">重新讀取磁碟</button></div><div class="output-tabs" role="tablist"><button id="tabMain" class="active" type="button" role="tab" aria-selected="true">PromptForge</button><button id="tabContext" type="button" role="tab" aria-selected="false">PromptForge-context</button></div><pre id="generated" tabindex="0"></pre></section>
-    <section id="agent" class="agent-section"><p class="eyebrow">03 / CONNECT</p><h2>交給 Agent 使用</h2><div class="agent-grid"><div><h3>Skill 入口</h3><p>在這個 repo 的新 Codex 工作階段使用 <code>$PromptForge</code>；把它產生的 prompt 交給 <code>$PromptForge-context</code> 檢查。Skill 檔案更新後須重新載入工作階段。</p><p class="path">.agents/skills/PromptForge/ · .agents/skills/PromptForge-context/</p></div><div><h3>本地 MCP</h3><p>Agent 可用 <code>get_selected_skill</code>、<code>get_context_skill</code>、<code>get_program_status</code> 即時讀取已保存版本。MCP 不修改大綱，也不自動執行任務。</p><p class="path" id="mcpUrl">/mcp</p><p>首次在 Codex 連接此 Web 時執行：</p><p class="path" id="mcpCommand">codex mcp add promptforge --url ...</p><button id="checkMcp" type="button">測試本地 MCP</button><small id="mcpResult"></small></div></div></section>
-    <footer>管理來源：<code>.promptforge/program.json</code> · 舊功能與刪除影響見<a href="/legacy.html">舊功能清單</a></footer>
+    <section class="editor" id="resources"><h2>腳本與參考資料</h2>
+<p>腳本是可執行程式；參考資料提供規則或背景；素材是輸出會用到的文字模板。儲存檔案後，按「加入目前步驟」，最後保存並生成 Skill。</p>
+<label class="field">已保存的檔案<select id="resourceSelect"><option value="">新增檔案</option></select></label>
+<label class="field">檔案路徑<input id="resourcePath" placeholder="scripts/check.py 或 references/rules.md"></label>
+<label class="field">檔案內容（UTF-8 文字）<textarea id="resourceText" rows="12" spellcheck="false"></textarea></label>
+<button id="saveResource" type="button">保存檔案</button><button id="attachResource" type="button" disabled>加入目前步驟</button><p id="resourceStatus" role="status"></p>
+<p class="subtle">可建立 Python、PowerShell、JavaScript 等腳本。執行命令、所需 runtime、輸入與輸出請填在步驟指示／行動；agent 須有相應 runtime 及執行權限。Web 保存和 MCP 讀取均不會執行腳本。素材編輯目前支援文字，不支援二進位檔案上傳。</p></section>
+<section id="agent" class="agent-section"><p class="eyebrow">03 / CONNECT</p><h2>連接 AI：只需設定一次</h2>
+<p>Web 讓你編輯 Skill；MCP 讓同一部電腦上的 agent 讀取保存版。新增 Skill 後沿用同一個 MCP 連接。</p>
+<ol><li>保持 PromptForge Web 運行。MCP 網址：<p class="path" id="mcpUrl"></p><button id="copyUrl" type="button">複製網址</button></li>
+<li>在執行 Codex 的電腦打開 PowerShell，貼上：<pre id="mcpCommand"></pre><button id="copyCommand" type="button">複製連接指令</button><p>執行 <code>codex mcp list</code>，確認 promptforge 出現在清單。若找不到 codex 指令，可使用下方設定檔方式。</p></li>
+<li>重新開啟 Codex 工作階段，讓 agent 載入 MCP 設定。</li>
+<li>把以下測試句交給 agent：<pre id="agentPrompt"></pre><button id="copyPrompt" type="button">複製測試句</button><p>看到 agent 實際呼叫工具並回傳 Skill 內容，才代表 agent 接入成功。</p></li></ol>
+<details><summary>使用設定檔連接／其他 MCP 客戶端</summary><p>Codex 可在使用者的 <code>~/.codex/config.toml</code> 加入以下區段；已有同名區段就修改原區段。</p><pre id="mcpConfig"></pre><p>其他支援 Streamable HTTP 的本地客戶端：新增 MCP server，名稱填 promptforge，URL 使用上面的網址。遠端／雲端 agent 的 127.0.0.1 並非這部電腦，不能直接用此網址。</p><a href="https://developers.openai.com/learn/docs-mcp" target="_blank" rel="noreferrer">官方 MCP 設定說明</a></details>
+<button id="checkMcp" type="button">檢查服務與生成版</button><p id="mcpResult"></p><p class="subtle">此按鈕只驗證 Web 到 MCP 的連線；無法證明另一個 agent 已連接。</p>
+<h3>不用 MCP，直接使用本地 Skill</h3><p id="directSkill"></p><p>新增或修改 Skill 檔後，開新工作階段重新發現。客戶端支援時亦可能顯示 /名稱。MCP 每次呼叫讀取保存版；已在對話讀取過的內容要再次呼叫才會更新。</p></section>
+<footer>2026 年 9 月重整 · 舊工作台、問卷、審核及多專案入口已退役；舊資料和 Git 歷史保留。</footer>
   </main>
+  <datalist id="skillPaths"></datalist>
   <script src="/program.js"></script>
 </body>
 </html>

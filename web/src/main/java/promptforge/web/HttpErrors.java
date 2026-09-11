@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import promptforge.*;
 import promptforge.workbench.FailureKind;
 import promptforge.workbench.WorkbenchException;
 import java.util.Map;
@@ -17,7 +16,7 @@ public class HttpErrors {
         return message(status(error.kind()), error.getMessage());
     }
 
-    @ExceptionHandler({RuleFormatException.class, KnowledgeFormatException.class, RuleConflictException.class, FrameBudgetException.class, IllegalArgumentException.class})
+    @ExceptionHandler(IllegalArgumentException.class)
     ResponseEntity<?> domain(RuntimeException error) { return message(HttpStatus.UNPROCESSABLE_ENTITY, error.getMessage()); }
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ResponseEntity<?> json(HttpMessageNotReadableException error) { return message(HttpStatus.BAD_REQUEST, "JSON 格式或欄位無效，請檢查輸入。"); }

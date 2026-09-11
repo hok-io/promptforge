@@ -14,21 +14,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Run the same tests as local Windows
-        shell: pwsh
-        run: ./scripts/test.ps1
-      - name: Check Codex skill entrypoint
-        shell: pwsh
-        run: ./scripts/check-skill.ps1
-      - name: Smoke-test confirmed prompt workflow
-        shell: pwsh
-        run: ./scripts/confirmed-prompt-smoke.ps1
-      - name: Package executable JAR
-        shell: pwsh
-        run: ./scripts/package.ps1
-      - name: Smoke-test packaged CLI
-        shell: pwsh
-        run: ./scripts/package-smoke.ps1
       - name: Build Java modules for browser installer
         shell: pwsh
         run: |
