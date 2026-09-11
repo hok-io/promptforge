@@ -17,7 +17,7 @@ codex mcp add promptforge --url http://127.0.0.1:8081/mcp
 codex mcp list
 ```
 
-Codex 需開新工作階段才會取得新 MCP 設定；MCP 端點在 Web 停止後不可用。MCP 的即時讀取與 repo Skill 的啟用是兩條入口；使用者在 Web 的選擇仍是唯一來源。2026-09-28 的實際 Codex CLI 呼叫紀錄顯示 `promptforge/get_selected_skill` 完成，回傳內容包含已選的「理解與界定任務」，不含未選的「補查專案資料」。
+Codex 需開新工作階段才會取得新 MCP 設定；MCP 端點在 Web 停止後不可用。MCP 的即時讀取與 repo Skill 的啟用是兩條入口；使用者在 Web 的選擇仍是唯一來源。2026-09-28 的實際 Codex CLI 呼叫紀錄顯示 `promptforge/get_selected_skill` 與 `get_context_skill` 完成：前者含已選的「理解與界定任務」且不含未選的「補查專案資料」。另用一個無專案資料的任務測試 `$PromptForge`，得到包含判斷、行動、觀察、調整與完成／受阻條件的 prompt；交給 `$PromptForge-context` 後，agent 區分已讀資料、可讀但未讀資源、缺少資料及目前受阻範圍，沒有執行原任務。
 
 ## 既有實作去留盤點，待使用者決定
 

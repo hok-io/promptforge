@@ -105,6 +105,7 @@
   }
   async function checkMcp() {
     $('#mcpState').textContent = '檢查中'; $('#mcpUrl').textContent = `${location.origin}/mcp`;
+    $('#mcpCommand').textContent = `codex mcp add promptforge --url ${location.origin}/mcp`;
     try {
       const response = await fetch('/mcp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'get_selected_skill', arguments: {} } }) });
       if (!response.ok) throw Error(`HTTP ${response.status}`);
