@@ -78,7 +78,7 @@ class BrowserWorkflowTest {
         page = context.newPage();
         page.route("**/*", route -> routeLocalOnly(route));
         page.onDialog(dialog -> { if ("alert".equals(dialog.type())) { unexpectedAlerts.add(dialog.message()); dialog.dismiss(); } else dialog.accept(); });
-        page.navigate("http://127.0.0.1:" + port + "/");
+        page.navigate("http://127.0.0.1:" + port + "/workbench.html");
         page.locator("#connectionState.online").waitFor();
         page.locator("#projectSelect").selectOption("demo");
         assertThat(page.locator("#projectName")).hasText("Demo");
@@ -252,7 +252,7 @@ class BrowserWorkflowTest {
         context = browser.newContext(); page = context.newPage();
         page.route("**/*", route -> routeLocalOnly(route));
         page.onDialog(dialog -> { if ("alert".equals(dialog.type())) { unexpectedAlerts.add(dialog.message()); dialog.dismiss(); } else dialog.accept(); });
-        page.navigate("http://127.0.0.1:" + port + "/");
+        page.navigate("http://127.0.0.1:" + port + "/workbench.html");
         page.locator("#connectionState.online").waitFor();
     }
 

@@ -1,4 +1,4 @@
-param([ValidateRange(1024,65535)][int] $Port = 8080)
+param([ValidateRange(1024,65535)][int] $Port = 8081)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $jarPath = Join-Path $root 'web/target/promptforge-web-1.0-SNAPSHOT.jar'

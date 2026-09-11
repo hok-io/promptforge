@@ -20,8 +20,13 @@ class ProgramControllerTest {
         mvc.perform(get("/api/program")).andExpect(status().isOk()).andExpect(jsonPath("$.revision").value("new"));
         mvc.perform(put("/api/program").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"revision\":\"new\",\"outline\":{\"steps\":[{\"id\":\"one\",\"title\":\"First\",\"selected\":true}]}}"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.outline.steps.length()").value(1));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.outline.steps.length()").value(1))
+                .andExpect(jsonPath("$.generatedCurrent").value(true));
         mvc.perform(get("/api/program")).andExpect(status().isOk()).andExpect(jsonPath("$.generated").isNotEmpty());
+        mvc.perform(post("/api/program/preview").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"steps\":[{\"id\":\"next\",\"title\":\"Preview Only\",\"selected\":true}]}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.generated").value(org.hamcrest.Matchers.containsString("Preview Only")));
+        assertFalse(Files.readString(root.resolve(".agents/skills/PromptForge/SKILL.md")).contains("Preview Only"));
     }
 
 

@@ -32,9 +32,22 @@ public final class ProgramController {
         JsonNode outline = source.text().isBlank() ? blankOutline() : parse(source.text());
         String generated = exists(SKILL) ? files.read(SKILL) : "";
         String context = exists(CONTEXT) ? files.read(CONTEXT) : "";
-        return new View(source.revision(), outline, generated, context,
-                generated.isBlank() ? "尚未生成；保存後需重新載入 agent 以發現入口。" : "已保存於 repo；新的 agent 工作階段需重新載入 Skill。",
-                exists(SKILL) && exists(CONTEXT));
+        boolean current = false;
+        String status;
+        if (generated.isBlank() || context.isBlank()) status = "尚未生成；保存後需重新載入 agent。";
+        else {
+            try {
+                current = generated.equals(compile(outline)) && context.equals(contextSkill());
+                status = current ? "生成版與管理大綱一致；agent 工作階段更新後需重新載入。" : "管理大綱與生成版不同步；請重新保存。";
+            } catch (RuntimeException error) { status = "管理大綱有錯誤，生成版仍保留：" + error.getMessage(); }
+        }
+        return new View(source.revision(), outline, generated, context, status,
+                exists(SKILL) && exists(CONTEXT), current);
+    }
+
+    @PostMapping("/preview")
+    public Preview preview(@RequestBody JsonNode outline) {
+        return new Preview(compile(outline), contextSkill());
     }
 
     @PutMapping
@@ -159,5 +172,7 @@ public final class ProgramController {
         catch (IOException ignored) { /* original failure is reported */ }
     }
     public record Write(String revision, JsonNode outline) { }
-    public record View(String revision, JsonNode outline, String generated, String contextGenerated, String status, boolean discoverableFilesPresent) { }
+    public record View(String revision, JsonNode outline, String generated, String contextGenerated,
+                       String status, boolean discoverableFilesPresent, boolean generatedCurrent) { }
+    public record Preview(String generated, String contextGenerated) { }
 }
