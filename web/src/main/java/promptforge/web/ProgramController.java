@@ -108,6 +108,22 @@ public final class ProgramController {
                     out.append("- ").append(field).append(": `").append(path).append("` (read when needed)\n");
                 }
             }
+            JsonNode capabilities = step.path("capabilities");
+            if (!capabilities.isMissingNode() && !capabilities.isArray())
+                throw new WorkbenchException(FailureKind.INVALID_INPUT, "capabilities 必須是陣列。");
+            for (JsonNode capability : capabilities) {
+                if (!capability.isObject()) throw new WorkbenchException(FailureKind.INVALID_INPUT, "能力設定必須是物件。");
+                String type = required(capability, "type");
+                if (!List.of("script", "reference", "skill").contains(type))
+                    throw new WorkbenchException(FailureKind.INVALID_INPUT, "未知能力類型：" + type);
+                String path = capability.path("path").asText("").trim();
+                if (capability.path("selected").asBoolean(false)) {
+                    if (path.isEmpty()) throw new WorkbenchException(FailureKind.INVALID_INPUT, "已選能力缺少路徑。");
+                    if (!Files.isRegularFile(files.resolve(path)))
+                        throw new WorkbenchException(FailureKind.INVALID_INPUT, "缺少必要依賴：" + path);
+                    out.append("- ").append(type).append(": `").append(path).append("` (read when needed)\n");
+                }
+            }
             out.append("\n");
         }
         out.append("## Required result\n\nWrite a prompt with the original goal, scope, constraints, expected output and acceptance method. Include an executable ReAct loop: judge the next step from current evidence; act; observe actual results; adjust, gather more context or retry; decide completion or blockage. Run only steps needed for this task. Ask or research when essential information is missing. Show a brief decision summary, action results and verification evidence; never request hidden chain of thought. The prompt must be usable directly as input to $PromptForge-context.\n");

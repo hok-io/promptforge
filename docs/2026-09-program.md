@@ -4,7 +4,7 @@
 
 ## 使用
 
-啟動本地 Web 後開啟 `/program.html`。管理來源是 repo 根目錄 `.promptforge/program.json`，包含完整步驟與勾選狀態。新增、編輯、排序及勾選後按 Save；生成器驗證所選步驟與引用的 repo 相對檔案，再更新 `.agents/skills/PromptForge/SKILL.md` 及 `.agents/skills/PromptForge-context/SKILL.md`。未勾選步驟只留在管理來源。Web 下方顯示實際生成內容和重新載入提示。保存時攜帶 revision；另一分頁或外部編輯造成的舊 revision 會得到 409。依賴缺失會得到 422，上一份生成版保持可用。
+啟動本地 Web 後開啟 `/program.html`。管理來源是 repo 根目錄 `.promptforge/program.json`，包含完整步驟、能力與勾選狀態。新增、編輯、排序及勾選後按 Save；每步的可選能力可分別設定 script、reference 或 skill 的 repo 相對檔案路徑。生成器只驗證所選步驟所選能力的必要檔案，再更新 `.agents/skills/PromptForge/SKILL.md` 及 `.agents/skills/PromptForge-context/SKILL.md`。未勾選步驟與能力只留在管理來源。Web 下方顯示實際生成內容和重新載入提示。保存時攜帶 revision；另一分頁或外部編輯造成的舊 revision 會得到 409。依賴缺失會得到 422，上一份生成版保持可用。
 
 Codex 的 repo scoped Skill 用 `$PromptForge` 與 `$PromptForge-context` 明確呼叫。若客戶端把 Skill 顯示為斜線項目，也可選 `/PromptForge` 與 `/PromptForge-context`；斜線顯示由客戶端決定。檔案變更後開新 agent 工作階段使其重新發現。`PromptForge-context` 只檢查 context，不執行原任務。
 

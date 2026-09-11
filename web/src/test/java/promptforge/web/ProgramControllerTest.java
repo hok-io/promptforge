@@ -43,12 +43,17 @@ class ProgramControllerTest {
         assertEquals(4, new ProgramController(root.toString()).get().outline().path("steps").size());
         assertEquals(2, countSelected(new ProgramController(root.toString()).get().outline()));
         var changed = (com.fasterxml.jackson.databind.node.ObjectNode) json.readTree(four);
-        changed.withArray("steps").get(0).deepCopy();
         ((com.fasterxml.jackson.databind.node.ObjectNode) changed.withArray("steps").get(0)).put("instructions", "Updated");
         ((com.fasterxml.jackson.databind.node.ObjectNode) changed.withArray("steps").get(2)).put("selected", false);
+        var caps = ((com.fasterxml.jackson.databind.node.ObjectNode) changed.withArray("steps").get(0)).putArray("capabilities");
+        caps.addObject().put("type", "reference").put("path", "unused.md").put("selected", false);
+        Files.writeString(root.resolve("used.md"), "needed");
+        caps.addObject().put("type", "reference").put("path", "used.md").put("selected", true);
         var second = api.save(new ProgramController.Write(first.revision(), changed));
         assertTrue(second.generated().contains("Updated"));
         assertFalse(second.generated().contains("Third"));
+        assertTrue(second.generated().contains("used.md"));
+        assertFalse(second.generated().contains("unused.md"));
         assertThrows(WorkbenchException.class, () -> api.save(new ProgramController.Write(first.revision(), changed)));
         ((com.fasterxml.jackson.databind.node.ObjectNode) changed.withArray("steps").get(0)).putArray("scripts").add("missing.ps1");
         assertThrows(WorkbenchException.class, () -> api.save(new ProgramController.Write(second.revision(), changed)));
