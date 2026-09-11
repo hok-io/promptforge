@@ -8,3 +8,6 @@ out/
 /.promptforge/
 
 /.private/
+
+__pycache__/
+*.pyc

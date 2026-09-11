@@ -1,55 +1,52 @@
 <!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>PromptForge｜Skill 管理</title>
-  <link rel="stylesheet" href="/program.css">
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f7f8"><title>PromptForge｜開始使用</title><link rel="stylesheet" href="/program.css"></head>
 <body>
-  <header class="site-head">
-    <div class="brand"><span class="mark">P</span><div><strong>PromptForge</strong><small>本地 Skill 管理</small></div></div>
-    <nav aria-label="主要導覽"><a href="#outline">管理大綱</a><a href="#output">生成內容</a><a href="#agent">Agent 連接</a><a href="#resources">腳本與資料</a></nav>
-  </header>
-  <main>
-    <section class="intro">
-      <div><p class="eyebrow">LOCAL FIRST · SEPTEMBER 2026</p><h1>決定 Agent 現在能使用甚麼</h1><p>在這裏保留完整做事大綱，選出目前需要的步驟與能力。保存後只把所選內容生成給 Agent；未選項目仍留在管理資料。</p></div>
-      <div class="intro-actions"><button id="save" class="primary" type="button">保存並生成 Skill</button><button id="preview" type="button">預覽目前選擇</button></div>
-    </section>
-    <div id="message" class="message" role="status" aria-live="polite"></div>
-    <section class="summary" aria-label="目前狀態">
-      <div><span>管理大綱</span><strong id="stepCount">—</strong><small>步驟總數</small></div>
-      <div><span>提供給 Agent</span><strong id="selectedCount">—</strong><small>已選步驟</small></div>
-      <div><span>保存狀態</span><strong id="saveState">載入中</strong><small id="revision">—</small></div>
-      <div><span>本地 MCP</span><strong id="mcpState">檢查中</strong><small>讀取已生成版本</small></div>
-    </section>
-    <section class="editor" id="library">
-<h2>我的 Skill</h2><p>每個 Skill 是一套不同的做事方法，可以有自己的步驟、腳本和參考資料。PromptForge 用來整理任務；PromptForge-context 專門檢查 context，由程式一併產生。</p>
-<label class="field">目前編輯<select id="skillSelect"></select></label><button id="newSkill" type="button">＋ 建立新 Skill</button>
-<div id="newSkillForm" hidden><label class="field">新 Skill ID<input id="newSkillId" placeholder="例如 review-code"></label><button id="createSkill" type="button">建立草稿</button><button id="cancelNewSkill" type="button">取消</button></div>
-<label class="field">用途與使用時機<textarea id="skillDescription" placeholder="這個 Skill 幫你做甚麼？甚麼時候應該用？"></textarea></label><p id="skillLocation" class="subtle"></p></section>
-    <section id="outline" class="section-head"><div><p class="eyebrow">01 / MANAGE</p><h2>完整大綱</h2><p>選步驟、調整順序，再編輯每步的 ReAct 設定與依賴。</p></div><button id="addStep" type="button">＋ 新增步驟</button></section>
-    <div class="workspace"><aside class="step-list" aria-label="步驟清單"><div id="steps"></div></aside><section id="editor" class="editor" aria-label="步驟設定"><p class="empty">選一個步驟開始編輯。</p></section></div>
-    <section id="output" class="output-section"><div class="section-head"><div><p class="eyebrow">02 / OUTPUT</p><h2>生成內容</h2><p id="outputHint">這裏顯示目前已保存的 Agent 版本；預覽不會寫入檔案。</p></div><button id="reload" type="button">重新讀取磁碟</button></div><div class="output-tabs" role="tablist"><button id="tabMain" class="active" type="button" role="tab" aria-selected="true">PromptForge</button><button id="tabContext" type="button" role="tab" aria-selected="false">PromptForge-context</button></div><pre id="generated" tabindex="0"></pre></section>
-    <section class="editor" id="resources"><h2>腳本與參考資料</h2>
-<p>腳本是可執行程式；參考資料提供規則或背景；素材是輸出會用到的文字模板。儲存檔案後，按「加入目前步驟」，最後保存並生成 Skill。</p>
-<label class="field">已保存的檔案<select id="resourceSelect"><option value="">新增檔案</option></select></label>
-<label class="field">檔案路徑<input id="resourcePath" placeholder="scripts/check.py 或 references/rules.md"></label>
-<label class="field">檔案內容（UTF-8 文字）<textarea id="resourceText" rows="12" spellcheck="false"></textarea></label>
-<button id="saveResource" type="button">保存檔案</button><button id="attachResource" type="button" disabled>加入目前步驟</button><p id="resourceStatus" role="status"></p>
-<p class="subtle">可建立 Python、PowerShell、JavaScript 等腳本。執行命令、所需 runtime、輸入與輸出請填在步驟指示／行動；agent 須有相應 runtime 及執行權限。Web 保存和 MCP 讀取均不會執行腳本。素材編輯目前支援文字，不支援二進位檔案上傳。</p></section>
-<section id="agent" class="agent-section"><p class="eyebrow">03 / CONNECT</p><h2>連接 AI：只需設定一次</h2>
-<p>Web 讓你編輯 Skill；MCP 讓同一部電腦上的 agent 讀取保存版。新增 Skill 後沿用同一個 MCP 連接。</p>
-<ol><li>保持 PromptForge Web 運行。MCP 網址：<p class="path" id="mcpUrl"></p><button id="copyUrl" type="button">複製網址</button></li>
-<li>在執行 Codex 的電腦打開 PowerShell，貼上：<pre id="mcpCommand"></pre><button id="copyCommand" type="button">複製連接指令</button><p>執行 <code>codex mcp list</code>，確認 promptforge 出現在清單。若找不到 codex 指令，可使用下方設定檔方式。</p></li>
-<li>重新開啟 Codex 工作階段，讓 agent 載入 MCP 設定。</li>
-<li>把以下測試句交給 agent：<pre id="agentPrompt"></pre><button id="copyPrompt" type="button">複製測試句</button><p>看到 agent 實際呼叫工具並回傳 Skill 內容，才代表 agent 接入成功。</p></li></ol>
-<details><summary>使用設定檔連接／其他 MCP 客戶端</summary><p>Codex 可在使用者的 <code>~/.codex/config.toml</code> 加入以下區段；已有同名區段就修改原區段。</p><pre id="mcpConfig"></pre><p>其他支援 Streamable HTTP 的本地客戶端：新增 MCP server，名稱填 promptforge，URL 使用上面的網址。遠端／雲端 agent 的 127.0.0.1 並非這部電腦，不能直接用此網址。</p><a href="https://developers.openai.com/learn/docs-mcp" target="_blank" rel="noreferrer">官方 MCP 設定說明</a></details>
-<button id="checkMcp" type="button">檢查服務與生成版</button><p id="mcpResult"></p><p class="subtle">此按鈕只驗證 Web 到 MCP 的連線；無法證明另一個 agent 已連接。</p>
-<h3>不用 MCP，直接使用本地 Skill</h3><p id="directSkill"></p><p>新增或修改 Skill 檔後，開新工作階段重新發現。客戶端支援時亦可能顯示 /名稱。MCP 每次呼叫讀取保存版；已在對話讀取過的內容要再次呼叫才會更新。</p></section>
-<footer>2026 年 9 月重整 · 舊工作台、問卷、審核及多專案入口已退役；舊資料和 Git 歷史保留。</footer>
-  </main>
-  <datalist id="skillPaths"></datalist>
-  <script src="/program.js"></script>
-</body>
-</html>
+<a class="skip-link" href="#main">跳到主要內容</a>
+<header class="site-head"><a class="brand" href="#home"><span class="mark" aria-hidden="true">P</span><span><strong>PromptForge</strong><small>本地 Skill 工作台</small></span></a><span class="release">新版 · 2026.09</span></header>
+<div class="app-shell">
+<aside class="sidebar"><nav aria-label="主要導覽">
+<a href="#home" data-route="home"><span class="nav-number" aria-hidden="true">01</span> 開始使用</a>
+<a href="#agent" data-route="agent"><span class="nav-number" aria-hidden="true">02</span> 連接 AI</a>
+<a href="#verify" data-route="verify"><span class="nav-number" aria-hidden="true">03</span> 驗證連接</a>
+<a href="#manage" data-route="manage"><span class="nav-number" aria-hidden="true">04</span> 管理 Skill</a>
+</nav><div class="sidebar-note"><strong>資料留在本機</strong><p>Web 編輯做事方法，AI 按你保存的 Skill 工作。</p><a href="#agent">第一次用？先連接 AI →</a></div></aside>
+<main id="main" tabindex="-1">
+<div class="skill-bar"><label for="skillSelect">目前 Skill</label><select id="skillSelect" aria-describedby="skillBarHint"></select><span id="skillBarHint">切換後，使用、編輯及驗證都會跟隨這個 Skill。</span></div>
+<div id="message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
+<section data-screen="home" id="home">
+<div class="page-heading"><p class="eyebrow">開始使用</p><h1>用 Skill 開始一個任務</h1><p>選好做事方法、填入任務，再複製到 AI 對話。第一次使用，先連接 AI。</p></div>
+<div class="start-grid"><section class="use-panel"><div class="section-head"><h2>使用目前 Skill</h2><span class="tag" id="homeReady">讀取中</span></div><p id="skillPurpose"></p><div class="selected-preview"><strong>AI 會收到的步驟</strong><ol id="activeSteps"></ol><a href="#manage">修改步驟與能力 →</a></div>
+<label class="field" for="taskInput">你想交給 AI 的任務</label><textarea id="taskInput" rows="4" placeholder="例如：幫我整理一個本地待辦程式的開發要求，列出範圍、限制及驗收方法。"></textarea><p class="helper">這裏只準備呼叫指令。貼到 AI 對話後，由 AI 執行 Skill。</p>
+<button class="primary" id="copyTask" type="button">複製給 AI 的使用指令</button><p id="taskFeedback" class="local-feedback" role="status"></p><details><summary>查看將複製的內容</summary><pre id="taskCommand"></pre></details>
+</section><aside class="start-aside"><h2>第一次使用</h2><ol class="journey-list"><li><strong>連接 AI</strong><p>設定一次 MCP，讓 AI 取得你的 Skill。</p><a class="button-link" href="#agent">開始連接 →</a></li><li><strong>驗證讀取成功</strong><p>讓 AI 讀取測試句指定的版本，這裏會收到回執。</p><a href="#verify">前往驗證 →</a></li><li><strong>交付你的任務</strong><p>回來複製使用指令，貼到 AI 對話。</p></li></ol><div class="note"><strong>Skill 是甚麼？</strong><p>你保存的一套做事方法。可以包含步驟、腳本、參考資料及其他 Skill。</p><a href="#manage">建立自己的 Skill →</a></div></aside></div>
+<section id="contextUsage" class="context-panel"><h2>取得 prompt 後，檢查資料夠唔夠</h2><p>PromptForge 整理要求；PromptForge-context 檢查已讀、未讀和缺失的資料。它不會開始做原本任務。</p><label class="field" for="contextInput">貼上 PromptForge 產生的完整 prompt</label><textarea id="contextInput" rows="3"></textarea><button id="copyContext" type="button">複製 context 檢查指令</button><p id="contextFeedback" role="status"></p></section>
+</section>
+<section data-screen="agent" id="agent" hidden>
+<div class="page-heading"><p class="eyebrow">連接 AI</p><h1>設定一次，之後直接用。</h1><p>MCP 是 AI 讀取本地 Skill 的連接方式。請在執行 AI 的同一部電腦設定。</p></div>
+<div class="connection-banner"><span class="status-dot" aria-hidden="true"></span><div><strong id="mcpState">檢查中</strong><p id="mcpResult">正在確認本地服務。</p></div><button id="checkMcp" type="button">重新檢查服務</button></div>
+<ol class="setup-steps"><li><span class="step-index" aria-hidden="true">1</span><div><h2>在 PowerShell 加入連接</h2><p>使用 Codex？打開 PowerShell，複製並執行以下命令。</p><div class="code-action"><pre id="mcpCommand"></pre><button id="copyCommand" type="button">複製命令</button></div><p class="helper">已設定過 promptforge 就直接去第 2 步。這是本地連接，不需要 API key。</p><details><summary>我找不到 codex 命令／使用其他 AI 工具</summary><p>Codex 可在使用者的 <code>~/.codex/config.toml</code> 加入以下區段；已有同名區段就修改原區段。</p><pre id="mcpConfig"></pre><p>其他本地工具：在 MCP 設定新增 Streamable HTTP 連接，名稱填 promptforge，URL 填以下網址。</p><div class="code-action"><pre id="mcpUrl"></pre><button id="copyUrl" type="button">複製網址</button></div><p>遠端或雲端 AI 不能直接存取這部電腦的 127.0.0.1。此處提供同機連接。</p></details></div></li>
+<li><span class="step-index" aria-hidden="true">2</span><div><h2>確認設定，再開新 AI 對話</h2><p>在 PowerShell 執行 <code>codex mcp list</code>，清單應有 <strong>promptforge</strong>。再開新工作階段，讓工具載入。</p><details><summary>清單沒有 promptforge？</summary><p>返回第 1 步，在執行 Codex 的同一個使用者帳戶設定。Web 顯示服務可達，並不代表 AI 已加入連接。</p></details></div></li>
+<li><span class="step-index" aria-hidden="true">3</span><div><h2>讓 AI 實際讀一次</h2><p>下一頁會給你一段測試句。貼到 AI 後，回來看讀取回執。</p><a class="button-link primary" href="#verify">下一步：驗證連接 →</a></div></li></ol>
+<details class="alternative"><summary>直接用本地 Skill，不經 MCP</summary><p id="directSkill"></p><p>新增或修改後須重新發現。斜線入口由客戶端決定。MCP 每次呼叫讀取保存版；已讀過的內容要再次呼叫才會更新。</p></details>
+</section>
+<section data-screen="verify" id="verify" hidden>
+<div class="page-heading"><p class="eyebrow">驗證連接</p><h1>看到回執，才知道 AI 讀到。</h1><p>此測試驗證 MCP 讀取目前保存的 Skill。任務結果是否正確，仍要按下面的輸出要求檢查。</p></div>
+<div class="verification-panel"><div class="section-head"><h2>連接驗證</h2><span id="verificationState" class="tag">尚未開始</span></div><ol class="verification-guide"><li>按「產生測試句」。</li><li>複製並貼到你的 AI 對話，讓 AI 呼叫工具。</li><li>回來查看結果；等候期間每 3 秒更新。</li></ol><button id="startVerification" class="primary" type="button">產生測試句</button><p id="verificationError" role="alert"></p>
+<div id="verificationBody" hidden><label class="field" for="agentPrompt">貼到 AI 的測試句</label><textarea id="agentPrompt" rows="5" readonly></textarea><button id="copyPrompt" type="button">複製測試句</button><button id="refreshVerification" type="button">更新驗證結果</button><p id="verificationCopyFeedback" role="status"></p><div class="receipt" role="status" aria-live="polite"><strong id="receiptTitle">等待 MCP 讀取</strong><p id="receiptDetail"></p><code id="receiptVersion"></code></div><p class="helper">有效 15 分鐘；重啟服務後失效。回執證明帶驗證碼的 MCP 呼叫已讀取此版本，不識別是哪個客戶端，也不代表 AI 已正確完成任務。</p></div>
+<details><summary>一直等候，應該點做？</summary><ul><li>AI 說沒有工具：回到「連接 AI」，檢查設定後開新工作階段。</li><li>AI 只回覆文字：請它實際呼叫 get_skill，並傳入測試句的 verificationCode。</li><li>顯示版本已變更：重新產生測試句，驗證最新保存版。</li></ul><a href="#agent">返回連接步驟 →</a></details></div>
+<section class="acceptance-panel"><h2>使用結果，應該點驗收？</h2><p id="acceptanceIntro"></p><ul id="acceptanceChecks"></ul><p class="helper">以上是人工驗收清單，不會因連接通過而自動打勾。</p><a class="button-link" href="#home">返回開始使用 →</a></section>
+</section>
+<section data-screen="manage" id="manage" hidden>
+<div class="page-heading"><p class="eyebrow">管理 Skill</p><h1>保存你的做事方法。</h1><p>先編輯，再勾選提供給 AI 的步驟。未勾選的內容保留在大綱。</p></div>
+<div class="save-toolbar"><div><strong id="saveState">載入中</strong><small id="revision"></small></div><button id="preview" type="button">預覽選擇</button><button id="save" class="primary" type="button">保存並生成 Skill</button></div>
+<div id="saveNext" class="success-next" hidden>保存完成。<a href="#home">使用這個 Skill →</a> <a href="#verify">驗證 AI 讀取 →</a></div>
+<section class="editor" id="library"><div class="section-head"><h2>Skill 的用途</h2><button id="newSkill" type="button">＋ 建立新 Skill</button></div><div id="newSkillForm" hidden><label class="field" for="newSkillId">新 Skill ID（必填）</label><input id="newSkillId" aria-describedby="newSkillHelp" placeholder="例如 review-code"><p id="newSkillHelp" class="helper">小寫英文、數字及連字號。建立後用這個名稱呼叫 Skill。</p><p id="newSkillError" role="alert"></p><button id="createSkill" type="button">建立草稿</button><button id="cancelNewSkill" type="button">取消</button></div><label class="field" for="skillDescription">用途與使用時機（必填）</label><textarea id="skillDescription" rows="2" placeholder="這個 Skill 幫你做甚麼？甚麼時候用？"></textarea><p id="skillLocation" class="helper"></p></section>
+<section id="outline" class="section-head"><div><h2>步驟大綱 <span class="count" id="stepCount">0</span></h2><p>目前提供 <strong id="selectedCount">0</strong> 步給 AI；點名稱可編輯。</p></div><button id="addStep" type="button">＋ 新增步驟</button></section>
+<div class="workspace"><aside class="step-list" aria-label="步驟清單"><div id="steps"></div></aside><section id="editor" class="editor" aria-label="步驟設定"></section></div>
+<details class="resource-panel" id="resources"><summary>腳本與參考資料（選用）</summary><p>先保存檔案，再加入目前步驟，最後保存 Skill。腳本由有相應工具與權限的 AI 執行。</p><label class="field" for="resourceSelect">已保存的檔案</label><select id="resourceSelect"><option value="">新增檔案</option></select><label class="field" for="resourcePath">檔案路徑</label><input id="resourcePath" aria-describedby="pathHelp" placeholder="scripts/check.py"><p id="pathHelp" class="helper">腳本用 scripts/；背景資料用 references/；文字模板用 assets/。例如 references/rules.md。</p><label class="field" for="resourceText">檔案內容（UTF-8 文字）</label><textarea id="resourceText" rows="8" spellcheck="false"></textarea><button id="saveResource" type="button">保存檔案</button><button id="attachResource" type="button" disabled>加入目前步驟</button><p id="resourceStatus" role="status"></p><p class="helper">Web 不會執行腳本或安裝 runtime。圖片等二進位素材未支援上傳。</p></details>
+<details class="output-section" id="output"><summary>查看生成給 AI 的內容</summary><div class="section-head"><p id="outputHint"></p><button id="reload" type="button">重新讀取磁碟</button></div><div class="output-tabs" role="group" aria-label="生成內容"><button id="tabMain" class="active" type="button" aria-pressed="true">PromptForge</button><button id="tabContext" type="button" aria-pressed="false">PromptForge-context</button></div><pre id="generated" tabindex="0"></pre></details>
+</section>
+<footer>所有 Skill 管理資料保存在這個 project。這裏是新版工作台，舊入口已退役。</footer>
+</main></div><datalist id="skillPaths"></datalist><script src="/journey.js"></script><script src="/program.js"></script>
+</body></html>

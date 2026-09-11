@@ -26,8 +26,12 @@ public final class ProgramMcpController {
     private static final String OUTLINE = ".promptforge/program.json";
     private final WorkspaceFiles files;
     private final ObjectMapper json = new ObjectMapper();
+    private final ConnectionVerification verification;
 
-    public ProgramMcpController(@Value("${promptforge.home:.}") String home) {
+    public ProgramMcpController(String home) { this(home, new ConnectionVerification(home)); }
+    @org.springframework.beans.factory.annotation.Autowired
+    public ProgramMcpController(@Value("${promptforge.home:.}") String home, ConnectionVerification verification) {
+        this.verification = verification;
         files = new WorkspaceFiles(Path.of(home));
     }
 
@@ -49,7 +53,7 @@ public final class ProgramMcpController {
             case "tools/list" -> result = Map.of("tools", List.of(
                     tool("list_skills", "List locally generated Skills available to read."),
                     Map.of("name", "get_skill", "description", "Read a generated Skill by name. Follow its project root and dependency paths; this tool does not execute scripts.",
-                            "inputSchema", Map.of("type", "object", "properties", Map.of("name", Map.of("type", "string")), "required", List.of("name"), "additionalProperties", false),
+                            "inputSchema", Map.of("type", "object", "properties", Map.of("name", Map.of("type", "string"), "verificationCode", Map.of("type", "string", "description", "Optional code supplied by the Web connection check. Records a short-lived receipt of this read.")), "required", List.of("name"), "additionalProperties", false),
                             "annotations", Map.of("readOnlyHint", true)),
                     tool("get_selected_skill", "Read the exact currently generated PromptForge Skill. Only selected steps and dependencies are present."),
                     tool("get_context_skill", "Read the currently generated PromptForge-context Skill for checking context without executing the task."),
@@ -58,7 +62,7 @@ public final class ProgramMcpController {
                 String name = request.path("params").path("name").asText("");
                 result = switch (name) {
                     case "list_skills" -> skillList();
-                    case "get_skill" -> namedSkill(request.path("params").path("arguments").path("name").asText(""));
+                    case "get_skill" -> namedSkill(request.path("params").path("arguments"));
                     case "get_selected_skill" -> readTool(MAIN);
                     case "get_context_skill" -> readTool(CONTEXT);
                     case "get_program_status" -> statusTool();
@@ -73,18 +77,27 @@ public final class ProgramMcpController {
 
     private Map<String, Object> skillList() {
         try {
-            List<String> names = files.filesUnder(".agents/skills").stream()
-                    .filter(path -> path.endsWith("/SKILL.md"))
-                    .map(path -> Path.of(path).getParent().getFileName().toString()).toList();
+            java.util.ArrayList<String> names = new java.util.ArrayList<>();
+            for (String name : List.of("PromptForge", "PromptForge-context")) if (Files.isRegularFile(files.resolve(".agents/skills/" + name + "/SKILL.md"))) names.add(name);
+            for (String outline : files.filesUnder(".promptforge/outlines")) {
+                String name = Path.of(outline).getFileName().toString().replaceFirst("\\.json$", "");
+                if (outline.endsWith(".json") && Files.isRegularFile(files.resolve(".agents/skills/" + name + "/SKILL.md"))) names.add(name);
+            }
             return toolText(json.writeValueAsString(names));
         } catch (Exception error) { return toolError(error.getMessage()); }
     }
-    private Map<String, Object> namedSkill(String name) {
+    private Map<String, Object> namedSkill(JsonNode arguments) {
+        String name = arguments.path("name").asText("");
         if (!name.equals("PromptForge-context")) {
             try { ProgramController.validateName(name); }
             catch (RuntimeException error) { return toolError(error.getMessage()); }
         }
-        return readTool(".agents/skills/" + name + "/SKILL.md");
+        Map<String,Object> result = readTool(".agents/skills/" + name + "/SKILL.md");
+        if (!result.containsKey("isError") && arguments.has("verificationCode")) {
+            @SuppressWarnings("unchecked") var content = (List<Map<String,String>>) result.get("content");
+            verification.record(arguments.path("verificationCode").asText(), name, content.get(0).get("text"));
+        }
+        return result;
     }
 
     private static Map<String, Object> tool(String name, String description) {
