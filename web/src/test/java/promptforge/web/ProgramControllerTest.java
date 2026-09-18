@@ -19,12 +19,12 @@ class ProgramControllerTest {
         var mvc = MockMvcBuilders.standaloneSetup(new ProgramController(root.toString())).build();
         mvc.perform(get("/api/program")).andExpect(status().isOk()).andExpect(jsonPath("$.revision").value("new"));
         mvc.perform(put("/api/program").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"revision\":\"new\",\"outline\":{\"steps\":[{\"id\":\"one\",\"title\":\"First\",\"selected\":true}]}}"))
+                .content("{\"revision\":\"new\",\"outline\":{\"description\":\"Test instructions\",\"steps\":[{\"id\":\"one\",\"title\":\"First\",\"selected\":true}]}}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.outline.steps.length()").value(1))
                 .andExpect(jsonPath("$.generatedCurrent").value(true));
         mvc.perform(get("/api/program")).andExpect(status().isOk()).andExpect(jsonPath("$.generated").isNotEmpty());
         mvc.perform(post("/api/program/preview").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"steps\":[{\"id\":\"next\",\"title\":\"Preview Only\",\"selected\":true}]}"))
+                .content("{\"description\":\"Test instructions\",\"steps\":[{\"id\":\"next\",\"title\":\"Preview Only\",\"selected\":true}]}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.generated").value(org.hamcrest.Matchers.containsString("Preview Only")));
         assertFalse(Files.readString(root.resolve(".agents/skills/PromptForge/SKILL.md")).contains("Preview Only"));
     }
@@ -33,7 +33,7 @@ class ProgramControllerTest {
     @Test void selectedStepsPersistAndFailedGenerationPreservesUsableVersion() throws Exception {
         ProgramController api = new ProgramController(root.toString());
         String four = """
-            {"steps":[
+            {"description":"Test instructions","steps":[
               {"id":"one","title":"First","selected":true,"instructions":"A"},
               {"id":"two","title":"Second","selected":false,"instructions":"B"},
               {"id":"three","title":"Third","selected":true,"instructions":"C"},
@@ -64,7 +64,7 @@ class ProgramControllerTest {
         assertThrows(WorkbenchException.class, () -> api.save(new ProgramController.Write(second.revision(), changed)));
         assertEquals(second.generated(), Files.readString(root.resolve(".agents/skills/PromptForge/SKILL.md")));
         assertEquals(second.revision(), api.get().revision());
-        assertTrue(second.contextGenerated().contains("Do not execute the original task"));
+        assertFalse(Files.exists(root.resolve(".agents/skills/PromptForge-context/SKILL.md")));
     }
     private int countSelected(com.fasterxml.jackson.databind.JsonNode outline) {
         int count = 0; for (var step : outline.path("steps")) if (step.path("selected").asBoolean()) count++; return count;

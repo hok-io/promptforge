@@ -25,17 +25,20 @@ public final class SkillLibraryController {
         return programs.computeIfAbsent(name, key -> new ProgramController(home, key));
     }
     @GetMapping public List<String> list() {
-        List<String> names = new ArrayList<>(List.of("PromptForge"));
+        List<String> names = new ArrayList<>(SkillCatalog.names(files));
         for (String path : files.filesUnder(".promptforge/outlines")) {
             String filename = Path.of(path).getFileName().toString();
-            if (filename.endsWith(".json")) names.add(filename.substring(0, filename.length() - 5));
+            if (filename.endsWith(".json")) {
+                String name = filename.substring(0, filename.length() - 5);
+                try { ProgramController.validateName(name); names.add(name); }
+                catch (WorkbenchException ignored) { /* Ignore non-Skill source filenames. */ }
+            }
         }
+        if (names.isEmpty()) names.add("PromptForge");
         return names.stream().distinct().sorted().toList();
     }
     @GetMapping("/{name}") public ProgramController.View get(@PathVariable String name) { return program(name).get(); }
     @PutMapping("/{name}") public ProgramController.View save(@PathVariable String name, @RequestBody ProgramController.Write write) {
-        if (program(name).get().revision().equals("new") && Files.exists(files.resolve(".agents/skills/" + name + "/SKILL.md")))
-            throw new WorkbenchException(FailureKind.CONFLICT, "同名 Skill 已存在，請使用另一個 ID，避免覆蓋外部 Skill。");
         return program(name).save(write);
     }
     @PostMapping("/{name}/preview") public ProgramController.Preview preview(@PathVariable String name, @RequestBody JsonNode outline) { return program(name).preview(outline); }

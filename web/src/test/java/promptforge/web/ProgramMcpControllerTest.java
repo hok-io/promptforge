@@ -14,7 +14,7 @@ class ProgramMcpControllerTest {
     @Test void servesOnlyCurrentGeneratedSelectionThroughReadOnlyTools() throws Exception {
         ProgramController program = new ProgramController(root.toString());
         var source = json.readTree("""
-                {"steps":[{"id":"one","title":"Selected","selected":true},
+                {"description":"Test instructions","steps":[{"id":"one","title":"Selected","selected":true},
                 {"id":"two","title":"Unselected","selected":false}]}
                 """);
         program.save(new ProgramController.Write("new", source));

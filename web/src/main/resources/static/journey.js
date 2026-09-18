@@ -8,7 +8,7 @@
     const screen = routeAliases[target] || (['home','agent','verify','manage'].includes(target) ? target : 'home');
     document.querySelectorAll('[data-screen]').forEach(el => { el.hidden = el.dataset.screen !== screen; });
     document.querySelectorAll('[data-route]').forEach(el => { if (el.dataset.route === screen) el.setAttribute('aria-current','page'); else el.removeAttribute('aria-current'); });
-    document.title = 'PromptForge｜' + ({home:'開始使用',agent:'連接 AI',verify:'驗證連接',manage:'管理 Skill'})[screen];
+    document.title = 'PromptForge｜' + ({home:'Skill 庫',agent:'連接 AI',verify:'驗證連接',manage:'管理 Skill'})[screen];
     if (['resources','output'].includes(target)) $('#' + target).open = true;
     const heading = document.querySelector('[data-screen="' + screen + '"] h1'); heading.tabIndex = -1; heading.focus({preventScroll:true});
     if (routeAliases[target]) $('#' + target).scrollIntoView(); else window.scrollTo(0,0);
@@ -38,23 +38,28 @@
     const next = event.detail;
     if (model && model.name !== next.name) { resetReceipt(); $('#taskFeedback').textContent = ''; }
     model = next;
-    $('#skillPurpose').textContent = next.saved?.outline?.description || (next.name === 'PromptForge' ? '把原始任務整理成可交給 AI 執行的 prompt，保留目標、限制、驗收與 ReAct 流程。' : '保存用途與步驟後，便可把這個 Skill 交給 AI 使用。');
+    $('#skillPurpose').textContent = next.saved?.outline?.description || '先填寫這個 Skill 的用途與指示，再保存。';
     const list = $('#activeSteps'); list.replaceChildren();
     for (const step of selectedSteps()) { const li = document.createElement('li'); li.textContent = step.title; list.append(li); }
-    if (!list.childElementCount) { const li = document.createElement('li'); li.textContent = '尚未生成。先到「管理 Skill」加入步驟並保存。'; list.append(li); }
+    if (next.saved?.outline?.document) { for (const heading of [...next.saved.outline.document.matchAll(/^#{1,3} (.+)$/gm)].slice(0,6)) { const li=document.createElement('li'); li.textContent=heading[1]; list.append(li); } }
+    if (!list.childElementCount) { const li = document.createElement('li'); li.textContent = next.saved?.outline?.document ? '完整指示可在「編輯」查看。' : '尚未生成。先到「管理 Skill」加入步驟並保存。'; list.append(li); }
     const ready = !!next.saved?.generatedCurrent;
     $('#homeReady').textContent = next.dirty ? '有未保存修改' : ready ? '保存版可使用' : '請先保存生成';
     $('#copyTask').disabled = !ready; $('#startVerification').disabled = !ready || next.dirty;
     $('#taskFeedback').textContent = next.dirty ? 'AI 只會讀取上次保存版。請先到「管理 Skill」保存修改。' : !ready ? '請先到「管理 Skill」保存並生成，再複製使用指令。' : '';
     $('#verificationError').textContent = !ready || next.dirty ? '請先到「管理 Skill」保存並生成，再開始驗證。' : '';
-    $('#contextUsage').hidden = next.name !== 'PromptForge';
-    const checks = next.name === 'PromptForge' ? [
-      'Prompt 保留你的目標、範圍、限制、預期結果及驗收方法。',
-      '包含判斷下一步 → 行動 → 觀察 → 調整／重試 → 完成或受阻的 ReAct 流程。',
-      '把完整 prompt 交給 PromptForge-context，結果分清已讀資料、可讀但未讀、缺失資料及可完成／受阻範圍。',
-      'Context 檢查沒有自動執行原任務；聲稱已取得的資料有實際讀取證據。'
-    ] : selectedSteps().map(step => step.title + '：' + (step.output || '按步驟定義檢查實際輸出') + '；停止條件：' + (step.stop || '尚未填寫，請到管理 Skill 補充'));
-    $('#acceptanceIntro').textContent = next.name === 'PromptForge' ? '先用一個小任務試跑，再核對以下結果。' : '依目前保存的步驟檢查 AI 輸出；完成條件由你在 Skill 內定義。';
+    const checks = selectedSteps().flatMap(step => [step.output, step.stop].filter(value => typeof value === 'string' && value.trim()).map(value => step.title + '：' + value));
+    if (next.saved?.outline?.result) checks.unshift(next.saved.outline.result);
+    if (!checks.length && next.saved?.outline?.document) {
+      const sections = next.saved.outline.document.split(/(?=^#{1,4}\s)/m);
+      for (const section of sections) {
+        const lines = section.split(/\r?\n/), heading = (lines.shift() || '').replace(/^#{1,4}\s+/, '').trim();
+        if (/(output|result|acceptance|completion|done|完成|輸出|驗收)/i.test(heading)) {
+          const content = lines.join('\n').trim(); if (content) checks.push(heading + '：' + content);
+        }
+      }
+    }
+    $('#acceptanceIntro').textContent = checks.length ? '以下內容來自目前保存的 Skill；請據此核對實際任務結果。' : '目前 Skill 沒有獨立列出輸出或停止條件；請按管理內容中的指示核對結果。';
     $('#acceptanceChecks').replaceChildren(...checks.map(text => { const li = document.createElement('li'); li.textContent = text; return li; }));
     updateTask(); if (receipt) refreshReceipt();
   }
@@ -93,10 +98,6 @@
   $('#copyTask').onclick = () => {
     if (!$('#taskInput').value.trim()) { $('#taskFeedback').textContent = '請先寫低你的任務，再複製使用指令。'; $('#taskInput').focus(); return; }
     copy($('#taskCommand').textContent,$('#taskFeedback'));
-  };
-  $('#copyContext').onclick = () => {
-    if (!$('#contextInput').value.trim()) { $('#contextFeedback').textContent = '請先貼上完整 prompt。'; $('#contextInput').focus(); return; }
-    copy(command($('#contextInput').value.trim(),'PromptForge-context'),$('#contextFeedback'));
   };
   document.addEventListener('program:change',updateModel);
   window.addEventListener('hashchange',route);

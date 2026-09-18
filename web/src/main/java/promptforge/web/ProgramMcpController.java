@@ -51,7 +51,7 @@ public final class ProgramMcpController {
                     "serverInfo", Map.of("name", "promptforge-local", "version", "1.0"));
             case "ping" -> result = Map.of();
             case "tools/list" -> result = Map.of("tools", List.of(
-                    tool("list_skills", "List locally generated Skills available to read."),
+                    tool("list_skills", "List local Skills available to read."),
                     Map.of("name", "get_skill", "description", "Read a generated Skill by name. Follow its project root and dependency paths; this tool does not execute scripts.",
                             "inputSchema", Map.of("type", "object", "properties", Map.of("name", Map.of("type", "string"), "verificationCode", Map.of("type", "string", "description", "Optional code supplied by the Web connection check. Records a short-lived receipt of this read.")), "required", List.of("name"), "additionalProperties", false),
                             "annotations", Map.of("readOnlyHint", true)),
@@ -77,21 +77,15 @@ public final class ProgramMcpController {
 
     private Map<String, Object> skillList() {
         try {
-            java.util.ArrayList<String> names = new java.util.ArrayList<>();
-            for (String name : List.of("PromptForge", "PromptForge-context")) if (Files.isRegularFile(files.resolve(".agents/skills/" + name + "/SKILL.md"))) names.add(name);
-            for (String outline : files.filesUnder(".promptforge/outlines")) {
-                String name = Path.of(outline).getFileName().toString().replaceFirst("\\.json$", "");
-                if (outline.endsWith(".json") && Files.isRegularFile(files.resolve(".agents/skills/" + name + "/SKILL.md"))) names.add(name);
-            }
+            var names = SkillCatalog.names(files);
             return toolText(json.writeValueAsString(names));
         } catch (Exception error) { return toolError(error.getMessage()); }
     }
     private Map<String, Object> namedSkill(JsonNode arguments) {
         String name = arguments.path("name").asText("");
-        if (!name.equals("PromptForge-context")) {
-            try { ProgramController.validateName(name); }
-            catch (RuntimeException error) { return toolError(error.getMessage()); }
-        }
+        try { ProgramController.validateName(name); }
+        catch (RuntimeException error) { return toolError(error.getMessage()); }
+        if (!SkillCatalog.names(files).contains(name)) return toolError("找不到本機 Skill：" + name);
         Map<String,Object> result = readTool(".agents/skills/" + name + "/SKILL.md");
         if (!result.containsKey("isError") && arguments.has("verificationCode")) {
             @SuppressWarnings("unchecked") var content = (List<Map<String,String>>) result.get("content");

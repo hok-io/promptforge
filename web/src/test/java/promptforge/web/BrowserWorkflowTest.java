@@ -17,6 +17,10 @@ class BrowserWorkflowTest {
     @DynamicPropertySource static void properties(DynamicPropertyRegistry registry) { registry.add("promptforge.home", HOME::toString); }
     @LocalServerPort int port;
     @Test void createSkillAddScriptSaveReloadAndReadThroughMcp() throws Exception {
+        for (String name : List.of("PromptForge", "PromptForge-context", "ui-ux-pro-max")) {
+            Path file = HOME.resolve(".agents/skills/" + name + "/SKILL.md"); Files.createDirectories(file.getParent());
+            Files.writeString(file, "---\nname: " + name + "\ndescription: Local fixture\n---\n\n# Instructions\nRead input and report evidence.\n");
+        }
         try (Playwright playwright = Playwright.create(new Playwright.CreateOptions().setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")));
              Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true).setChannel(System.getenv().getOrDefault("PROMPTFORGE_BROWSER_CHANNEL", "chromium")));
              BrowserContext context = browser.newContext()) {
@@ -52,6 +56,23 @@ class BrowserWorkflowTest {
             Path script = HOME.resolve(".promptforge/resources/text-check/scripts/check.js");
             Process run = new ProcessBuilder("node", script.toString()).redirectErrorStream(true).start();
             assertTrue(run.waitFor(10, java.util.concurrent.TimeUnit.SECONDS)); assertEquals(0,run.exitValue()); assertEquals("SCRIPT_OK",new String(run.getInputStream().readAllBytes()).trim());
+            for (String name : List.of("PromptForge-context", "ui-ux-pro-max")) {
+                page.locator("#skillSelect").selectOption(name);
+                assertThat(page.locator("#editTitle")).hasText(name);
+                assertThat(page.locator("#documentEditor")).isVisible();
+                String document = page.locator("#skillDocument").inputValue() + "\nEdited through GUI.\n";
+                page.locator("#skillDocument").fill(document); page.locator("#save").click();
+                assertThat(page.locator("#saveState")).hasText("已同步");
+                assertEquals(document, Files.readString(HOME.resolve(".agents/skills/" + name + "/SKILL.md")));
+            }
+            String companion = Files.readString(HOME.resolve(".agents/skills/PromptForge-context/SKILL.md"));
+            page.locator("#skillSelect").selectOption("PromptForge");
+            assertThat(page.locator("#editTitle")).hasText("PromptForge");
+            assertThat(page.locator("#documentEditor")).isVisible(); page.locator("#save").click();
+            assertThat(page.locator("#saveState")).hasText("已同步");
+            assertEquals(companion, Files.readString(HOME.resolve(".agents/skills/PromptForge-context/SKILL.md")));
+            page.locator("#skillSelect").selectOption("text-check");
+            assertThat(page.locator("#structuredEditor")).isVisible();
             page.locator("nav a[href='#agent']").click();
             assertThat(page.locator("#mcpState")).hasText("本地服務可達");
             page.locator("nav a[href='#verify']").click(); page.locator("#startVerification").click();
