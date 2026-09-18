@@ -38,6 +38,16 @@
     const next = event.detail;
     if (model && model.name !== next.name) { resetReceipt(); $('#taskFeedback').textContent = ''; }
     model = next;
+    $('#connectionSkillName').textContent = next.name;
+    $('#connectionSkillPurpose').textContent = next.saved?.outline?.description || '尚未填寫用途';
+    $('#connectionSkillStatus').textContent = next.saved?.generatedCurrent ? '已保存，可透過 MCP 讀取' : '內容尚未生成或不同步，請先保存';
+    $('#connectionSkillContent').textContent = next.saved?.generated || '尚未生成';
+    $('#connectionSkillCommand').textContent = '請呼叫 promptforge MCP 的 get_skill，name="' + next.name + '"，讀取這個 Skill 並簡述用途。';
+    $('#copySkillRead').disabled = !next.saved?.generatedCurrent;
+    $('#connectionCopyFeedback').textContent = '';
+    $('#verifyTitle').textContent = '測試 ' + next.name;
+    $('#verifySkillPurpose').textContent = next.saved?.outline?.description || '';
+
     $('#skillPurpose').textContent = next.saved?.outline?.description || '先填寫這個 Skill 的用途與指示，再保存。';
     const list = $('#activeSteps'); list.replaceChildren();
     for (const step of selectedSteps()) { const li = document.createElement('li'); li.textContent = step.title; list.append(li); }
@@ -92,6 +102,7 @@
     } catch(error) { $('#verificationError').textContent = error.message; }
     finally { button.disabled = !model?.saved?.generatedCurrent || model?.dirty; button.textContent = '產生測試指令'; }
   };
+  $('#copySkillRead').onclick = () => copy($('#connectionSkillCommand').textContent, $('#connectionCopyFeedback'));
   $('#refreshVerification').onclick = refreshReceipt;
   $('#copyPrompt').onclick = () => copy($('#agentPrompt').value, $('#verificationCopyFeedback'));
   $('#taskInput').oninput = updateTask;

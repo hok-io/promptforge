@@ -75,6 +75,16 @@ class BrowserWorkflowTest {
             assertThat(page.locator("#structuredEditor")).isVisible();
             page.locator("nav a[href='#agent']").click();
             assertThat(page.locator("#mcpState")).hasText("本地服務可達");
+            for (String name : List.of("PromptForge-context", "ui-ux-pro-max", "text-check")) {
+                page.locator("#skillSelect").selectOption(name);
+                assertThat(page.locator("#connectionSkillName")).hasText(name);
+                assertThat(page.locator("#connectionSkillCommand")).containsText("name=\"" + name + "\"");
+                assertThat(page.locator("#connectionSkillContent")).containsText("name: " + name);
+                page.locator("#copySkillRead").click();
+                assertThat(page.locator("#connectionCopyFeedback")).containsText("已複製");
+                assertTrue(page.evaluate("navigator.clipboard.readText()").toString().contains("name=\"" + name + "\""));
+            }
+
             page.locator("nav a[href='#verify']").click(); page.locator("#startVerification").click();
             assertThat(page.locator("#verificationState")).hasText("等候 AI 讀取");
             String prompt = page.locator("#agentPrompt").inputValue();
