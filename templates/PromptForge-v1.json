@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Turn a user's task into an executable prompt that preserves the goal, scope, constraints, expected result, and acceptance checks.",
+  "input": "The user's original task. Preserve its intent and any stated requirements.",
+  "result": "Write a complete prompt that can be given directly to an AI. Include the original goal, scope, constraints, expected output, and acceptance method. Define an evidence-driven ReAct loop: decide the next useful action from current evidence, act, observe the result, adapt or retry when needed, and decide whether the task is complete or blocked. Use only steps needed for the task. Ask or research when essential information is missing. Request a concise decision summary, actions and verification evidence; never request hidden chain of thought. The complete output must work directly as input to PromptForge-context for a separate context check before execution.",
+  "steps": [
+    {
+      "id": "understand",
+      "title": "Understand and scope the task",
+      "selected": true,
+      "purpose": "Preserve the user's goal, scope, constraints, and expected result.",
+      "input": "The task request and relevant conversation context.",
+      "decision": "Identify what is known, what essential information is missing, and what can be resolved from available sources.",
+      "actions": "Review relevant project or reference material. Ask a focused question only when an essential decision cannot be resolved from available evidence.",
+      "observation": "Record concrete sources, user answers, and remaining gaps.",
+      "adjustment": "Refine the scope or state assumptions when evidence changes the task definition.",
+      "output": "A faithful task definition with explicit constraints and acceptance needs.",
+      "stop": "The task is clear enough to express as an executable prompt, or the blocking gap is stated.",
+      "scripts": [],
+      "references": [],
+      "skills": [],
+      "capabilities": []
+    },
+    {
+      "id": "compose",
+      "title": "Compose the executable prompt",
+      "selected": true,
+      "purpose": "Give an AI actionable instructions while preserving the defined task.",
+      "input": "The task definition, verified context, and unresolved gaps.",
+      "decision": "Include only actions and context that help complete or verify this task.",
+      "actions": "Specify the goal, scope, constraints, expected output, acceptance checks, and evidence-driven ReAct loop. Keep necessary clarification or research in scope.",
+      "observation": "Check that each requirement maps to an action or acceptance check and that no unsupported requirement was added.",
+      "adjustment": "Revise omissions or ambiguity, and label information that remains unavailable.",
+      "output": "A complete prompt ready for a separate context check and then execution.",
+      "stop": "The prompt is directly usable, includes its acceptance method, and makes unresolved blockers explicit.",
+      "scripts": [],
+      "references": [],
+      "skills": [],
+      "capabilities": []
+    }
+  ]
+}

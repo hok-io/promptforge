@@ -33,20 +33,26 @@ class BrowserWorkflowTest {
             page.locator("nav a[href='#manage']").click();
             page.locator("#newSkill").click(); page.locator("#newSkillId").fill("text-check"); page.locator("#createSkill").click();
             assertThat(page.locator("#skillSelect")).hasValue("text-check");
+            assertThat(page.locator("#editTitle")).hasText("text-check");
             page.locator("#skillDescription").fill("檢查輸入文字的 Skill");
+            assertThat(page.locator("#editor")).not().isVisible();
+            page.locator("#manageNext").click();
+            assertThat(page.locator("#editor")).containsText("直接寫 AI 要做的事");
             page.getByLabel("名稱", new Page.GetByLabelOptions().setExact(true)).fill("Run local checker");
             page.getByLabel("指示", new Page.GetByLabelOptions().setExact(true)).fill("Run the selected script and report its actual stdout.");
             page.locator("#resources > summary").click(); page.locator("#resourcePath").fill("scripts/check.js"); page.locator("#resourceText").fill("console.log('SCRIPT_OK');\n"); page.locator("#saveResource").click();
             assertThat(page.locator("#resourceStatus")).containsText("檔案已保存"); page.locator("#attachResource").click();
             page.getByLabel("能力使用方法").fill("node .promptforge/resources/text-check/scripts/check.js");
-            page.locator("#save").click(); assertThat(page.locator("#saveState")).hasText("已同步");
-            page.locator("#output > summary").click(); assertThat(page.locator("#generated")).containsText("scripts/check.js");
+            page.locator("[data-manage-pane='3']").click(); page.locator("#save").click(); assertThat(page.locator("#saveState")).hasText("已同步");
+            assertThat(page.locator("#generated")).containsText("scripts/check.js");
             page.reload(); page.locator("#skillSelect").selectOption("text-check");
-            page.locator("#output > summary").click(); assertThat(page.locator("#generated")).containsText("Run local checker");
-            page.locator("#resources > summary").click();
+            assertThat(page.locator("#editTitle")).hasText("text-check");
+            page.locator("[data-manage-pane='3']").click();
+            assertThat(page.locator("#generated")).containsText("Run local checker");
+            page.locator("[data-manage-pane='2']").click(); page.locator("#resources > summary").click();
             assertThat(page.locator("#resourceSelect")).containsText("scripts/check.js");
             page.locator("#resourceSelect").selectOption("scripts/check.js"); assertThat(page.locator("#resourceText")).hasValue("console.log('SCRIPT_OK');\n");
-            page.locator("#addStep").click(); page.getByLabel("名稱", new Page.GetByLabelOptions().setExact(true)).fill("PRIVATE_UNSELECTED"); page.locator("#save").click();
+            page.locator("#addStep").click(); page.getByLabel("名稱", new Page.GetByLabelOptions().setExact(true)).fill("PRIVATE_UNSELECTED"); page.locator("[data-manage-pane='3']").click(); page.locator("#save").click();
             assertThat(page.locator("#saveState")).hasText("已同步"); assertThat(page.locator("#generated")).not().containsText("PRIVATE_UNSELECTED");
             Object result = page.evaluate("""
                 async () => (await (await fetch('/mcp', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'get_skill',arguments:{name:'text-check'}}})})).json()).result.content[0].text
@@ -59,19 +65,23 @@ class BrowserWorkflowTest {
             for (String name : List.of("PromptForge-context", "ui-ux-pro-max")) {
                 page.locator("#skillSelect").selectOption(name);
                 assertThat(page.locator("#editTitle")).hasText(name);
+                page.locator("#manageNext").click();
                 assertThat(page.locator("#documentEditor")).isVisible();
                 String document = page.locator("#skillDocument").inputValue() + "\nEdited through GUI.\n";
-                page.locator("#skillDocument").fill(document); page.locator("#save").click();
+                String body = page.locator("#documentBody").inputValue() + "\nEdited through GUI.\n";
+                page.locator("#documentBody").fill(body); page.locator("[data-manage-pane='3']").click(); page.locator("#save").click();
                 assertThat(page.locator("#saveState")).hasText("已同步");
                 assertEquals(document, Files.readString(HOME.resolve(".agents/skills/" + name + "/SKILL.md")));
             }
             String companion = Files.readString(HOME.resolve(".agents/skills/PromptForge-context/SKILL.md"));
             page.locator("#skillSelect").selectOption("PromptForge");
             assertThat(page.locator("#editTitle")).hasText("PromptForge");
-            assertThat(page.locator("#documentEditor")).isVisible(); page.locator("#save").click();
+            page.locator("#manageNext").click();
+            assertThat(page.locator("#documentEditor")).isVisible(); page.locator("[data-manage-pane='3']").click(); page.locator("#save").click();
             assertThat(page.locator("#saveState")).hasText("已同步");
             assertEquals(companion, Files.readString(HOME.resolve(".agents/skills/PromptForge-context/SKILL.md")));
             page.locator("#skillSelect").selectOption("text-check");
+            assertThat(page.locator("#editTitle")).hasText("text-check"); page.locator("#manageNext").click();
             assertThat(page.locator("#structuredEditor")).isVisible();
             page.locator("nav a[href='#agent']").click();
             assertThat(page.locator("#mcpState")).hasText("本地服務可達");
@@ -99,10 +109,30 @@ class BrowserWorkflowTest {
             page.locator("#taskInput").fill("Check sample input"); page.locator("#copyTask").click();
             assertThat(page.locator("#taskFeedback")).containsText("已複製");
             String copied = page.evaluate("navigator.clipboard.readText()").toString(); assertTrue(copied.contains("text-check")); assertTrue(copied.contains("Check sample input"));
-            page.locator("nav a[href='#manage']").click(); page.locator(".step-open").first().click(); page.getByLabel("名稱",new Page.GetByLabelOptions().setExact(true)).fill("UNSAVED_EDIT");
+            page.locator("nav a[href='#manage']").click(); page.locator("[data-manage-pane='2']").click(); page.locator(".step-open").first().click(); page.getByLabel("名稱",new Page.GetByLabelOptions().setExact(true)).fill("UNSAVED_EDIT");
             page.locator("nav a[href='#home']").click(); assertThat(page.locator("#activeSteps")).not().containsText("UNSAVED_EDIT");
             page.goBack(); assertThat(page.locator("#manage")).isVisible(); page.goForward(); assertThat(page.locator("#home")).isVisible();
-            for (int width : new int[]{375,768,1024,1440}) { page.setViewportSize(width,900); assertEquals(1,((Number)page.evaluate("document.documentElement.scrollWidth <= innerWidth ? 1 : 0")).intValue(),"overflow at " + width); }
+            for (int width : new int[]{375,768,1024,1440}) {
+                page.setViewportSize(width,900);
+                for (String route : List.of("home", "agent", "verify", "manage")) {
+                    page.locator("nav a[href='#" + route + "']").click();
+                    assertThat(page.locator("#" + route)).isVisible();
+                    if (route.equals("manage")) {
+                        for (int pane : new int[]{1,2,3}) {
+                            page.locator("[data-manage-pane='" + pane + "']").click();
+                            assertThat(page.locator("[data-manage-panel='" + pane + "']")).isVisible();
+                            assertEquals(1,((Number)page.evaluate("document.documentElement.scrollWidth <= innerWidth ? 1 : 0")).intValue(),"manage pane " + pane + " overflow at " + width);
+                        }
+                    }
+                    assertEquals(1,((Number)page.evaluate("document.documentElement.scrollWidth <= innerWidth ? 1 : 0")).intValue(),route + " overflow at " + width);
+                }
+            }
+            page.locator("[data-manage-pane='2']").click();
+            page.screenshot(new Page.ScreenshotOptions().setFullPage(true).setPath(Path.of("../build/manage-steps-desktop.png")));
+            page.setViewportSize(375,900);
+            page.screenshot(new Page.ScreenshotOptions().setFullPage(true).setPath(Path.of("../build/manage-steps-mobile.png")));
+            page.locator("nav a[href='#home']").click();
+            page.setViewportSize(1440,900);
             page.screenshot(new Page.ScreenshotOptions().setPath(Path.of(System.getProperty("java.io.tmpdir")).getParent().resolve("uiux-home-desktop.png")));
             page.setViewportSize(390,844); assertTrue(((Number)page.evaluate("document.documentElement.scrollWidth <= innerWidth ? 1 : 0")).intValue() == 1);
             assertTrue(errors.isEmpty(), errors.toString());

@@ -9,6 +9,7 @@
     document.querySelectorAll('[data-screen]').forEach(el => { el.hidden = el.dataset.screen !== screen; });
     document.querySelectorAll('[data-route]').forEach(el => { if (el.dataset.route === screen) el.setAttribute('aria-current','page'); else el.removeAttribute('aria-current'); });
     document.title = 'PromptForge｜' + ({home:'Skill 庫',agent:'連接 AI',verify:'驗證連接',manage:'管理 Skill'})[screen];
+    if (routeAliases[target]) document.dispatchEvent(new CustomEvent('manage:section',{detail:target === 'output' ? 3 : target === 'library' ? 1 : 2}));
     if (['resources','output'].includes(target)) $('#' + target).open = true;
     const heading = document.querySelector('[data-screen="' + screen + '"] h1'); heading.tabIndex = -1; heading.focus({preventScroll:true});
     if (routeAliases[target]) $('#' + target).scrollIntoView(); else window.scrollTo(0,0);

@@ -1,6 +1,6 @@
 # PromptForge UI/UX development
 
-For interface design or usability changes, read `.agents/skills/ui-ux-pro-max/SKILL.md` and apply relevant rules from its local search data and references.
+For interface design or usability changes, use a locally installed UI/UX Pro Max Skill when available: read `.agents/skills/ui-ux-pro-max/SKILL.md` and apply relevant rules from its local search data and references. Fresh checkouts do not include `.agents/skills/`; install the optional Skill locally before relying on it. Do not assume it was read merely because a service is reachable.
 
 - Read `docs/uiux-2026-09.md` for product-specific decisions and acceptance criteria.
 - Keep user-facing navigation task-oriented: use, connect, verify, manage. Keep technical setup out of ordinary task entry.

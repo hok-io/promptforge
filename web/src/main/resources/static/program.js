@@ -3,14 +3,31 @@
   const $ = selector => document.querySelector(selector);
   const state = { name: 'PromptForge', resourceRevision: 'new', resourceDirty: false, resourceSavedPath: '', revision: 'new', outline: { steps: [] }, saved: null, preview: null, selected: null, tab: 'main', dirty: false, csrf: null };
   const groups = [
-    ['這一步要做甚麼', [['id', '步驟 ID', 'text'], ['title', '名稱', 'text'], ['purpose', '目的', 'area'], ['instructions', '指示', 'area']]],
-    ['ReAct：判斷與執行', [['input', '輸入', 'area'], ['decision', '判斷依據', 'area'], ['actions', '可採取的行動', 'area'], ['observation', '預期觀察', 'area'], ['adjustment', '失敗後如何調整', 'area']]],
-    ['結果與停止', [['output', '輸出', 'area'], ['stop', '停止條件', 'area']]]
+    ['編輯這一步', [['title', '名稱', 'text'], ['instructions', '指示', 'area']]],
+    ['進階：用途與識別碼', [['id', '步驟 ID', 'text'], ['purpose', '目的', 'area']]],
+    ['進階：AI 遇到不同情況時怎樣處理', [['input', '輸入', 'area'], ['decision', '判斷依據', 'area'], ['actions', '可採取的行動', 'area'], ['observation', '預期觀察', 'area'], ['adjustment', '失敗後如何調整', 'area']]],
+    ['這一步完成後要交出甚麼', [['output', '輸出', 'area'], ['stop', '停止條件', 'area']]]
   ];
+  const fieldHelp = {
+    title: ['給這一步一個容易辨認的名稱，會顯示在左邊清單和 AI 指示中。', '例如：檢查資料是否齊全'],
+    instructions: ['直接寫 AI 要做的事。保存後，勾選的步驟會把這段指示交給 AI。', '例如：讀取使用者提供的檔案，列出缺少的資料。不要自行猜測。'],
+    id: ['程式用來識別這一步的代號，已自動產生。一般不用修改，也不影響顯示名稱。', '例如：check-input'],
+    purpose: ['解釋為甚麼需要這一步，幫助 AI 判斷何時應使用它。', '例如：避免在資料不足時開始修改程式。'],
+    input: ['AI 開始這一步前需要取得的資料，不是現在要你上傳檔案。', '例如：使用者的任務要求及相關程式檔案。'],
+    decision: ['AI 應根據哪些事實決定下一個動作。寫判斷規則，不用寫內部思考過程。', '例如：資料足夠就整理要求；缺少關鍵資料就追問。'],
+    actions: ['允許 AI 採取的具體動作。這段文字本身不會替 AI 安裝工具或授予權限。', '例如：讀取專案檔案、執行已有測試、向使用者提問。'],
+    observation: ['AI 做完動作後要檢查的實際結果，避免只說「已完成」。', '例如：測試通過或失敗的訊息，以及實際讀到的檔案內容。'],
+    adjustment: ['結果不符合預期時，AI 應如何調整或重試。', '例如：測試失敗就按錯誤訊息修正；檔案不存在就詢問位置。'],
+    output: ['這一步結束時應交出的結果，可供你或下一步使用。', '例如：列出已知要求、缺少的資料及其來源。'],
+    stop: ['寫清楚何時算完成，以及甚麼情況必須停下，避免一直重試。', '例如：必要資料齊全便完成；無法讀取必要檔案時停下並說明原因。']
+  };
   function element(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; }
   function message(text, error = false) { $('#message').textContent = text; $('#message').classList.toggle('error', error); if (error) $('#message').focus(); }
   function markDirty() { $('#saveNext').hidden = true; state.dirty = true; state.preview = null; updateSummary(); showOutput(); }
   function updateSummary() {
+    const selected = state.outline.steps.filter(step=>step.selected);
+    $('#reviewSummary').textContent = typeof state.outline.document === 'string' ? state.name + '：保存整份指示文件。' : state.name + '：共 ' + state.outline.steps.length + ' 步，提供 ' + selected.length + ' 步給 AI。';
+    $('#reviewSteps').replaceChildren(...selected.map(step=>element('li','',step.title)));
     $('#stepCount').textContent = String(state.outline.steps.length);
     $('#selectedCount').textContent = String(state.outline.steps.filter(step => step.selected).length);
     $('#saveState').textContent = state.dirty ? '尚未保存' : state.saved?.generatedCurrent ? '已同步' : '需重新生成';
@@ -31,8 +48,8 @@
     state.outline.steps.forEach((step, index) => {
       const row = element('div', `step-card${step === state.selected ? ' active' : ''}`);
       const top = element('div', 'step-top');
-      const open = element('button', 'step-open'); open.type = 'button'; open.append(document.createTextNode(step.title || '未命名步驟'), element('small', '', step.id || '未設定 ID')); open.onclick = () => { state.selected = step; renderSteps(); renderEditor(); };
-      const selected = element('label', 'selected-label'); const check = element('input'); check.type = 'checkbox'; check.checked = !!step.selected; check.setAttribute('aria-label', `${step.title || step.id} 提供給 Agent`); check.onchange = () => { step.selected = check.checked; markDirty(); }; selected.append(check, document.createTextNode('啟用'));
+      const open = element('button', 'step-open'); open.type = 'button'; open.append(document.createTextNode(step.title || '未命名步驟')); open.onclick = () => { state.selected = step; renderSteps(); renderEditor(); };
+      const selected = element('label', 'selected-label'); const check = element('input'); check.type = 'checkbox'; check.checked = !!step.selected; check.setAttribute('aria-label', `${step.title || step.id} 提供給 Agent`); check.onchange = () => { step.selected = check.checked; markDirty(); }; selected.append(check, document.createTextNode('提供給 AI'));
       top.append(open, selected); row.append(top);
       const controls = element('div', 'step-controls');
       for (const [label, delta] of [['上移', -1], ['下移', 1]]) {
@@ -48,27 +65,29 @@
     const editor = $('#editor'); editor.replaceChildren(); const step = state.selected;
     if (!step) { editor.append(element('p', 'empty', '選一個步驟開始編輯。')); return; }
     for (const [title, fields] of groups) {
-      let group = editor; if (title !== groups[0][0]) { group = element('details'); group.append(element('summary', '', title)); editor.append(group); } else group.append(element('h3', '', title)); const grid = element('div', 'field-grid');
+      let group = editor; if (title !== groups[0][0]) { group = element('details'); if (!step.instructions && fields.some(([key]) => step[key]) && title.includes('AI 遇到')) group.open = true; group.append(element('summary', '', title)); editor.append(group); } else group.append(element('h3', '', title)); const grid = element('div', 'field-grid');
       for (const [key, labelText, kind] of fields) {
         const label = element('label', `field${kind === 'area' ? ' wide' : ''}`, labelText);
-        const input = element(kind === 'area' ? 'textarea' : 'input'); if (kind === 'text') input.type = 'text'; input.value = step[key] || ''; input.placeholder = key === 'id' ? '小寫英文、數字與連字號' : '';
+        const input = element(kind === 'area' ? 'textarea' : 'input'); if (kind === 'text') input.type = 'text'; input.setAttribute('aria-label',labelText); input.value = step[key] || ''; input.placeholder = ({id:'自動產生，通常不用修改',title:'例如：檢查輸入資料',instructions:'例如：讀取使用者提供的檔案，列出缺少的資料；不要猜測。',input:'這一步需要甚麼資料？',output:'完成後要交出甚麼？',stop:'甚麼情況算完成？甚麼情況要停下？'})[key] || ''; if(key === 'instructions') input.rows=5;
         input.oninput = () => { step[key] = input.value; markDirty(); if (key === 'title' || key === 'id') renderSteps(); };
-        label.append(input); grid.append(label);
+        if (key === 'instructions' && !step.instructions && (step.actions || step.decision)) input.placeholder = '這一步已在下方分項設定行動和判斷規則。可在這裏補充指示。';
+        const help = fieldHelp[key]; label.append(element('small','field-help',help[0]),input,element('small','field-example',help[1])); grid.append(label);
       }
       group.append(grid);
     }
-    editor.append(element('h3', '', '可選能力與依賴'), element('p', 'subtle', '未勾選能力保留在大綱，但不放入 Agent 版本；已勾選檔案缺失時 Save 會報錯。'));
-    const list = element('div', 'capability-list'); editor.append(list); step.capabilities ||= [];
+    const capabilityPanel = element('details'); capabilityPanel.id = 'capabilityPanel'; capabilityPanel.append(element('summary','','附加工具與資料（選用）'),element('p','subtle','這一步需要腳本、參考資料或其他 Skill 時才填。勾選要提供給 AI 的項目。')); editor.append(capabilityPanel);
+    const list = element('div', 'capability-list'); capabilityPanel.append(list); step.capabilities ||= [];
     step.capabilities.forEach((cap, index) => {
-      const row = element('div', 'capability'); const selected = element('label'); const check = element('input'); check.type = 'checkbox'; check.checked = !!cap.selected; check.setAttribute('aria-label', `能力 ${index + 1} 提供給 Agent`); check.onchange = () => { cap.selected = check.checked; markDirty(); }; selected.append(check, document.createTextNode('啟用'));
+      const row = element('div', 'capability'); const selected = element('label'); const check = element('input'); check.type = 'checkbox'; check.checked = !!cap.selected; check.setAttribute('aria-label', `能力 ${index + 1} 提供給 Agent`); check.onchange = () => { cap.selected = check.checked; markDirty(); }; selected.append(check, document.createTextNode('提供給 AI'));
       const type = element('select'); type.setAttribute('aria-label', `能力 ${index + 1} 類型`); for (const value of ['script', 'reference', 'skill', 'asset']) { const option = element('option', '', ({script:'腳本',reference:'參考資料',skill:'其他 Skill',asset:'素材'})[value]); option.value = value; type.append(option); } type.value = cap.type || 'reference'; type.onchange = () => { cap.type = type.value; markDirty(); };
       const path = element('input'); path.type = 'text'; path.setAttribute('list', 'skillPaths'); path.placeholder = 'repo 相對檔案路徑'; path.value = cap.path || ''; path.setAttribute('aria-label', `能力 ${index + 1} 路徑`); path.oninput = () => { cap.path = path.value; markDirty(); };
       const remove = element('button', '', '移除'); remove.type = 'button'; remove.onclick = () => { step.capabilities.splice(index, 1); markDirty(); renderEditor(); };
       const usage = element('input'); usage.placeholder = '使用方法／執行命令'; usage.value = cap.usage || ''; usage.setAttribute('aria-label', '能力使用方法'); usage.oninput = () => { cap.usage = usage.value; markDirty(); };
       const deps = element('input'); deps.placeholder = '必要依賴路徑，以逗號分隔'; deps.value = (cap.requires || []).join(', '); deps.setAttribute('aria-label', '能力必要依賴'); deps.oninput = () => { cap.requires = deps.value.split(',').map(x => x.trim()).filter(Boolean); markDirty(); };
-      row.append(selected, type, path, usage, deps, remove); list.append(row);
+      function explained(control, title, help) { const label=element('label','cap-field',title); label.append(control,element('small','field-help',help)); return label; }
+      row.append(selected, explained(type,'要加入哪類內容？','腳本是可執行檔案；參考資料是背景文件；其他 Skill 是另一套指示。'), explained(path,'檔案位置','填專案內的相對路徑。可先在下方「腳本與參考資料」建立檔案，再加入此步驟。'), explained(usage,'AI 應怎樣使用它？','例如：先讀取這份規則；或執行 node scripts/check.js 並檢查結果。'), explained(deps,'它還需要哪些檔案？（選填）','例如腳本會讀取一份設定檔。多個路徑用逗號分隔；沒有就留空。'), remove); list.append(row);
     });
-    const add = element('button', '', '＋ 新增能力'); add.type = 'button'; add.onclick = () => { step.capabilities.push({ type: 'reference', path: '', selected: false }); markDirty(); renderEditor(); }; editor.append(add);
+    const add = element('button', '', '＋ 新增能力'); add.type = 'button'; add.onclick = () => { step.capabilities.push({ type: 'reference', path: '', selected: false }); markDirty(); renderEditor(); }; capabilityPanel.append(add);
   }
   function showOutput() {
     const value = state.preview || state.saved || {};
@@ -91,11 +110,11 @@
     const version = ++loadVersion; $('#save').disabled = true; $('#preview').disabled = true; $('#documentEditor').hidden = true; $('#structuredEditor').hidden = true;
     const data = await request(endpoint()); if (version !== loadVersion) return; $('#save').disabled = false; $('#preview').disabled = false; state.revision = data.revision; state.outline = structuredClone(data.outline); state.saved = data; state.preview = null; state.dirty = false;
     const id = state.selected?.id; state.outline.steps.forEach(migrateLegacy); state.selected = state.outline.steps.find(step => step.id === id) || state.outline.steps[0] || null;
-    $('#skillDescription').value = state.outline.description || ''; const documentMode = typeof state.outline.document === 'string'; $('#documentEditor').hidden = !documentMode; $('#structuredEditor').hidden = documentMode; $('#skillDocument').value = state.outline.document || ''; $('#skillDescription').readOnly = documentMode; $('#skillInput').value = state.outline.input || ''; $('#skillResult').value = state.outline.result || ''; $('#editTitle').textContent = state.name; $('#useTitle').textContent = '使用 ' + state.name; $('#skillLocation').textContent = `生成位置：.agents/skills/${state.name}/SKILL.md`; renderSteps(); renderEditor(); updateSummary(); showOutput(); message(''); await refreshResources(); checkMcp();
+    $('#skillDescription').value = state.outline.description || ''; const documentMode = typeof state.outline.document === 'string'; $('#documentEditor').hidden = !documentMode; $('#structuredEditor').hidden = documentMode; $('#skillDocument').value = state.outline.document || ''; $('#skillDescription').readOnly = false; $('#structuredBasics').hidden = documentMode; syncDocumentBody(); $('#contentPaneButton').textContent = documentMode ? '2 指示' : '2 步驟'; $('#manageGuide').textContent = documentMode ? '用途 → 編輯指示 → 檢查並保存' : '用途 → 編輯並勾選步驟 → 檢查並保存'; $('#skillInput').value = state.outline.input || ''; $('#skillResult').value = state.outline.result || ''; $('#editTitle').textContent = state.name; $('#useTitle').textContent = '使用 ' + state.name; $('#skillLocation').textContent = `生成位置：.agents/skills/${state.name}/SKILL.md`; renderSteps(); renderEditor(); updateSummary(); showOutput(); message(''); setManagePane(1); await refreshResources(); checkMcp();
   }
   async function preview() {
-    const button = $('#preview'); button.disabled = true;
-    try { state.preview = await request(endpoint() + '/preview', { method: 'POST', body: JSON.stringify(state.outline) }); showOutput(); message('預覽成功；尚未保存。'); location.hash = 'output'; $('#output').open = true; }
+    setManagePane(3); const button = $('#preview'); button.disabled = true;
+    try { state.preview = await request(endpoint() + '/preview', { method: 'POST', body: JSON.stringify(state.outline) }); showOutput(); message('預覽成功；尚未保存。'); $('#output').open = true; }
     catch (error) { message(error.message, true); } finally { button.disabled = false; }
   }
   async function save() {
@@ -150,7 +169,7 @@
   }
   function clearResource() { state.resourceRevision = 'new'; state.resourceDirty = false; state.resourceSavedPath = ''; $('#resourcePath').value = ''; $('#resourcePath').readOnly = false; $('#resourceText').value = ''; $('#attachResource').disabled = true; $('#resourceStatus').textContent = ''; }
   const guarded = action => async event => { const button = event?.currentTarget; if (button?.tagName === 'BUTTON') button.disabled = true; try { await action(); } catch(error) { if (!$('#newSkillForm').hidden) { $('#newSkillError').textContent = error.message; $('#newSkillId').setAttribute('aria-invalid','true'); } if (button?.id === 'saveResource') $('#resourceStatus').textContent = error.message; message(error.message, true); } finally { if (button?.tagName === 'BUTTON') button.disabled = false; } };
-  $('#skillDescription').oninput = () => { state.outline.description = $('#skillDescription').value; markDirty(); };
+  $('#skillDescription').oninput = () => { state.outline.description = $('#skillDescription').value; if(typeof state.outline.document === 'string') { state.outline.document = state.outline.document.replace(/^description:.*$/m, () => 'description: ' + JSON.stringify(state.outline.description)); $('#skillDocument').value = state.outline.document; } markDirty(); };
   async function switchSkill(next) {
     if (next === state.name) return true;
     if ((state.dirty || state.resourceDirty) && !confirm('切換 Skill 會捨棄未保存的修改，繼續？')) { $('#skillSelect').value = state.name; return false; }
@@ -158,9 +177,10 @@
   }
   $('#skillSelect').onchange = guarded(async () => switchSkill($('#skillSelect').value));
   $('#newFromLibrary').onclick = () => { location.hash = 'manage'; $('#newSkill').click(); };
-  $('#skillDocument').oninput = () => { state.outline.document = $('#skillDocument').value; markDirty(); };
+  $('#skillDocument').oninput = () => { state.outline.document = $('#skillDocument').value; syncDocumentBody(); markDirty(); };
+  $('#documentBody').oninput = () => { const match = state.outline.document.match(/^(---\r?\n[\s\S]*?\r?\n---[^\S\r\n]*\r?\n?)/); if(match) { state.outline.document = match[0] + $('#documentBody').value; $('#skillDocument').value = state.outline.document; markDirty(); } };
   for (const key of ['input','result']) $('#skill' + key[0].toUpperCase() + key.slice(1)).oninput = event => { state.outline[key] = event.target.value; markDirty(); };
-  $('#newSkill').onclick = () => { $('#newSkillError').textContent = ''; $('#newSkillId').removeAttribute('aria-invalid'); $('#newSkillForm').hidden = false; $('#newSkillId').focus(); };
+  $('#newSkill').onclick = () => { $('#newSkillError').textContent = ''; $('#newSkillId').removeAttribute('aria-invalid'); setManagePane(1); $('#newSkillForm').hidden = false; $('#newSkillId').focus(); };
   $('#cancelNewSkill').onclick = () => { $('#newSkillForm').hidden = true; };
   $('#createSkill').onclick = guarded(async () => {
     const name = $('#newSkillId').value.trim();
@@ -188,8 +208,21 @@
     const path = '.promptforge/resources/' + state.name + '/' + state.resourceSavedPath;
     const type = state.resourceSavedPath.startsWith('scripts/') ? 'script' : state.resourceSavedPath.startsWith('assets/') ? 'asset' : 'reference';
     state.selected.capabilities ||= []; if (!state.selected.capabilities.some(cap => cap.path === path)) state.selected.capabilities.push({type,path,selected:true});
-    markDirty(); renderEditor(); message('已加入目前步驟；請填使用方法，再保存並生成 Skill。'); $('#editor').scrollIntoView();
+    markDirty(); renderEditor(); $('#capabilityPanel').open = true; message('已加入目前步驟；請填使用方法，再保存並生成 Skill。'); $('#editor').scrollIntoView();
   };
   for (const [button, source] of [['#copyUrl','#mcpUrl'],['#copyCommand','#mcpCommand']]) $(button).onclick = guarded(async () => { await navigator.clipboard.writeText($(source).textContent); message('已複製。'); });
+  let managePane = 1;
+  function syncDocumentBody() { $('#documentBody').value = (state.outline.document || '').replace(/^---\r?\n[\s\S]*?\r?\n---[^\S\r\n]*\r?\n?/, ''); }
+  function setManagePane(number) {
+    managePane = number;
+    document.querySelectorAll('[data-manage-panel]').forEach(panel => panel.hidden = Number(panel.dataset.managePanel) !== number);
+    document.querySelectorAll('[data-manage-pane]').forEach(button => { if(Number(button.dataset.managePane) === number) button.setAttribute('aria-current','step'); else button.removeAttribute('aria-current'); });
+    $('#manageBack').hidden = number === 1; $('#manageNext').hidden = number === 3; $('#save').hidden = number !== 3; $('#preview').hidden = number !== 3;
+    $('#manageNext').textContent = number === 1 ? (typeof state.outline.document === 'string' ? '下一步：編輯指示' : '下一步：編輯步驟') : '下一步：檢查並保存';
+  }
+  $('#manageNext').onclick = () => { if(managePane === 2) preview(); else setManagePane(2); };
+  $('#manageBack').onclick = () => setManagePane(managePane - 1);
+  document.querySelectorAll('[data-manage-pane]').forEach(button => button.onclick = () => { const pane=Number(button.dataset.managePane); if(pane===3) preview(); else setManagePane(pane); });
+  document.addEventListener('manage:section', event => setManagePane(event.detail));
   refreshSkills().then(load).catch(error => message(error.message, true));
 })();

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Check the actual context available for an executable task prompt. Use this Skill to inspect context and report feasibility; do not carry out the prompt's task.",
+  "input": "The complete task prompt to review.",
+  "result": "Report separately: (1) context actually read and understood, with evidence; (2) accessible sources not yet read; (3) necessary missing or inaccessible information; (4) scope feasible now and scope blocked, with reasons. Tool availability alone is not acquired context. Give concise decision, action, and verification summaries without hidden chain of thought. Do not execute the original task.",
+  "steps": [
+    {
+      "id": "inspect-context",
+      "title": "Inspect the prompt and available context",
+      "selected": true,
+      "purpose": "Determine what information the task requires and what is actually accessible.",
+      "input": "The complete task prompt, current environment, files, tools, and relevant resources.",
+      "decision": "Identify context needed to assess feasibility, including constraints and acceptance criteria.",
+      "actions": "Inspect relevant accessible sources and read only what is needed to understand the task context. Do not perform the task actions described in the prompt.",
+      "observation": "Separate information actually read from sources that are merely available or listed.",
+      "adjustment": "Read or research another relevant source, or ask a focused question for necessary missing information; then reassess. State any remaining inaccessible information and its effect on feasibility.",
+      "output": "An evidence-based account of context actually understood, unread sources, and necessary gaps.",
+      "stop": "Relevant context has been checked sufficiently to assess feasibility, or the remaining access blocker is explicit.",
+      "scripts": [],
+      "references": [],
+      "skills": [],
+      "capabilities": []
+    },
+    {
+      "id": "assess-feasibility",
+      "title": "Assess scope and report blockers",
+      "selected": true,
+      "purpose": "Show which parts of the requested task the current context can support.",
+      "input": "The prompt requirements and the evidence gathered during context inspection.",
+      "decision": "Distinguish feasible scope from scope that depends on missing or inaccessible information.",
+      "actions": "Report the four context categories and explain each material blocker. Do not execute the original task.",
+      "observation": "Ensure each feasibility claim is supported by inspected evidence and that tool availability is not presented as proof of access or understanding.",
+      "adjustment": "Correct unsupported claims or narrow the feasibility assessment to what the evidence supports.",
+      "output": "A concise context and feasibility report with evidence and explicit blockers.",
+      "stop": "The report distinguishes understood context, unread resources, missing data, feasible scope, and blocked scope.",
+      "scripts": [],
+      "references": [],
+      "skills": [],
+      "capabilities": []
+    }
+  ]
+}

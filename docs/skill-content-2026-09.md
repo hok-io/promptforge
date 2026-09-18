@@ -25,5 +25,5 @@
 - 使用專案 bundled Maven/JDK 離線執行 `mvn -o -q test`：17 個測試通過（workbench 6、web 11），無失敗或略過。Wrapper 在此環境的 PowerShell `.Target[0]` 失敗，未修改 wrapper。
 - 真實 Edge 測試覆蓋 context / 已安裝 Markdown 的編輯保存、PromptForge 保存不覆蓋 context、新增 Skill 與腳本、選擇生成、重開、MCP 讀取，以及並行／外部修改衝突。
 - 實際 localhost:8081 GUI 已顯示三個 Skill。三者 API 均回報 generatedCurrent=true，原有生成內容未變。
-- 2026-09-30 02:00:56（UTC+8），真實 Codex agent 經 MCP 列出三個 Skill，成功讀取 PromptForge-context 並確認不執行原任務；網頁收到版本 `83b0a3932c5a` 的驗證回執。
+- 2026-09-30 02:00:56（UTC+8），真實 Codex agent 經 MCP 列出三個 Skill，成功讀取 PromptForge-context 並確認不執行原任務；網頁收到版本 `83b0a3932c5a` 的讀取成功的驗證結果。
 - 此次驗證讀取與管理功能，不宣稱所有任務輸出都已驗收。視覺樣式尚未重整。

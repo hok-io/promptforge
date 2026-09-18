@@ -79,6 +79,7 @@ public final class ProgramController {
         String oldMain = exists(SKILL) ? files.read(SKILL) : null;
         String expectedArtifact = currentSource.path("_generatedRevision").asText("");
         if (!write.outline().isObject()) throw new WorkbenchException(FailureKind.INVALID_INPUT, "Skill 來源需要 JSON 物件。");
+        if (!write.outline().has("schemaVersion")) ((ObjectNode)write.outline()).put("schemaVersion", "1.0");
         String main = compile(write.outline());
         if (oldMain != null && !expectedArtifact.isEmpty()
                 && !RevisionFileStore.hash(oldMain).equals(expectedArtifact)
@@ -123,6 +124,8 @@ public final class ProgramController {
     }
 
     private String compile(JsonNode outline) {
+        if (outline.has("schemaVersion") && !"1.0".equals(outline.path("schemaVersion").asText()))
+            throw new WorkbenchException(FailureKind.INVALID_INPUT, "不支援的大綱 schemaVersion；目前支援 1.0。請先轉換大綱格式。");
         if (outline.has("document")) {
             String document = outline.path("document").asText();
             String normalized = document.replace("\r\n", "\n");

@@ -6,8 +6,11 @@ out/
 .tools/
 **/target/
 /.promptforge/
+/.agents/skills/
 
 /.private/
 
 __pycache__/
 *.pyc
+
+/workbench-projects.json

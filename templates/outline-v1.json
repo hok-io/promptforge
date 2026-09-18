@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "description": "A reusable description of when this Skill should be used and what it helps accomplish.",
+  "input": "Describe the task input and context this Skill expects.",
+  "result": "Describe the expected result and how to know the work is complete.",
+  "steps": [
+    {
+      "id": "understand",
+      "title": "Understand the task",
+      "selected": true,
+      "purpose": "Preserve the user's goal, scope, constraints, and expected result.",
+      "input": "The user's request and relevant conversation context.",
+      "decision": "Identify what is known, what is essential, and what can be decided from available evidence.",
+      "actions": "Review relevant sources and clarify only when a material decision cannot be resolved.",
+      "observation": "Record the evidence found and any remaining gaps.",
+      "adjustment": "Revise assumptions or gather the specific missing context.",
+      "output": "A concise task definition ready for the next step.",
+      "stop": "The goal and necessary constraints are clear, or the blocking gap is stated.",
+      "scripts": [],
+      "references": [],
+      "skills": [],
+      "capabilities": []
+    },
+    {
+      "id": "perform",
+      "title": "Perform the work",
+      "selected": true,
+      "purpose": "Complete the requested work using the task definition and verified context.",
+      "input": "The defined task and relevant evidence.",
+      "decision": "Choose the next action based on current evidence and acceptance criteria.",
+      "actions": "Act, inspect the result, then adapt or retry when needed.",
+      "observation": "Capture concrete outcomes and verification evidence.",
+      "adjustment": "Resolve mismatches or explain what remains blocked.",
+      "output": "The requested result and a concise account of its verification.",
+      "stop": "Acceptance criteria are met, or the reason further progress is blocked is clear.",
+      "scripts": [],
+      "references": [],
+      "skills": [],
+      "capabilities": []
+    }
+  ]
+}
