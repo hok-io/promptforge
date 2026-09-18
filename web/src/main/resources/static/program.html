@@ -10,12 +10,12 @@
 <a href="#agent" data-route="agent"><span class="nav-number" aria-hidden="true">02</span> 連接 AI</a>
 <a href="#verify" data-route="verify"><span class="nav-number" aria-hidden="true">03</span> 驗證連接</a>
 <a href="#manage" data-route="manage"><span class="nav-number" aria-hidden="true">04</span> 管理 Skill</a>
-</nav><div class="sidebar-note"><strong>資料留在本機</strong><p>Web 編輯做事方法，AI 按你保存的 Skill 工作。</p><a href="#agent">第一次用？先連接 AI →</a></div></aside>
+</nav><div class="sidebar-note"><strong>資料留在本機</strong><p>在這裡管理 Skill，再透過 MCP 提供給 AI。</p><a href="#agent">第一次用？先連接 AI →</a></div></aside>
 <main id="main" tabindex="-1">
 <div class="skill-bar"><label for="skillSelect">目前 Skill</label><select id="skillSelect" aria-describedby="skillBarHint"></select><span id="skillBarHint">切換後，使用、編輯及驗證都會跟隨這個 Skill。</span></div>
 <div id="message" class="message" role="status" aria-live="polite" tabindex="-1"></div>
 <section data-screen="home" id="home">
-<div class="page-heading"><p class="eyebrow">YOUR LOCAL WORKSPACE</p><h1>你的 Skill 庫<span class="library-total" id="libraryTotal"></span></h1><p>把做事方法收好，交給 AI 重複使用。</p><button id="newFromLibrary" type="button" class="primary">＋ 新增 Skill</button></div>
+<div class="page-heading"><p class="eyebrow">YOUR LOCAL WORKSPACE</p><h1>你的 Skill 庫<span class="library-total" id="libraryTotal"></span></h1><p>新增、編輯及使用本地 Skill。</p><button id="newFromLibrary" type="button" class="primary">＋ 新增 Skill</button></div>
 <div id="skillCards" class="skill-cards" aria-label="所有本地 Skill"></div><div class="start-grid"><section class="use-panel"><div class="section-head"><h2 id="useTitle">使用 Skill</h2><span class="tag" id="homeReady">讀取中</span></div><p id="skillPurpose"></p><div class="selected-preview"><strong>內容摘要</strong><ol id="activeSteps"></ol><a href="#manage">修改步驟與能力 →</a></div>
 <label class="field" for="taskInput">你想交給 AI 的任務</label><textarea id="taskInput" rows="4" placeholder="輸入要交給這個 Skill 處理的任務或資料…"></textarea><p class="helper">這裏只準備呼叫指令。貼到 AI 對話後，由 AI 執行 Skill。</p>
 <button class="primary" id="copyTask" type="button">複製給 AI 的使用指令</button><p id="taskFeedback" class="local-feedback" role="status"></p><details><summary>查看將複製的內容</summary><pre id="taskCommand"></pre></details>
@@ -23,19 +23,19 @@
 
 </section>
 <section data-screen="agent" id="agent" hidden>
-<div class="page-heading"><p class="eyebrow">連接 AI</p><h1>設定一次，之後直接用。</h1><p>MCP 是 AI 讀取本地 Skill 的連接方式。請在執行 AI 的同一部電腦設定。</p></div>
+<div class="page-heading"><p class="eyebrow">連接 AI</p><h1>連接你的 AI 工具</h1><p>MCP 是 AI 讀取本地 Skill 的連接方式。請在執行 AI 的同一部電腦設定。</p></div>
 <div class="connection-banner"><span class="status-dot" aria-hidden="true"></span><div><strong id="mcpState">檢查中</strong><p id="mcpResult">正在確認本地服務。</p></div><button id="checkMcp" type="button">重新檢查服務</button></div>
 <ol class="setup-steps"><li><span class="step-index" aria-hidden="true">1</span><div><h2>在 PowerShell 加入連接</h2><p>使用 Codex？打開 PowerShell，複製並執行以下命令。</p><div class="code-action"><pre id="mcpCommand"></pre><button id="copyCommand" type="button">複製命令</button></div><p class="helper">已設定過 promptforge 就直接去第 2 步。這是本地連接，不需要 API key。</p><details><summary>我找不到 codex 命令／使用其他 AI 工具</summary><p>Codex 可在使用者的 <code>~/.codex/config.toml</code> 加入以下區段；已有同名區段就修改原區段。</p><pre id="mcpConfig"></pre><p>其他本地工具：在 MCP 設定新增 Streamable HTTP 連接，名稱填 promptforge，URL 填以下網址。</p><div class="code-action"><pre id="mcpUrl"></pre><button id="copyUrl" type="button">複製網址</button></div><p>遠端或雲端 AI 不能直接存取這部電腦的 127.0.0.1。此處提供同機連接。</p></details></div></li>
 <li><span class="step-index" aria-hidden="true">2</span><div><h2>確認設定，再開新 AI 對話</h2><p>在 PowerShell 執行 <code>codex mcp list</code>，清單應有 <strong>promptforge</strong>。再開新工作階段，讓工具載入。</p><details><summary>清單沒有 promptforge？</summary><p>返回第 1 步，在執行 Codex 的同一個使用者帳戶設定。Web 顯示服務可達，並不代表 AI 已加入連接。</p></details></div></li>
-<li><span class="step-index" aria-hidden="true">3</span><div><h2>讓 AI 實際讀一次</h2><p>下一頁會給你一段測試句。貼到 AI 後，回來看讀取回執。</p><a class="button-link primary" href="#verify">下一步：驗證連接 →</a></div></li></ol>
+<li><span class="step-index" aria-hidden="true">3</span><div><h2>讓 AI 實際讀一次</h2><p>複製下一頁的測試指令，貼到 AI 對話，再回來查看是否讀取成功。</p><a class="button-link primary" href="#verify">下一步：驗證連接 →</a></div></li></ol>
 <details class="alternative"><summary>直接用本地 Skill，不經 MCP</summary><p id="directSkill"></p><p>新增或修改後須重新發現。斜線入口由客戶端決定。MCP 每次呼叫讀取保存版；已讀過的內容要再次呼叫才會更新。</p></details>
 </section>
 <section data-screen="verify" id="verify" hidden>
-<div class="page-heading"><p class="eyebrow">驗證連接</p><h1>看到回執，才知道 AI 讀到。</h1><p>此測試驗證 MCP 讀取目前保存的 Skill。任務結果是否正確，仍要按下面的輸出要求檢查。</p></div>
-<div class="verification-panel"><div class="section-head"><h2>連接驗證</h2><span id="verificationState" class="tag">尚未開始</span></div><ol class="verification-guide"><li>按「產生測試句」。</li><li>複製並貼到你的 AI 對話，讓 AI 呼叫工具。</li><li>回來查看結果；等候期間每 3 秒更新。</li></ol><button id="startVerification" class="primary" type="button">產生測試句</button><p id="verificationError" role="alert"></p>
-<div id="verificationBody" hidden><label class="field" for="agentPrompt">貼到 AI 的測試句</label><textarea id="agentPrompt" rows="5" readonly></textarea><button id="copyPrompt" type="button">複製測試句</button><button id="refreshVerification" type="button">更新驗證結果</button><p id="verificationCopyFeedback" role="status"></p><div class="receipt" role="status" aria-live="polite"><strong id="receiptTitle">等待 MCP 讀取</strong><p id="receiptDetail"></p><code id="receiptVersion"></code></div><p class="helper">有效 15 分鐘；重啟服務後失效。回執證明帶驗證碼的 MCP 呼叫已讀取此版本，不識別是哪個客戶端，也不代表 AI 已正確完成任務。</p></div>
-<details><summary>一直等候，應該點做？</summary><ul><li>AI 說沒有工具：回到「連接 AI」，檢查設定後開新工作階段。</li><li>AI 只回覆文字：請它實際呼叫 get_skill，並傳入測試句的 verificationCode。</li><li>顯示版本已變更：重新產生測試句，驗證最新保存版。</li></ul><a href="#agent">返回連接步驟 →</a></details></div>
-<section class="acceptance-panel"><h2>使用結果，應該點驗收？</h2><p id="acceptanceIntro"></p><ul id="acceptanceChecks"></ul><p class="helper">以上是人工驗收清單，不會因連接通過而自動打勾。</p><a class="button-link" href="#home">返回開始使用 →</a></section>
+<div class="page-heading"><p class="eyebrow">驗證連接</p><h1>測試 MCP 連線</h1><p>確認 AI 能否透過 MCP 讀取你選擇的 Skill。</p></div>
+<div class="verification-panel"><div class="section-head"><h2>連接驗證</h2><span id="verificationState" class="tag">尚未開始</span></div><ol class="verification-guide"><li>按「產生測試指令」。</li><li>複製並貼到你的 AI 對話，讓 AI 呼叫工具。</li><li>回來查看結果；等候期間每 3 秒更新。</li></ol><button id="startVerification" class="primary" type="button">產生測試指令</button><p id="verificationError" role="alert"></p>
+<div id="verificationBody" hidden><label class="field" for="agentPrompt">貼到 AI 的測試指令</label><textarea id="agentPrompt" rows="5" readonly></textarea><button id="copyPrompt" type="button">複製測試指令</button><button id="refreshVerification" type="button">更新驗證結果</button><p id="verificationCopyFeedback" role="status"></p><div class="receipt" role="status" aria-live="polite"><strong id="receiptTitle">等待 MCP 讀取</strong><p id="receiptDetail"></p><code id="receiptVersion"></code></div><p class="helper">測試指令有效 15 分鐘，重啟服務後需重新產生。測試通過表示有 AI 工具透過 MCP 讀取了這個版本；系統無法辨認是哪個工具。任務結果仍需另外檢查。</p></div>
+<details><summary>沒有成功連線？</summary><ul><li>AI 說沒有工具：回到「連接 AI」，檢查設定後開新工作階段。</li><li>AI 只回覆文字：請它實際呼叫 get_skill，並傳入測試指令的 verificationCode。</li><li>顯示版本已變更：重新產生測試指令，驗證最新保存版。</li></ul><a href="#agent">返回連接步驟 →</a></details></div>
+<section class="acceptance-panel"><h2>檢查 AI 的結果</h2><p id="acceptanceIntro"></p><ul id="acceptanceChecks"></ul><p class="helper">連線測試通過後，請依以上要求檢查 AI 的實際輸出。</p><a class="button-link" href="#home">返回 Skill 庫 →</a></section>
 </section>
 <section data-screen="manage" id="manage" hidden>
 <div class="page-heading"><p class="eyebrow">管理 Skill</p><h1 id="editTitle">編輯 Skill</h1><p>先編輯，再勾選提供給 AI 的步驟。未勾選的內容保留在大綱。</p></div>

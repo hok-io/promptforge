@@ -67,10 +67,10 @@
   function renderReceipt(data) {
     receipt = data;
     const info = {
-      waiting:['等候 AI 讀取','尚未收到回執','將上面的測試句貼到 AI，等它實際呼叫 get_skill。'],
-      verified:['讀取驗證通過','MCP 已讀取指定版本','收到帶驗證碼的讀取呼叫：' + (data.readAt ? new Date(data.readAt).toLocaleString('zh-HK') : '') + '。可以返回「開始使用」交付任務。'],
-      stale:['版本已變更','請驗證最新版本','Skill 已更新。按「產生測試句」取得新的驗證碼。'],
-      expired:['驗證已過期','請重新產生測試句','這次驗證超過 15 分鐘，請重新開始。']
+      waiting:['等候 AI 讀取','AI 尚未讀取 Skill','將上面的測試指令貼到 AI，等它實際呼叫 get_skill。'],
+      verified:['讀取驗證通過','AI 已成功讀取 Skill','讀取時間：' + (data.readAt ? new Date(data.readAt).toLocaleString('zh-HK') : '') + '。現在可以到「Skill 庫」使用這個 Skill。'],
+      stale:['版本已變更','請驗證最新版本','Skill 已更新。按「產生測試指令」取得新的驗證碼。'],
+      expired:['驗證已過期','請重新產生測試指令','這次驗證超過 15 分鐘，請重新開始。']
     }[data.state];
     $('#verificationState').textContent = info[0]; $('#receiptTitle').textContent = info[1]; $('#receiptDetail').textContent = info[2];
     $('#receiptVersion').textContent = data.skill + ' · 版本 ' + data.revision.slice(0,12);
@@ -79,7 +79,7 @@
     clearTimeout(poll); if (!receipt) return;
     const code = receipt.code;
     try { const data = await api('/api/verification/' + encodeURIComponent(code)); if (receipt?.code === code) { renderReceipt(data); $('#verificationError').textContent = ''; } }
-    catch(error) { $('#verificationError').textContent = error.message + ' 可按「更新驗證結果」重試，或重新產生測試句。'; }
+    catch(error) { $('#verificationError').textContent = error.message + ' 可按「更新驗證結果」重試，或重新產生測試指令。'; }
     if (receipt?.code === code && receipt.state === 'waiting' && !$('#verify').hidden) poll = setTimeout(refreshReceipt,3000);
   }
   $('#startVerification').onclick = async () => {
@@ -90,13 +90,13 @@
       $('#agentPrompt').value = '連接驗證：請實際呼叫 promptforge MCP 的 get_skill，傳入 name="' + data.skill + '" 及 verificationCode="' + data.code + '"。回報讀到的 Skill 名稱與步驟。這次只驗證讀取，先不要執行 Skill 的任務。';
       $('#copyPrompt').focus(); poll = setTimeout(refreshReceipt,3000);
     } catch(error) { $('#verificationError').textContent = error.message; }
-    finally { button.disabled = !model?.saved?.generatedCurrent || model?.dirty; button.textContent = '產生測試句'; }
+    finally { button.disabled = !model?.saved?.generatedCurrent || model?.dirty; button.textContent = '產生測試指令'; }
   };
   $('#refreshVerification').onclick = refreshReceipt;
   $('#copyPrompt').onclick = () => copy($('#agentPrompt').value, $('#verificationCopyFeedback'));
   $('#taskInput').oninput = updateTask;
   $('#copyTask').onclick = () => {
-    if (!$('#taskInput').value.trim()) { $('#taskFeedback').textContent = '請先寫低你的任務，再複製使用指令。'; $('#taskInput').focus(); return; }
+    if (!$('#taskInput').value.trim()) { $('#taskFeedback').textContent = '請先輸入任務，再複製指令。'; $('#taskInput').focus(); return; }
     copy($('#taskCommand').textContent,$('#taskFeedback'));
   };
   document.addEventListener('program:change',updateModel);
