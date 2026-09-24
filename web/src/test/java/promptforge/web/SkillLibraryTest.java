@@ -8,6 +8,20 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 class SkillLibraryTest {
  @TempDir Path root;
+ @Test void emptyLibraryHasNoInventedSkillsAndMcpSeesNewSavesWithoutReconnect() throws Exception {
+  var api = new SkillLibraryController(root.toString(), new ProgramController(root.toString()));
+  var json = new ObjectMapper();
+  var mcp = new ProgramMcpController(root.toString());
+  assertTrue(api.list().isEmpty());
+  assertEquals("[]", call(mcp,json,"list_skills",json.createObjectNode()).path("result").path("content").get(0).path("text").asText());
+  for(String name : List.of("alpha", "beta")) {
+   var outline = json.readTree("{\"description\":\"Test\",\"steps\":[{\"id\":\"one\",\"title\":\"Do work\",\"selected\":true}]}");
+   var saved = api.save(name,new ProgramController.Write("new",outline));
+   assertEquals(saved.generated(),call(mcp,json,"get_skill",json.createObjectNode().put("name",name)).path("result").path("content").get(0).path("text").asText());
+  }
+  assertEquals(List.of("alpha","beta"),api.list());
+  assertTrue(call(mcp,json,"list_skills",json.createObjectNode()).path("result").path("content").get(0).path("text").asText().contains("beta"));
+ }
  @Test void resourcesConflictAndMissingTransitiveDependenciesPreserveGeneration() throws Exception {
   var json=new ObjectMapper(); var api=new SkillLibraryController(root.toString(),new ProgramController(root.toString()));
   var file=api.write("demo",new SkillLibraryController.ResourceWrite("scripts/check.js","new","console.log('ok')"));

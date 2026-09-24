@@ -34,7 +34,7 @@ public final class SkillLibraryController {
                 catch (WorkbenchException ignored) { /* Ignore non-Skill source filenames. */ }
             }
         }
-        if (names.isEmpty()) names.add("PromptForge");
+        if (Files.isRegularFile(files.resolve(".promptforge/program.json"))) names.add("PromptForge");
         return names.stream().distinct().sorted().toList();
     }
     @GetMapping("/{name}") public ProgramController.View get(@PathVariable String name) { return program(name).get(); }

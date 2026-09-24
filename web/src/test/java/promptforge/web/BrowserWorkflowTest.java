@@ -85,15 +85,21 @@ class BrowserWorkflowTest {
             assertThat(page.locator("#structuredEditor")).isVisible();
             page.locator("nav a[href='#agent']").click();
             assertThat(page.locator("#mcpState")).hasText("本地服務可達");
-            for (String name : List.of("PromptForge-context", "ui-ux-pro-max", "text-check")) {
-                page.locator("#skillSelect").selectOption(name);
-                assertThat(page.locator("#connectionSkillName")).hasText(name);
-                assertThat(page.locator("#connectionSkillCommand")).containsText("name=\"" + name + "\"");
-                assertThat(page.locator("#connectionSkillContent")).containsText("name: " + name);
-                page.locator("#copySkillRead").click();
-                assertThat(page.locator("#connectionCopyFeedback")).containsText("已複製");
-                assertTrue(page.evaluate("navigator.clipboard.readText()").toString().contains("name=\"" + name + "\""));
-            }
+            assertThat(page.locator("#skillBar")).not().isVisible();
+            assertThat(page.locator("#connectionLibrary")).containsText("text-check");
+            assertThat(page.locator("#connectionLibrary")).containsText("PromptForge-context");
+            assertThat(page.locator("#agent")).containsText("一次連接，使用整個 Skill 庫");
+            page.locator("#copyLibraryRead").click();
+            assertTrue(page.evaluate("navigator.clipboard.readText()").toString().contains("list_skills"));
+            Path added = HOME.resolve(".agents/skills/external-new/SKILL.md"); Files.createDirectories(added.getParent());
+            Files.writeString(added,"---\nname: external-new\ndescription: Added outside the GUI\n---\n\n# External instructions\nRead new data.\n");
+            page.locator("nav a[href='#home']").click();
+            assertThat(page.locator("#skillCards")).containsText("Added outside the GUI");
+            page.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON, new Page.GetByRoleOptions().setName("使用 external-new").setExact(true)).click();
+            assertThat(page.locator("#skillPurpose")).hasText("Added outside the GUI");
+            assertThat(page.locator("#activeSteps")).containsText("External instructions");
+            page.locator("#skillSelect").selectOption("text-check");
+            assertThat(page.locator("#useTitle")).hasText("使用 text-check");
 
             page.locator("nav a[href='#verify']").click(); page.locator("#startVerification").click();
             assertThat(page.locator("#verificationState")).hasText("等候 AI 讀取");

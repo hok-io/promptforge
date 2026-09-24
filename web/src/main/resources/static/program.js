@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const $ = selector => document.querySelector(selector);
-  const state = { name: 'PromptForge', resourceRevision: 'new', resourceDirty: false, resourceSavedPath: '', revision: 'new', outline: { steps: [] }, saved: null, preview: null, selected: null, tab: 'main', dirty: false, csrf: null };
+  const state = { name: null, resourceRevision: 'new', resourceDirty: false, resourceSavedPath: '', revision: 'new', outline: { steps: [] }, saved: null, preview: null, selected: null, tab: 'main', dirty: false, csrf: null };
   const groups = [
     ['編輯這一步', [['title', '名稱', 'text'], ['instructions', '指示', 'area']]],
     ['進階：用途與識別碼', [['id', '步驟 ID', 'text'], ['purpose', '目的', 'area']]],
@@ -107,7 +107,7 @@
   }
   let loadVersion = 0;
   async function load() {
-    const version = ++loadVersion; $('#save').disabled = true; $('#preview').disabled = true; $('#documentEditor').hidden = true; $('#structuredEditor').hidden = true;
+    $('#manageNext').disabled = false; const version = ++loadVersion; $('#save').disabled = true; $('#preview').disabled = true; $('#documentEditor').hidden = true; $('#structuredEditor').hidden = true;
     const data = await request(endpoint()); if (version !== loadVersion) return; $('#save').disabled = false; $('#preview').disabled = false; state.revision = data.revision; state.outline = structuredClone(data.outline); state.saved = data; state.preview = null; state.dirty = false;
     const id = state.selected?.id; state.outline.steps.forEach(migrateLegacy); state.selected = state.outline.steps.find(step => step.id === id) || state.outline.steps[0] || null;
     $('#skillDescription').value = state.outline.description || ''; const documentMode = typeof state.outline.document === 'string'; $('#documentEditor').hidden = !documentMode; $('#structuredEditor').hidden = documentMode; $('#skillDocument').value = state.outline.document || ''; $('#skillDescription').readOnly = false; $('#structuredBasics').hidden = documentMode; syncDocumentBody(); $('#contentPaneButton').textContent = documentMode ? '2 指示' : '2 步驟'; $('#manageGuide').textContent = documentMode ? '用途 → 編輯指示 → 檢查並保存' : '用途 → 編輯並勾選步驟 → 檢查並保存'; $('#skillInput').value = state.outline.input || ''; $('#skillResult').value = state.outline.result || ''; $('#editTitle').textContent = state.name; $('#useTitle').textContent = '使用 ' + state.name; $('#skillLocation').textContent = `生成位置：.agents/skills/${state.name}/SKILL.md`; renderSteps(); renderEditor(); updateSummary(); showOutput(); message(''); setManagePane(1); await refreshResources(); checkMcp();
@@ -121,7 +121,7 @@
     const button = $('#save'); if (state.resourceDirty) { message('腳本或資料仍未保存。請先保存檔案，再生成 Skill。', true); return; } button.disabled = true; button.textContent = '正在保存並生成…';
     try {
       const data = await request(endpoint(), { method: 'PUT', body: JSON.stringify({ revision: state.revision, outline: state.outline }) });
-      state.revision = data.revision; state.saved = data; state.preview = null; state.dirty = false; updateSummary(); showOutput(); message(`已保存 ${state.name}。可返回「開始使用」複製指令，或前往「驗證連接」。`); $('#saveNext').hidden = false; await refreshSkills(); checkMcp();
+      state.revision = data.revision; state.saved = data; state.preview = null; state.dirty = false; updateSummary(); showOutput(); message(`已保存 ${state.name}。可返回「Skill 庫」複製指令，或前往「驗證連接」。`); $('#saveNext').hidden = false; await refreshSkills(); checkMcp();
     } catch (error) { message(error.status === 409 ? `${error.message} 請按「重新讀取磁碟」取得新版。` : error.message, true); }
     finally { button.disabled = false; button.textContent = '保存並生成 Skill'; }
   }
@@ -130,7 +130,6 @@
     $('#mcpUrl').textContent = location.origin + '/mcp';
     $('#mcpCommand').textContent = 'codex mcp add promptforge --url ' + location.origin + '/mcp';
     $('#mcpConfig').textContent = '[mcp_servers.promptforge]\nurl = "' + location.origin + '/mcp"';
-    $('#directSkill').textContent = '在此 project 的新工作階段使用 $' + state.name + '。';
     try {
       const response = await fetch('/mcp', {method:'POST',signal:AbortSignal.timeout(10000),headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'ping'})});
       const result = await response.json(); if (!response.ok || result.error) throw Error('本地 MCP 未正常回應');
@@ -145,14 +144,20 @@
 
   function endpoint() { return '/api/skills/' + encodeURIComponent(state.name); }
   async function refreshSkills() {
-    const names = await request('/api/skills'); if (!names.includes(state.name)) names.push(state.name);
-    $('#skillSelect').replaceChildren(...names.map(name => { const option = element('option', '', name); option.value = name; return option; })); $('#skillSelect').value = state.name;
+    const names = await request('/api/skills');
+    if (!state.name && names.length) state.name = names[0];
+    const pickerNames = names.includes(state.name) || !state.name ? names : [...names, state.name];
+    $('#skillSelect').replaceChildren(...pickerNames.map(name => { const option = element('option', '', name); option.value = name; return option; })); $('#skillSelect').value = state.name;
     $('#skillPaths').replaceChildren(...names.map(name => { const option = element('option'); option.value = `.agents/skills/${name}/SKILL.md`; return option; }));
     $('#libraryTotal').textContent = names.length;
+    $('#libraryStatus').textContent = names.length ? '已從本機讀取 ' + names.length + ' 個 Skill。' : '還沒有 Skill。按「新增 Skill」建立第一個。';
+    $('#skillUse').hidden = !state.name;
+    const available = [];
     const cards = await Promise.all(names.map(async name => {
       const card = element('article','skill-card'); card.append(element('span','skill-glyph','S'),element('h2','',name));
       try { const data = await request('/api/skills/' + encodeURIComponent(name));
         card.append(element('p','card-description',data.outline.description || '尚未填寫用途'));
+        if(data.discoverableFilesPresent) available.push(name);
         const detail = typeof data.outline.document === 'string' ? 'Markdown 文件' : `${data.outline.steps.filter(x=>x.selected).length} / ${data.outline.steps.length} 步已選`;
         card.append(element('span','card-meta',detail + ' · ' + (data.discoverableFilesPresent ? 'MCP 可讀取' : '尚未生成')));
       } catch(error) { card.append(element('p','',error.message)); }
@@ -160,6 +165,9 @@
       for (const [text,route] of [['使用','home'],['編輯','manage']]) { const button = element('button',text === '使用' ? 'primary' : '',text); button.setAttribute('aria-label',text + ' ' + name); button.onclick = guarded(async()=> { if (await switchSkill(name)) { location.hash=route; if(route==='home') $('#taskInput').focus(); } }); actions.append(button); }
       card.append(actions); return card;
     })); $('#skillCards').replaceChildren(...cards);
+    $('#connectionLibraryStatus').textContent = '目前有 ' + available.length + ' 個已生成的 Skill 可透過這個連接讀取。';
+    $('#connectionLibrary').replaceChildren(...available.sort().map(name => element('li','',name)));
+    $('#copyLibraryRead').disabled = !available.length;
   }
 
   async function refreshResources() {
@@ -171,7 +179,7 @@
   const guarded = action => async event => { const button = event?.currentTarget; if (button?.tagName === 'BUTTON') button.disabled = true; try { await action(); } catch(error) { if (!$('#newSkillForm').hidden) { $('#newSkillError').textContent = error.message; $('#newSkillId').setAttribute('aria-invalid','true'); } if (button?.id === 'saveResource') $('#resourceStatus').textContent = error.message; message(error.message, true); } finally { if (button?.tagName === 'BUTTON') button.disabled = false; } };
   $('#skillDescription').oninput = () => { state.outline.description = $('#skillDescription').value; if(typeof state.outline.document === 'string') { state.outline.document = state.outline.document.replace(/^description:.*$/m, () => 'description: ' + JSON.stringify(state.outline.description)); $('#skillDocument').value = state.outline.document; } markDirty(); };
   async function switchSkill(next) {
-    if (next === state.name) return true;
+    if (next === state.name) { if(!state.dirty && !state.resourceDirty) await load(); return true; }
     if ((state.dirty || state.resourceDirty) && !confirm('切換 Skill 會捨棄未保存的修改，繼續？')) { $('#skillSelect').value = state.name; return false; }
     state.name = next; $('#skillSelect').value = next; clearResource(); await load(); return true;
   }
@@ -224,5 +232,7 @@
   $('#manageBack').onclick = () => setManagePane(managePane - 1);
   document.querySelectorAll('[data-manage-pane]').forEach(button => button.onclick = () => { const pane=Number(button.dataset.managePane); if(pane===3) preview(); else setManagePane(pane); });
   document.addEventListener('manage:section', event => setManagePane(event.detail));
-  refreshSkills().then(load).catch(error => message(error.message, true));
+  $('#refreshLibrary').onclick = guarded(async () => { await refreshSkills(); if(state.name && !state.dirty && !state.resourceDirty) await load(); });
+  document.addEventListener('library:refresh', () => refreshSkills().catch(error => message(error.message,true)));
+  refreshSkills().then(() => { if(state.name) return load(); $('#save').disabled = true; $('#preview').disabled = true; $('#manageNext').disabled = true; $('#copyTask').disabled = true; $('#startVerification').disabled = true; checkMcp(); }).catch(error => message(error.message, true));
 })();

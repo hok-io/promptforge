@@ -13,6 +13,8 @@
     if (['resources','output'].includes(target)) $('#' + target).open = true;
     const heading = document.querySelector('[data-screen="' + screen + '"] h1'); heading.tabIndex = -1; heading.focus({preventScroll:true});
     if (routeAliases[target]) $('#' + target).scrollIntoView(); else window.scrollTo(0,0);
+    $('#skillBar').hidden = screen === 'agent';
+    if (screen === 'home' || screen === 'agent') document.dispatchEvent(new Event('library:refresh'));
     if (screen === 'verify' && receipt) refreshReceipt();
   }
   async function api(path, options = {}) {
@@ -30,7 +32,7 @@
   function command(task, name) {
     return '請透過 promptforge MCP 的 get_skill 讀取 name="' + name + '" 的最新保存版，然後依該 Skill 處理以下輸入。若無法讀取，請說明原因。\n\n' + task;
   }
-  function updateTask() { $('#taskCommand').textContent = command($('#taskInput').value.trim() || '［在此填寫你的任務］',model?.name || 'PromptForge'); }
+  function updateTask() { $('#taskCommand').textContent = command($('#taskInput').value.trim() || '［在此填寫你的任務］',model?.name || ''); }
   async function copy(text, feedback) {
     try { await navigator.clipboard.writeText(text); feedback.textContent = '已複製。現在貼到你的 AI 對話。'; }
     catch { feedback.textContent = '瀏覽器未允許複製，請展開內容後手動複製。'; }
@@ -39,16 +41,11 @@
     const next = event.detail;
     if (model && model.name !== next.name) { resetReceipt(); $('#taskFeedback').textContent = ''; }
     model = next;
-    $('#connectionSkillName').textContent = next.name;
-    $('#connectionSkillPurpose').textContent = next.saved?.outline?.description || '尚未填寫用途';
-    $('#connectionSkillStatus').textContent = next.saved?.generatedCurrent ? '已保存，可透過 MCP 讀取' : '內容尚未生成或不同步，請先保存';
-    $('#connectionSkillContent').textContent = next.saved?.generated || '尚未生成';
-    $('#connectionSkillCommand').textContent = '請呼叫 promptforge MCP 的 get_skill，name="' + next.name + '"，讀取這個 Skill 並簡述用途。';
-    $('#copySkillRead').disabled = !next.saved?.generatedCurrent;
-    $('#connectionCopyFeedback').textContent = '';
     $('#verifyTitle').textContent = '測試 ' + next.name;
     $('#verifySkillPurpose').textContent = next.saved?.outline?.description || '';
 
+    $('#savedSkillContent').textContent = next.saved?.generated || '尚未生成；請先保存。';
+    $('#skillInputHelp').textContent = next.saved?.outline?.input || '按這個 Skill 的指示，填入任務或所需資料。';
     $('#skillPurpose').textContent = next.saved?.outline?.description || '先填寫這個 Skill 的用途與指示，再保存。';
     const list = $('#activeSteps'); list.replaceChildren();
     for (const step of selectedSteps()) { const li = document.createElement('li'); li.textContent = step.title; list.append(li); }
@@ -103,7 +100,7 @@
     } catch(error) { $('#verificationError').textContent = error.message; }
     finally { button.disabled = !model?.saved?.generatedCurrent || model?.dirty; button.textContent = '產生測試指令'; }
   };
-  $('#copySkillRead').onclick = () => copy($('#connectionSkillCommand').textContent, $('#connectionCopyFeedback'));
+  $('#copyLibraryRead').onclick = () => copy($('#libraryReadCommand').textContent, $('#connectionCopyFeedback'));
   $('#refreshVerification').onclick = refreshReceipt;
   $('#copyPrompt').onclick = () => copy($('#agentPrompt').value, $('#verificationCopyFeedback'));
   $('#taskInput').oninput = updateTask;
