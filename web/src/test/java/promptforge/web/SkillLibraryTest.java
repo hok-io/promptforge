@@ -49,25 +49,42 @@ class SkillLibraryTest {
   var api = new SkillLibraryController(root.toString(), new ProgramController(root.toString()));
   for (String name : List.of("PromptForge", "PromptForge-context", "ui-ux-pro-max")) writeSkill(name, "Original " + name);
   assertTrue(api.list().containsAll(List.of("PromptForge", "PromptForge-context", "ui-ux-pro-max")));
+  for (String name : List.of("PromptForge", "PromptForge-context", "ui-ux-pro-max")) {
+   var imported = api.get(name);
+   assertFalse(imported.outline().has("document"));
+   assertEquals(1, imported.outline().path("steps").size());
+   assertTrue(imported.outline().path("steps").get(0).path("selected").asBoolean());
+  }
+  String untouched = Files.readString(root.resolve(".agents/skills/ui-ux-pro-max/SKILL.md"));
+  var uiOutline = api.get("ui-ux-pro-max");
+  api.save("ui-ux-pro-max", new ProgramController.Write(uiOutline.revision(), uiOutline.outline()));
+  assertEquals(untouched, Files.readString(root.resolve(".agents/skills/ui-ux-pro-max/SKILL.md")));
+  assertTrue(api.get("ui-ux-pro-max").generatedCurrent());
 
   var context = api.get("PromptForge-context");
   var editedContext = ((com.fasterxml.jackson.databind.node.ObjectNode) context.outline()).deepCopy();
-  editedContext.put("document", editedContext.path("document").asText() + "\nContext-only edit.\n");
+  var addedStep = ((com.fasterxml.jackson.databind.node.ArrayNode) editedContext.path("steps")).addObject();
+  addedStep.put("id", "context-only").put("title", "Context-only step").put("selected", true).put("instructions", "Context-only edit.");
   var contextSaved = api.save("PromptForge-context", new ProgramController.Write(context.revision(), editedContext));
   String savedContext = Files.readString(root.resolve(".agents/skills/PromptForge-context/SKILL.md"));
+  assertTrue(savedContext.contains("Original PromptForge-context"));
+  assertTrue(savedContext.contains("Context-only edit."));
+  assertTrue(savedContext.contains("license: MIT"));
 
   var main = json.readTree("""
    {"description":"Main instructions","steps":[{"id":"one","title":"Main step","selected":true}]}
    """);
   api.save("PromptForge", new ProgramController.Write(api.get("PromptForge").revision(), main));
   assertEquals(savedContext, Files.readString(root.resolve(".agents/skills/PromptForge-context/SKILL.md")));
-  assertTrue(api.get("PromptForge-context").generatedCurrent());
-
+  var contextView = api.get("PromptForge-context");
+  assertEquals(contextView.generated(), api.preview("PromptForge-context", contextView.outline()).generated());
+  assertTrue(contextView.generatedCurrent(), contextView.status());
   var external = savedContext + "\nExternal edit that must survive.\n";
   Files.writeString(root.resolve(".agents/skills/PromptForge-context/SKILL.md"), external);
   var stale = api.get("PromptForge-context");
   var staleEdit = ((com.fasterxml.jackson.databind.node.ObjectNode) stale.outline()).deepCopy();
-  staleEdit.put("document", staleEdit.path("document").asText() + "\nMy edit.\n");
+  ((com.fasterxml.jackson.databind.node.ObjectNode) staleEdit.path("steps").get(0))
+          .put("instructions", staleEdit.path("steps").get(0).path("instructions").asText() + "\nMy edit.\n");
   assertThrows(WorkbenchException.class, () -> api.save("PromptForge-context", new ProgramController.Write(stale.revision(), staleEdit)));
   assertEquals(external, Files.readString(root.resolve(".agents/skills/PromptForge-context/SKILL.md")));
 
@@ -106,7 +123,7 @@ class SkillLibraryTest {
  private void writeSkill(String name, String text) throws Exception {
   var path = root.resolve(".agents/skills/" + name + "/SKILL.md");
   Files.createDirectories(path.getParent());
-  Files.writeString(path, "---\nname: " + name + "\ndescription: " + text + "\n---\n\n" + text + "\n");
+  Files.writeString(path, "---\nname: " + name + "\ndescription: " + text + "\nlicense: MIT\n---\n\n" + text + "\n");
  }
  private com.fasterxml.jackson.databind.JsonNode call(ProgramMcpController mcp, ObjectMapper json, String name, com.fasterxml.jackson.databind.JsonNode args) {
   var request = json.createObjectNode().put("jsonrpc", "2.0").put("id", 1).put("method", "tools/call");

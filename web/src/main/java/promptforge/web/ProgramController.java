@@ -44,12 +44,13 @@ public final class ProgramController {
         JsonNode outline = source.text().isBlank() ? blankOutline() : parse(source.text());
         String generated = exists(SKILL) ? files.read(SKILL) : "";
         if (source.revision().equals("new") && !generated.isBlank()) {
-            ObjectNode imported = blankOutline(); imported.put("document", generated);
-            imported.put("description", descriptionFrom(generated));
+            ObjectNode imported = json.createObjectNode().put("document", generated);
             outline = imported;
             source = new VersionedText("external:" + RevisionFileStore.hash(generated), "");
         }
-        if (outline.has("document")) ((ObjectNode)outline).put("description", descriptionFrom(outline.path("document").asText()));
+        if (outline.has("document")) outline = importDocument(outline.path("document").asText());
+        if (outline.has("_sourceDocument") && !generated.isBlank())
+            ((ObjectNode) outline).put("_generatedRevision", RevisionFileStore.hash(generated));
         boolean current = false;
         String status;
         if (generated.isBlank()) status = "尚未生成；保存後需重新載入 agent。";
@@ -80,7 +81,14 @@ public final class ProgramController {
         String expectedArtifact = currentSource.path("_generatedRevision").asText("");
         if (!write.outline().isObject()) throw new WorkbenchException(FailureKind.INVALID_INPUT, "Skill 來源需要 JSON 物件。");
         if (!write.outline().has("schemaVersion")) ((ObjectNode)write.outline()).put("schemaVersion", "1.0");
+        ObjectNode submittedOutline = (ObjectNode) write.outline();
+        boolean unchangedImportedDocument = submittedOutline.has("_sourceDocument")
+                && importedFingerprint(submittedOutline).equals(submittedOutline.path("_sourceFingerprint").asText());
         String main = compile(write.outline());
+        if (!unchangedImportedDocument) {
+            submittedOutline.remove("_sourceDocument");
+            submittedOutline.remove("_sourceFingerprint");
+        }
         if (oldMain != null && !expectedArtifact.isEmpty()
                 && !RevisionFileStore.hash(oldMain).equals(expectedArtifact)
                 && !main.equals(oldMain))
@@ -128,12 +136,13 @@ public final class ProgramController {
             throw new WorkbenchException(FailureKind.INVALID_INPUT, "不支援的大綱 schemaVersion；目前支援 1.0。請先轉換大綱格式。");
         if (outline.has("document")) {
             String document = outline.path("document").asText();
-            String normalized = document.replace("\r\n", "\n");
-            if (!normalized.startsWith("---\n") || !normalized.contains("\ndescription:") || !normalized.contains("\nname: " + name + "\n"))
-                throw new WorkbenchException(FailureKind.INVALID_INPUT, "Markdown 必須保留 frontmatter name: " + name + " 及 description。");
-            if (document.getBytes(StandardCharsets.UTF_8).length > WorkspaceFiles.MAX_BYTES)
-                throw new WorkbenchException(FailureKind.INVALID_INPUT, "Skill 超過 256 KiB。");
-            validateDependencyContent(document);
+            validateDocument(document);
+            return document;
+        }
+        if (outline.has("_sourceDocument")
+                && importedFingerprint(outline).equals(outline.path("_sourceFingerprint").asText())) {
+            String document = outline.path("_sourceDocument").asText();
+            validateDocument(document);
             return document;
         }
         if (!outline.isObject() || !outline.path("steps").isArray())
@@ -150,7 +159,10 @@ public final class ProgramController {
         if (selected.isEmpty()) throw new WorkbenchException(FailureKind.INVALID_INPUT, "至少選擇一個步驟。");
         String description = outline.path("description").asText("").trim();
         if (description.isEmpty()) throw new WorkbenchException(FailureKind.INVALID_INPUT, "請填寫 Skill 用途與使用時機。");
-        StringBuilder out = new StringBuilder("---\nname: " + name + "\ndescription: " + yamlQuote(description) + "\n---\n\n# " + name + "\n\n");
+        StringBuilder out = new StringBuilder("---\nname: " + name + "\ndescription: " + yamlQuote(description) + "\n");
+        String extraFrontmatter = outline.path("_sourceFrontmatter").asText("");
+        if (!extraFrontmatter.isBlank()) out.append(extraFrontmatter.stripTrailing()).append('\n');
+        out.append("---\n\n# ").append(name).append("\n\n");
         out.append("Project root: `").append(files.root().toString().replace('\\', '/')).append("`. Resolve dependency paths against this root.\n\n");
         String input = outline.path("input").asText("");
         if (!input.isBlank()) out.append("Input: ").append(input).append("\n\n");
@@ -237,6 +249,82 @@ public final class ProgramController {
             Path resolved = files.resolve(SKILL).getParent().resolve(target).normalize();
             validateDependency(files.root().relativize(resolved).toString().replace('\\', '/'), target.endsWith("SKILL.md"), new HashSet<>());
         }
+    }
+
+    private void validateDocument(String document) {
+        String normalized = document.replace("\r\n", "\n");
+        if (!normalized.startsWith("---\n") || !normalized.contains("\ndescription:") || !normalized.contains("\nname: " + name + "\n"))
+            throw new WorkbenchException(FailureKind.INVALID_INPUT, "Markdown 必須保留 frontmatter name: " + name + " 及 description。");
+        if (document.getBytes(StandardCharsets.UTF_8).length > WorkspaceFiles.MAX_BYTES)
+            throw new WorkbenchException(FailureKind.INVALID_INPUT, "Skill 超過 256 KiB。");
+        validateDependencyContent(document);
+    }
+
+    private ObjectNode importDocument(String document) {
+        ObjectNode outline = blankOutline();
+        outline.put("schemaVersion", "1.0");
+        outline.put("description", descriptionFrom(document));
+        outline.put("_sourceDocument", document);
+        outline.put("_sourceFrontmatter", frontmatterExtras(document));
+
+        String body = document.replace("\r\n", "\n");
+        var frontmatter = java.util.regex.Pattern.compile("\\A---\\n[\\s\\S]*?\\n---[ \\t]*(?:\\n|\\z)").matcher(body);
+        if (frontmatter.find()) body = body.substring(frontmatter.end());
+
+        String title = "";
+        var heading = java.util.regex.Pattern.compile("(?m)^#{1,6}\\s+(.+?)\\s*$").matcher(body);
+        if (heading.find()) {
+            title = heading.group(1).trim();
+            body = body.substring(0, heading.start()) + body.substring(heading.end());
+        }
+        if (title.isBlank()) {
+            title = Arrays.stream(body.split("\\R")).map(String::trim).filter(line -> !line.isEmpty())
+                    .findFirst().orElse("Instructions");
+            if (title.length() > 72) title = title.substring(0, 72).stripTrailing();
+        }
+        String id = title.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+        if (id.isEmpty()) id = "source-instructions";
+        if (id.length() > 64) id = id.substring(0, 64).replaceAll("-+$", "");
+
+        ObjectNode step = outline.putArray("steps").addObject();
+        step.put("id", id);
+        step.put("title", title);
+        step.put("selected", true);
+        step.put("instructions", body);
+        step.putArray("capabilities");
+        outline.put("_sourceFingerprint", importedFingerprint(outline));
+        return outline;
+    }
+
+    private String frontmatterExtras(String document) {
+        String normalized = document.replace("\r\n", "\n");
+        var matcher = java.util.regex.Pattern.compile("\\A---\\n([\\s\\S]*?)\\n---(?:\\n|\\z)").matcher(normalized);
+        if (!matcher.find()) return "";
+        StringBuilder extras = new StringBuilder();
+        boolean inDescriptionValue = false;
+        for (String line : matcher.group(1).split("\\n", -1)) {
+            boolean topLevel = !line.startsWith(" ") && !line.startsWith("\t");
+            var key = java.util.regex.Pattern.compile("^([a-zA-Z0-9_-]+)\\s*:\\s*(.*)$").matcher(line);
+            if (topLevel && key.matches()) {
+                String fieldName = key.group(1);
+                if (fieldName.equals("name")) { inDescriptionValue = false; continue; }
+                if (fieldName.equals("description")) {
+                    inDescriptionValue = key.group(2).isBlank() || key.group(2).matches("[>|][+-]?");
+                    continue;
+                }
+                inDescriptionValue = false;
+            } else if (topLevel) inDescriptionValue = false;
+            if (!inDescriptionValue) extras.append(line).append('\n');
+        }
+        return extras.toString().stripTrailing();
+    }
+
+    private String importedFingerprint(JsonNode outline) {
+        ObjectNode snapshot = json.createObjectNode();
+        for (String key : List.of("schemaVersion", "description", "input", "result", "steps"))
+            if (outline.has(key)) snapshot.set(key, outline.get(key));
+        try { return RevisionFileStore.hash(json.writeValueAsString(snapshot)); }
+        catch (IOException error) { throw new WorkbenchException(FailureKind.INVALID_INPUT, "無法計算 Markdown 匯入版本。"); }
     }
 
     private static String required(JsonNode node, String key) {
