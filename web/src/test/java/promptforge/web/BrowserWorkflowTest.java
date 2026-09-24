@@ -42,6 +42,7 @@ class BrowserWorkflowTest {
             page.getByLabel("指示", new Page.GetByLabelOptions().setExact(true)).fill("Run the selected script and report its actual stdout.");
             page.locator("#resources > summary").click(); page.locator("#resourcePath").fill("scripts/check.js"); page.locator("#resourceText").fill("console.log('SCRIPT_OK');\n"); page.locator("#saveResource").click();
             assertThat(page.locator("#resourceStatus")).containsText("檔案已保存"); page.locator("#attachResource").click();
+            context.clearCookies(); // Simulate an expired session or a local server restart, without reloading the draft.
             page.getByLabel("能力使用方法").fill("node .promptforge/resources/text-check/scripts/check.js");
             page.locator("[data-manage-pane='3']").click(); page.locator("#save").click(); assertThat(page.locator("#saveState")).hasText("已同步");
             assertThat(page.locator("#generated")).containsText("scripts/check.js");
@@ -98,7 +99,7 @@ class BrowserWorkflowTest {
             page.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON, new Page.GetByRoleOptions().setName("使用 external-new").setExact(true)).click();
             assertThat(page.locator("#skillPurpose")).hasText("Added outside the GUI");
             assertThat(page.locator("#activeSteps")).containsText("External instructions");
-            page.locator("#skillSelect").selectOption("text-check");
+            page.getByRole(com.microsoft.playwright.options.AriaRole.BUTTON, new Page.GetByRoleOptions().setName("使用 text-check").setExact(true)).click();
             assertThat(page.locator("#useTitle")).hasText("使用 text-check");
 
             page.locator("nav a[href='#verify']").click(); page.locator("#startVerification").click();

@@ -13,18 +13,19 @@
     if (['resources','output'].includes(target)) $('#' + target).open = true;
     const heading = document.querySelector('[data-screen="' + screen + '"] h1'); heading.tabIndex = -1; heading.focus({preventScroll:true});
     if (routeAliases[target]) $('#' + target).scrollIntoView(); else window.scrollTo(0,0);
-    $('#skillBar').hidden = screen === 'agent';
+    $('#skillBar').hidden = screen === 'agent' || screen === 'home';
     if (screen === 'home' || screen === 'agent') document.dispatchEvent(new Event('library:refresh'));
     if (screen === 'verify' && receipt) refreshReceipt();
   }
-  async function api(path, options = {}) {
+  async function api(path, options = {}, retried = false) {
     const headers = {'Content-Type':'application/json'};
     if (options.method) {
-      if (!csrf) csrf = await (await fetch('/api/csrf')).json();
+      csrf = await (await fetch('/api/csrf', {cache:'no-store'})).json();
       headers[csrf.headerName] = csrf.token;
     }
     const response = await fetch(path, {...options,headers,signal:AbortSignal.timeout(12000)});
     const data = await response.json();
+    if (response.status === 403 && data.code === 'CSRF_EXPIRED' && !retried) return api(path, options, true);
     if (!response.ok) throw Error(data.message || '請求失敗，請重試。');
     return data;
   }

@@ -94,14 +94,15 @@
     $('#generated').textContent = value.generated || '尚未生成';
     $('#outputHint').textContent = state.preview ? '這是目前選擇的預覽，尚未保存到 Agent 版本。' : state.dirty ? '目前顯示上次保存的版本；大綱有尚未保存的修改。' : '這裏顯示目前已保存的 Agent 版本。';
   }
-  async function request(path, options = {}) {
+  async function request(path, options = {}, retried = false) {
     const headers = new Headers(options.headers || {});
     if (options.body !== undefined) headers.set('Content-Type', 'application/json');
     if (options.method && options.method !== 'GET') {
-      if (!state.csrf) { const response = await fetch('/api/csrf'); if (!response.ok) throw Error('無法取得本機保存權限。'); state.csrf = await response.json(); }
+      { const response = await fetch('/api/csrf', {cache:'no-store'}); if (!response.ok) throw Error('無法取得本機保存權限。'); state.csrf = await response.json(); }
       headers.set(state.csrf.headerName, state.csrf.token);
     }
     const response = await fetch(path, { ...options, headers, signal:AbortSignal.timeout(15000) }); const data = await response.json().catch(() => null);
+    if (response.status === 403 && data?.code === 'CSRF_EXPIRED' && !retried) return request(path, options, true);
     if (!response.ok) { const error = Error(data?.message || `操作失敗 (${response.status})`); error.status = response.status; throw error; }
     return data;
   }
@@ -151,7 +152,7 @@
     $('#skillPaths').replaceChildren(...names.map(name => { const option = element('option'); option.value = `.agents/skills/${name}/SKILL.md`; return option; }));
     $('#libraryTotal').textContent = names.length;
     $('#libraryStatus').textContent = names.length ? '已從本機讀取 ' + names.length + ' 個 Skill。' : '還沒有 Skill。按「新增 Skill」建立第一個。';
-    $('#skillUse').hidden = !state.name;
+    if(!state.name) $('#skillUse').hidden = true;
     const available = [];
     const cards = await Promise.all(names.map(async name => {
       const card = element('article','skill-card'); card.append(element('span','skill-glyph','S'),element('h2','',name));
@@ -162,7 +163,7 @@
         card.append(element('span','card-meta',detail + ' · ' + (data.discoverableFilesPresent ? 'MCP 可讀取' : '尚未生成')));
       } catch(error) { card.append(element('p','',error.message)); }
       const actions = element('div','card-actions');
-      for (const [text,route] of [['使用','home'],['編輯','manage']]) { const button = element('button',text === '使用' ? 'primary' : '',text); button.setAttribute('aria-label',text + ' ' + name); button.onclick = guarded(async()=> { if (await switchSkill(name)) { location.hash=route; if(route==='home') $('#taskInput').focus(); } }); actions.append(button); }
+      for (const [text,route] of [['使用','home'],['編輯','manage']]) { const button = element('button',text === '使用' ? 'primary' : '',text); button.setAttribute('aria-label',text + ' ' + name); button.onclick = guarded(async()=> { if (await switchSkill(name)) { location.hash=route; if(route==='home') { $('#skillUse').hidden = false; $('#skillUse').scrollIntoView({block:'start'}); $('#taskInput').focus({preventScroll:true}); } } }); actions.append(button); }
       card.append(actions); return card;
     })); $('#skillCards').replaceChildren(...cards);
     $('#connectionLibraryStatus').textContent = '目前有 ' + available.length + ' 個已生成的 Skill 可透過這個連接讀取。';
@@ -188,14 +189,15 @@
   $('#skillDocument').oninput = () => { state.outline.document = $('#skillDocument').value; syncDocumentBody(); markDirty(); };
   $('#documentBody').oninput = () => { const match = state.outline.document.match(/^(---\r?\n[\s\S]*?\r?\n---[^\S\r\n]*\r?\n?)/); if(match) { state.outline.document = match[0] + $('#documentBody').value; $('#skillDocument').value = state.outline.document; markDirty(); } };
   for (const key of ['input','result']) $('#skill' + key[0].toUpperCase() + key.slice(1)).oninput = event => { state.outline[key] = event.target.value; markDirty(); };
-  $('#newSkill').onclick = () => { $('#newSkillError').textContent = ''; $('#newSkillId').removeAttribute('aria-invalid'); setManagePane(1); $('#newSkillForm').hidden = false; $('#newSkillId').focus(); };
-  $('#cancelNewSkill').onclick = () => { $('#newSkillForm').hidden = true; };
+  $('#newSkill').onclick = () => { $('#newSkillError').textContent = ''; $('#newSkillId').removeAttribute('aria-invalid'); setManagePane(1); $('#newSkillForm').hidden = false; $('#manage').classList.add('creating-skill'); $('#editTitle').textContent = '新增 Skill'; $('#skillSelect').disabled = true; $('#newSkillId').focus(); };
+  function closeNewSkillForm() { $('#newSkillForm').hidden = true; $('#manage').classList.remove('creating-skill'); $('#skillSelect').disabled = false; $('#editTitle').textContent = state.name || '管理 Skill'; }
+  $('#cancelNewSkill').onclick = closeNewSkillForm;
   $('#createSkill').onclick = guarded(async () => {
     const name = $('#newSkillId').value.trim();
     if (!/^[a-z][a-z0-9-]{0,62}$/.test(name)) throw Error('請用小寫英文、數字、連字號，最多 63 字元。');
     if ((await request('/api/skills')).includes(name)) throw Error('已有同名 Skill，請從清單選擇。');
     if ((state.dirty || state.resourceDirty) && !confirm('建立新 Skill 會捨棄目前未保存修改，繼續？')) return;
-    state.name = name; clearResource(); await refreshSkills(); await load(); $('#newSkillForm').hidden = true;
+    state.name = name; clearResource(); await refreshSkills(); await load(); closeNewSkillForm();
     $('#addStep').click(); state.selected.selected = true; renderSteps(); updateSummary(); message('新 Skill 草稿：填寫用途與步驟，再按「保存並生成 Skill」。');
   });
   $('#resourceSelect').onchange = guarded(async () => {

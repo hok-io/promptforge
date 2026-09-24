@@ -12,3 +12,5 @@
 @media(max-width:760px){.manage-progress button{flex:1;padding:8px;font-size:14px}#manage .save-toolbar{bottom:0}}
 
 .field-help,.field-example{display:block;font-size:14px;font-weight:400;line-height:1.6;color:var(--muted);margin:6px 0 10px}.field-example{margin-bottom:4px}.capability .cap-field{display:block;grid-column:1/-1}.cap-field input,.cap-field select{margin-top:6px}
+
+#manage.creating-skill .manage-progress, #manage.creating-skill #manageGuide, #manage.creating-skill #skillBasicsFields, #manage.creating-skill #structuredBasics, #manage.creating-skill .save-toolbar, #manage.creating-skill #library .section-head { display:none; }
