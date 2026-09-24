@@ -180,6 +180,7 @@
   const guarded = action => async event => { const button = event?.currentTarget; if (button?.tagName === 'BUTTON') button.disabled = true; try { await action(); } catch(error) { if (!$('#newSkillForm').hidden) { $('#newSkillError').textContent = error.message; $('#newSkillId').setAttribute('aria-invalid','true'); } if (button?.id === 'saveResource') $('#resourceStatus').textContent = error.message; message(error.message, true); } finally { if (button?.tagName === 'BUTTON') button.disabled = false; } };
   $('#skillDescription').oninput = () => { state.outline.description = $('#skillDescription').value; if(typeof state.outline.document === 'string') { state.outline.document = state.outline.document.replace(/^description:.*$/m, () => 'description: ' + JSON.stringify(state.outline.description)); $('#skillDocument').value = state.outline.document; } markDirty(); };
   async function switchSkill(next) {
+    closeNewSkillForm();
     if (next === state.name) { if(!state.dirty && !state.resourceDirty) await load(); return true; }
     if ((state.dirty || state.resourceDirty) && !confirm('切換 Skill 會捨棄未保存的修改，繼續？')) { $('#skillSelect').value = state.name; return false; }
     state.name = next; $('#skillSelect').value = next; clearResource(); await load(); return true;
@@ -189,7 +190,7 @@
   $('#skillDocument').oninput = () => { state.outline.document = $('#skillDocument').value; syncDocumentBody(); markDirty(); };
   $('#documentBody').oninput = () => { const match = state.outline.document.match(/^(---\r?\n[\s\S]*?\r?\n---[^\S\r\n]*\r?\n?)/); if(match) { state.outline.document = match[0] + $('#documentBody').value; $('#skillDocument').value = state.outline.document; markDirty(); } };
   for (const key of ['input','result']) $('#skill' + key[0].toUpperCase() + key.slice(1)).oninput = event => { state.outline[key] = event.target.value; markDirty(); };
-  $('#newSkill').onclick = () => { $('#newSkillError').textContent = ''; $('#newSkillId').removeAttribute('aria-invalid'); setManagePane(1); $('#newSkillForm').hidden = false; $('#manage').classList.add('creating-skill'); $('#editTitle').textContent = '新增 Skill'; $('#skillSelect').disabled = true; $('#newSkillId').focus(); };
+  $('#newSkill').onclick = () => { $('#newSkillError').textContent = ''; $('#newSkillId').removeAttribute('aria-invalid'); setManagePane(1); $('#newSkillForm').hidden = false; $('#manage').classList.add('creating-skill'); $('#editTitle').textContent = '新增 Skill'; $('#newSkillId').focus(); };
   function closeNewSkillForm() { $('#newSkillForm').hidden = true; $('#manage').classList.remove('creating-skill'); $('#skillSelect').disabled = false; $('#editTitle').textContent = state.name || '管理 Skill'; }
   $('#cancelNewSkill').onclick = closeNewSkillForm;
   $('#createSkill').onclick = guarded(async () => {
@@ -235,6 +236,7 @@
   document.querySelectorAll('[data-manage-pane]').forEach(button => button.onclick = () => { const pane=Number(button.dataset.managePane); if(pane===3) preview(); else setManagePane(pane); });
   document.addEventListener('manage:section', event => setManagePane(event.detail));
   $('#refreshLibrary').onclick = guarded(async () => { await refreshSkills(); if(state.name && !state.dirty && !state.resourceDirty) await load(); });
+  document.addEventListener('page:change', event => { if(event.detail !== 'manage') closeNewSkillForm(); });
   document.addEventListener('library:refresh', () => refreshSkills().catch(error => message(error.message,true)));
   refreshSkills().then(() => { if(state.name) return load(); $('#save').disabled = true; $('#preview').disabled = true; $('#manageNext').disabled = true; $('#copyTask').disabled = true; $('#startVerification').disabled = true; checkMcp(); }).catch(error => message(error.message, true));
 })();

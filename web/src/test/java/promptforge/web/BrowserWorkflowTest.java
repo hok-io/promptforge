@@ -31,6 +31,17 @@ class BrowserWorkflowTest {
             page.navigate("http://127.0.0.1:" + port + "/");
             assertThat(page.locator("#skillSelect")).hasValue("PromptForge");
             page.locator("nav a[href='#manage']").click();
+            page.locator("#newSkill").click();
+            assertThat(page.locator("#skillSelect")).isEnabled();
+            page.locator("nav a[href='#verify']").click();
+            page.locator("#skillSelect").selectOption("PromptForge-context");
+            assertThat(page.locator("#verifyTitle")).hasText("測試 PromptForge-context");
+            page.locator("nav a[href='#manage']").click();
+            assertThat(page.locator("#newSkillForm")).not().isVisible();
+            page.locator("#newSkill").click();
+            page.locator("#skillSelect").selectOption("PromptForge");
+            assertThat(page.locator("#editTitle")).hasText("PromptForge");
+            assertThat(page.locator("#newSkillForm")).not().isVisible();
             page.locator("#newSkill").click(); page.locator("#newSkillId").fill("text-check"); page.locator("#createSkill").click();
             assertThat(page.locator("#skillSelect")).hasValue("text-check");
             assertThat(page.locator("#editTitle")).hasText("text-check");

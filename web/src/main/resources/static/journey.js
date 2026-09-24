@@ -13,6 +13,7 @@
     if (['resources','output'].includes(target)) $('#' + target).open = true;
     const heading = document.querySelector('[data-screen="' + screen + '"] h1'); heading.tabIndex = -1; heading.focus({preventScroll:true});
     if (routeAliases[target]) $('#' + target).scrollIntoView(); else window.scrollTo(0,0);
+    document.dispatchEvent(new CustomEvent('page:change', {detail:screen}));
     $('#skillBar').hidden = screen === 'agent' || screen === 'home';
     if (screen === 'home' || screen === 'agent') document.dispatchEvent(new Event('library:refresh'));
     if (screen === 'verify' && receipt) refreshReceipt();
