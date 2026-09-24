@@ -8,7 +8,7 @@
 /* Editing flow uses existing controls and colors. */
 .manage-progress{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}.manage-progress button[aria-current=step]{background:var(--soft);border-color:var(--primary);color:var(--primary)}
 #manage .save-toolbar{position:sticky;bottom:12px;margin-top:24px;box-shadow:0 3px 12px #00000012;z-index:2}
-#structuredBasics{margin-bottom:24px}#documentBody{min-height:300px}#reviewSteps:empty{display:none}
+#structuredBasics{margin-bottom:24px}#reviewSteps:empty{display:none}
 @media(max-width:760px){.manage-progress button{flex:1;padding:8px;font-size:14px}#manage .save-toolbar{bottom:0}}
 
 .field-help,.field-example{display:block;font-size:14px;font-weight:400;line-height:1.6;color:var(--muted);margin:6px 0 10px}.field-example{margin-bottom:4px}.capability .cap-field{display:block;grid-column:1/-1}.cap-field input,.cap-field select{margin-top:6px}

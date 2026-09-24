@@ -26,7 +26,7 @@
   function markDirty() { $('#saveNext').hidden = true; state.dirty = true; state.preview = null; updateSummary(); showOutput(); }
   function updateSummary() {
     const selected = state.outline.steps.filter(step=>step.selected);
-    $('#reviewSummary').textContent = typeof state.outline.document === 'string' ? state.name + '：保存整份指示文件。' : state.name + '：共 ' + state.outline.steps.length + ' 步，提供 ' + selected.length + ' 步給 AI。';
+    $('#reviewSummary').textContent = state.name + '：共 ' + state.outline.steps.length + ' 步，提供 ' + selected.length + ' 步給 AI。';
     $('#reviewSteps').replaceChildren(...selected.map(step=>element('li','',step.title)));
     $('#stepCount').textContent = String(state.outline.steps.length);
     $('#selectedCount').textContent = String(state.outline.steps.filter(step => step.selected).length);
@@ -108,10 +108,10 @@
   }
   let loadVersion = 0;
   async function load() {
-    $('#manageNext').disabled = false; const version = ++loadVersion; $('#save').disabled = true; $('#preview').disabled = true; $('#documentEditor').hidden = true; $('#structuredEditor').hidden = true;
+    $('#manageNext').disabled = false; const version = ++loadVersion; $('#save').disabled = true; $('#preview').disabled = true; $('#structuredEditor').hidden = true;
     const data = await request(endpoint()); if (version !== loadVersion) return; $('#save').disabled = false; $('#preview').disabled = false; state.revision = data.revision; state.outline = structuredClone(data.outline); state.saved = data; state.preview = null; state.dirty = false;
-    const id = state.selected?.id; state.outline.steps.forEach(migrateLegacy); state.selected = state.outline.steps.find(step => step.id === id) || state.outline.steps[0] || null;
-    $('#skillDescription').value = state.outline.description || ''; const documentMode = typeof state.outline.document === 'string'; $('#documentEditor').hidden = !documentMode; $('#structuredEditor').hidden = documentMode; $('#skillDocument').value = state.outline.document || ''; $('#skillDescription').readOnly = false; $('#structuredBasics').hidden = documentMode; syncDocumentBody(); $('#contentPaneButton').textContent = documentMode ? '2 指示' : '2 步驟'; $('#manageGuide').textContent = documentMode ? '用途 → 編輯指示 → 檢查並保存' : '用途 → 編輯並勾選步驟 → 檢查並保存'; $('#skillInput').value = state.outline.input || ''; $('#skillResult').value = state.outline.result || ''; $('#editTitle').textContent = state.name; $('#useTitle').textContent = '使用 ' + state.name; $('#skillLocation').textContent = `生成位置：.agents/skills/${state.name}/SKILL.md`; renderSteps(); renderEditor(); updateSummary(); showOutput(); message(''); setManagePane(1); await refreshResources(); checkMcp();
+    const id = state.selected?.id; state.outline.steps ||= []; state.outline.steps.forEach(migrateLegacy); state.selected = state.outline.steps.find(step => step.id === id) || state.outline.steps[0] || null;
+    $('#skillDescription').value = state.outline.description || ''; $('#structuredEditor').hidden = false; $('#skillDescription').readOnly = false; $('#structuredBasics').hidden = false; $('#contentPaneButton').textContent = '2 步驟'; $('#manageGuide').textContent = '用途 → 編輯並勾選步驟 → 檢查並保存'; $('#skillInput').value = state.outline.input || ''; $('#skillResult').value = state.outline.result || ''; $('#editTitle').textContent = state.name; $('#useTitle').textContent = '使用 ' + state.name; $('#skillLocation').textContent = `生成位置：.agents/skills/${state.name}/SKILL.md`; renderSteps(); renderEditor(); updateSummary(); showOutput(); message(''); setManagePane(1); await refreshResources(); checkMcp();
   }
   async function preview() {
     setManagePane(3); const button = $('#preview'); button.disabled = true;
@@ -159,7 +159,7 @@
       try { const data = await request('/api/skills/' + encodeURIComponent(name));
         card.append(element('p','card-description',data.outline.description || '尚未填寫用途'));
         if(data.discoverableFilesPresent) available.push(name);
-        const detail = typeof data.outline.document === 'string' ? 'Markdown 文件' : `${data.outline.steps.filter(x=>x.selected).length} / ${data.outline.steps.length} 步已選`;
+        const detail = `${data.outline.steps.filter(x=>x.selected).length} / ${data.outline.steps.length} 步已選`;
         card.append(element('span','card-meta',detail + ' · ' + (data.discoverableFilesPresent ? 'MCP 可讀取' : '尚未生成')));
       } catch(error) { card.append(element('p','',error.message)); }
       const actions = element('div','card-actions');
@@ -178,7 +178,7 @@
   }
   function clearResource() { state.resourceRevision = 'new'; state.resourceDirty = false; state.resourceSavedPath = ''; $('#resourcePath').value = ''; $('#resourcePath').readOnly = false; $('#resourceText').value = ''; $('#attachResource').disabled = true; $('#resourceStatus').textContent = ''; }
   const guarded = action => async event => { const button = event?.currentTarget; if (button?.tagName === 'BUTTON') button.disabled = true; try { await action(); } catch(error) { if (!$('#newSkillForm').hidden) { $('#newSkillError').textContent = error.message; $('#newSkillId').setAttribute('aria-invalid','true'); } if (button?.id === 'saveResource') $('#resourceStatus').textContent = error.message; message(error.message, true); } finally { if (button?.tagName === 'BUTTON') button.disabled = false; } };
-  $('#skillDescription').oninput = () => { state.outline.description = $('#skillDescription').value; if(typeof state.outline.document === 'string') { state.outline.document = state.outline.document.replace(/^description:.*$/m, () => 'description: ' + JSON.stringify(state.outline.description)); $('#skillDocument').value = state.outline.document; } markDirty(); };
+  $('#skillDescription').oninput = () => { state.outline.description = $('#skillDescription').value; markDirty(); };
   async function switchSkill(next) {
     closeNewSkillForm();
     if (next === state.name) { if(!state.dirty && !state.resourceDirty) await load(); return true; }
@@ -187,8 +187,6 @@
   }
   $('#skillSelect').onchange = guarded(async () => switchSkill($('#skillSelect').value));
   $('#newFromLibrary').onclick = () => { location.hash = 'manage'; $('#newSkill').click(); };
-  $('#skillDocument').oninput = () => { state.outline.document = $('#skillDocument').value; syncDocumentBody(); markDirty(); };
-  $('#documentBody').oninput = () => { const match = state.outline.document.match(/^(---\r?\n[\s\S]*?\r?\n---[^\S\r\n]*\r?\n?)/); if(match) { state.outline.document = match[0] + $('#documentBody').value; $('#skillDocument').value = state.outline.document; markDirty(); } };
   for (const key of ['input','result']) $('#skill' + key[0].toUpperCase() + key.slice(1)).oninput = event => { state.outline[key] = event.target.value; markDirty(); };
   $('#newSkill').onclick = () => { $('#newSkillError').textContent = ''; $('#newSkillId').removeAttribute('aria-invalid'); setManagePane(1); $('#newSkillForm').hidden = false; $('#manage').classList.add('creating-skill'); $('#editTitle').textContent = '新增 Skill'; $('#newSkillId').focus(); };
   function closeNewSkillForm() { $('#newSkillForm').hidden = true; $('#manage').classList.remove('creating-skill'); $('#skillSelect').disabled = false; $('#editTitle').textContent = state.name || '管理 Skill'; }
@@ -223,13 +221,12 @@
   };
   for (const [button, source] of [['#copyUrl','#mcpUrl'],['#copyCommand','#mcpCommand']]) $(button).onclick = guarded(async () => { await navigator.clipboard.writeText($(source).textContent); message('已複製。'); });
   let managePane = 1;
-  function syncDocumentBody() { $('#documentBody').value = (state.outline.document || '').replace(/^---\r?\n[\s\S]*?\r?\n---[^\S\r\n]*\r?\n?/, ''); }
   function setManagePane(number) {
     managePane = number;
     document.querySelectorAll('[data-manage-panel]').forEach(panel => panel.hidden = Number(panel.dataset.managePanel) !== number);
     document.querySelectorAll('[data-manage-pane]').forEach(button => { if(Number(button.dataset.managePane) === number) button.setAttribute('aria-current','step'); else button.removeAttribute('aria-current'); });
     $('#manageBack').hidden = number === 1; $('#manageNext').hidden = number === 3; $('#save').hidden = number !== 3; $('#preview').hidden = number !== 3;
-    $('#manageNext').textContent = number === 1 ? (typeof state.outline.document === 'string' ? '下一步：編輯指示' : '下一步：編輯步驟') : '下一步：檢查並保存';
+    $('#manageNext').textContent = number === 1 ? '下一步：編輯步驟' : '下一步：檢查並保存';
   }
   $('#manageNext').onclick = () => { if(managePane === 2) preview(); else setManagePane(2); };
   $('#manageBack').onclick = () => setManagePane(managePane - 1);
