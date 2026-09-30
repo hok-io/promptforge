@@ -23,6 +23,9 @@ class ProgramControllerTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.outline.steps.length()").value(1))
                 .andExpect(jsonPath("$.generatedCurrent").value(true));
         mvc.perform(get("/api/program")).andExpect(status().isOk()).andExpect(jsonPath("$.generated").isNotEmpty());
+        String generated = Files.readString(root.resolve(".agents/skills/PromptForge/SKILL.md"));
+        assertTrue(generated.contains("Project root: the current workspace containing this Skill."));
+        assertFalse(generated.contains(root.toString().replace('\\', '/')));
         mvc.perform(post("/api/program/preview").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"description\":\"Test instructions\",\"steps\":[{\"id\":\"next\",\"title\":\"Preview Only\",\"selected\":true}]}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.generated").value(org.hamcrest.Matchers.containsString("Preview Only")));

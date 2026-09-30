@@ -6,7 +6,10 @@ out/
 .tools/
 **/target/
 /.promptforge/
-/.agents/skills/
+/.agents/skills/*
+!/.agents/skills/PromptForge/
+/.agents/skills/PromptForge/**
+!/.agents/skills/PromptForge/SKILL.md
 
 /.private/
 

@@ -163,7 +163,7 @@ public final class ProgramController {
         String extraFrontmatter = outline.path("_sourceFrontmatter").asText("");
         if (!extraFrontmatter.isBlank()) out.append(extraFrontmatter.stripTrailing()).append('\n');
         out.append("---\n\n# ").append(name).append("\n\n");
-        out.append("Project root: `").append(files.root().toString().replace('\\', '/')).append("`. Resolve dependency paths against this root.\n\n");
+        out.append("Project root: the current workspace containing this Skill. Resolve dependency paths against this root.\n\n");
         String input = outline.path("input").asText("");
         if (!input.isBlank()) out.append("Input: ").append(input).append("\n\n");
         int number = 1;
